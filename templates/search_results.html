@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Removed the <head> tag since it is only supposed to be in base.html -->
+<h1>Search Results for "{{ query }}"</h1>
+<div class="quotes-container">
+    {% for quote in quotes %}
+    <div class="quote-container">
+        <p>{{ quote.quote }}</p>
+        {% if quote.image_url %}
+            <img src="{{ url_for('static', filename='author_images/' + quote.image_url) }}" alt="{{ quote.author }}" class="author-image"/>
+        {% endif %}
+
+        <p class="author">Author: {{ quote.author }}</p>
+
+        <!-- Add the "More Info" button -->
+        <button class="more-info-button" onclick="toggleMoreInfo({{ loop.index }}, '{{ quote.quote.replace("'", "\\'").replace('"', '&quot;') }}', '{{ quote.author.replace("'", "\\'").replace('"', '&quot;') }}')">More Info</button>
+
+        <!-- Dropdown Content -->
+        <div class="dropdown-content">
+            <form action="{{ url_for('collections.add_to_collection') }}" method="POST">
+                <select name="collection_id">
+                    {% for collection in current_user.collections %}
+                        <option value="{{ collection.id }}">{{ collection.name }}</option>
+                    {% endfor %}
+                    <option value="new">Create New Collection</option>
+                </select>
+                <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                <input type="submit" value="Add to Collection">
+            </form>
+        </div>
+
+        <!-- More Information Section (Initially hidden) -->
+        <div id="more-info-section-{{ loop.index }}" style="display: none;">
+            <h3>Additional Information</h3>
+            <p class="openai-info"></p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination navigation -->
+<div class="pagination">
+    <ul>
+        <!-- Previous Page Link -->
+        {% if page > 1 %}
+            <li><a href="{{ url_for('search', query=query, page=page-1) }}">Previous</a></li>
+        {% else %}
+            <li class="disabled">Previous</li>
+        {% endif %}
+
+        <!-- Individual Page Links -->
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <li class="active">{{ p }}</li>
+            {% else %}
+                <li><a href="{{ url_for('search', query=query, page=p) }}">{{ p }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Next Page Link -->
+        {% if page < total_pages %}
+            <li><a href="{{ url_for('search', query=query, page=page+1) }}">Next</a></li>
+        {% else %}
+            <li class="disabled">Next</li>
+        {% endif %}
+    </ul>
+</div>
+
+<script>
+    function toggleMoreInfo(index, quote, author) {
+        const moreInfoSection = document.getElementById(`more-info-section-${index}`);
+        if (moreInfoSection.style.display === 'none') {
+            if (!moreInfoSection.dataset.fetched) {
+                fetch('/get_more_info', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({quote: quote, author_name: author})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const infoPara = moreInfoSection.querySelector('.openai-info');
+                    infoPara.innerHTML = data.info;
+
+                    moreInfoSection.dataset.fetched = true;
+                });
+            }
+            moreInfoSection.style.display = 'block';
+        } else {
+            moreInfoSection.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,628 @@
+/* General Body and Font Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #202124;
+    color: #E8EAED;
+}
+
+.search-form {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.search-form input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 250px; /* You had different width values, choose which is appropriate */
+    background-color: #333; /* Dark gray background */
+    color: #E8EAED; /* Text color */
+}
+
+.search-form input[type="submit"] {
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.search-form input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.more-info-section {
+    display: none;
+}
+
+
+
+
+.date-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.date-navigation a {
+    text-decoration: none;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.date-navigation a:hover {
+    background-color: #f4f4f4;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #202124;
+    color: #E8EAED;
+}
+
+.search-form {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.search-form input[type="text"],
+.search-form input[type="submit"] {
+    display: inline-block;   /* Makes the input fields appear inline */
+    margin: 0 5px;          /* Small margin to space them out a bit */
+}
+
+.search-form input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 60%;
+    max-width: 500px;
+    background-color: #333; /* Dark gray background */
+    color: #E8EAED; /* Text color */
+}
+
+.search-form input[type="submit"] {
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.search-form input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+
+
+
+
+
+.search-form input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 250px; /* Or whatever width you desire */
+}
+
+.search-form input[type="submit"] {
+    padding: 10px 15px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-form input[type="submit"]:hover {
+    background-color: #555;
+}
+
+
+/* Navbar Styles */
+.navbar {
+    background-color: #2d2e30;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.navbar a {
+    float: left;
+    display: block;
+    color: #E8EAED;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: #3a3b3d;
+    color: white;
+}
+
+/* Quote Styles */
+.quote {
+    border: 1px solid #3a3b3d;
+    padding: 8px;
+    margin: 5px 0;
+    background-color: #2d2e30;
+    color: #E8EAED;
+    border-radius: 8px;
+}
+
+.quote button {
+    padding: 2px 2px;
+    background-color: #3a3b3d;
+    color: #E8EAED;
+    border: 1px solid #5f6368;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 4px;
+}
+
+.quote button:hover {
+    background-color: #5f6368;
+}
+
+/* Other Components */
+.author-column {
+    float: left;
+    width: 33.33%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.author-row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.top-authors ol {
+    columns: 3;
+    list-style-position: inside;
+}
+
+.top-authors a {
+    color: #8ab4f8;
+    text-decoration: none;
+}
+
+.top-authors a:hover {
+
+}
+
+.account-btn {
+    /* ... Retaining your styles ... */
+    border: 0;
+    outline: none;
+    box-shadow: none;
+}
+
+.account-btn:hover {
+    background-color: #5f6368;
+    color: #E8EAED;
+}
+
+/* Inputs, Forms, and Buttons */
+input, select, button {
+    background-color: #3a3b3d;
+    color: #E8EAED;
+    border: 1px solid #5f6368;
+    padding: 4px 10px;  /* Adjusted to match the desired size */
+    margin: 4px 1px;  /* Adjusted 10 to 10px for consistency */
+    border-radius: 4px;
+    font-size: 10px;   /* Adjusted to match the desired size */
+    transition: background-color 0.2s;
+
+}
+
+button:hover, input[type="submit"]:hover {
+    background-color: #5f6368;
+}
+
+/* Style for More Info button */
+.more-info-button {
+    padding: 4px 10px;  /* Adjust padding to make button smaller or larger */
+    font-size: 10px;    /* Adjust font-size if necessary */
+    cursor: pointer;
+    /* ... any other styles specific to this button */
+}
+
+ .quote-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    }
+
+.quote-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Style for the dropdown inside the .quote-actions */
+.quote-actions select {
+    padding: -5px;  /* Adjust padding to make dropdown smaller or larger */
+    font-size: 10px;    /* Adjust font-size if necessary */
+    /* ... any other styles specific to this dropdown */
+}
+
+/* Style for the Add to Collection button inside the .quote-actions */
+.quote-actions input[type="submit"] {
+    padding: -5px;  /* Adjust padding to make this input-button smaller or larger */
+    font-size: 10px;    /* Adjust font-size if necessary */
+    /* ... any other styles specific to this input-button */
+}
+
+/* Style for author link */
+.author-link {
+    text-decoration: none;     /* Remove underline */
+    color: #FFFFFF;            /* White color */
+    font-weight: bold;         /* Bold text */
+        /* Italic text */
+}
+
+/* Hover effect for author link */
+.author-link:hover {
+    color: #CCCCCC;            /* A light grey color on hover */
+ /* Add an underline on hover */
+    background-color: #333333; /* A dark grey background to contrast with the white text */
+}
+
+/* Style for author link */
+.author-link {
+    text-decoration: none;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+
+
+/* Hover effect for author link */
+.author-link:hover {
+    text-decoration: underline; /* Add an underline on hover */
+    color: #CCCCCC;            /* A light grey color on hover */
+    background-color: #333333; /* A dark grey background to contrast with the white text */
+}
+
+.selected-authors .author-link {
+    text-decoration: none;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+
+
+
+/* Style for the dropdown inside the .quote-actions */
+.quote-actions select {
+    padding: -5px;
+    font-size: 10px;
+}
+
+/* Style for the Add to Collection button inside the .quote-actions */
+.quote-actions input[type="submit"] {
+    padding: -5px;
+    font-size: 10px;
+}
+
+/* Style for author link */
+.author-link {
+    text-decoration: none;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+/* Hover effect for author link */
+.author-link:hover {
+    text-decoration: underline;
+    color: #CCCCCC;
+    background-color: #333333;
+}
+
+.selected-authors .author-link {
+    text-decoration: none;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+/* Style for the dropdown content */
+.dropdown-content {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.quote-container {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.pagination {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+}
+
+.pagination ul {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    flex-wrap: wrap;
+}
+
+.pagination ul li {
+    margin: 0 5px;
+}
+
+.pagination ul li a {
+    display: block;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.pagination ul li, .pagination ul li a {
+    box-sizing: border-box;
+}
+
+
+
+
+
+/* Top Authors Styles */
+.top-authors {
+    margin: 20px 0;
+    background-color: #2d2e30;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.top-authors h2 {
+    margin-top: 0;
+}
+
+.top-authors ol {
+    list-style-position: inside;
+    margin: 0;
+    padding-left: 20px; /* Adjust as needed */
+}
+
+.top-authors ol li a {
+    color: #FFFFFF;            /* White color */
+    text-decoration: none;     /* Remove underline */
+    font-weight: bold;         /* Bold text */
+}
+
+.top-authors ol li a:hover {
+    color: #CCCCCC;            /* A light grey color on hover */
+    background-color: #333333; /* A dark grey background to contrast with the white text */
+    text-decoration: underline; /* Add an underline on hover */
+}
+
+
+.author-alphabet {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Space between letters */
+    margin: 20px 0;
+}
+
+.author-alphabet a {
+    color: #E8EAED;
+    background-color: #3a3b3d;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.author-alphabet a:hover {
+    background-color: #5f6368;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination a {
+    padding: 5px 10px;
+    margin: 0 5px;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: #333;
+}
+
+.pagination a.active {
+    background-color: #007BFF;
+    color: #fff;
+}
+
+.pagination a:hover {
+    background-color: #f8f8f8;
+}
+
+.collection-name {
+    font-size: 1.5em; /* Makes the title slightly larger for emphasis */
+    margin-bottom: 8px; /* Adds some space below the title */
+}
+
+.collection-description {
+    margin-bottom: 16px; /* Adds more space below the description */
+}
+
+.collection-actions {
+    display: flex;
+    align-items: center; /* Vertically aligns the buttons and checkbox */
+    justify-content: space-between; /* Spaces out the actions for a cleaner look */
+}
+
+.public-label {
+    margin-right: 16px; /* Adds some space between the checkbox and the button */
+}
+
+.topics-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 1rem;
+}
+
+
+.topics-list {
+    flex: 1;  /* take up as much space as available */
+    margin: 0 10px;
+    width: 48%;
+    list-style: none; /* Removing bullet points */
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+}
+
+.topics-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.topics-list li:last-child {
+    border-bottom: none;
+}
+
+.topics-list a {
+    text-decoration: none;  /* Remove underline */
+    color: #E8EAED;         /* Default link color */
+    transition: color 0.2s; /* Smooth color transition */
+}
+
+.topics-list a:hover {
+    color: #CCCCCC;                 /* A light grey color on hover */
+    background-color: #333333;     /* A dark grey background to contrast */
+    text-decoration: underline;    /* Add an underline on hover for clarity */
+}
+
+.topics-container {
+    display: flex;
+    justify-content: space-between; /* Spaces out the columns */
+    flex-wrap: nowrap; /* Prevents wrapping */
+}
+
+.left-column, .right-column {
+    box-sizing: border-box; /* Ensures padding is included in width */
+    flex: 0 0 48%; /* Each column takes up 48% of the container's width */
+    padding: 0 10px; /* Padding between columns */
+}
+
+.topic-card {
+    border: 1px solid #3a3b3d;
+    padding: 15px;
+    margin: 10px 0;
+    background-color: #2d2e30;
+    color: #E8EAED;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.topic-card a {
+    color: #E8EAED;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.topic-card a:hover {
+    color: white;
+}
+
+
+
+
+
+
+/* User Details Styling */
+.user-details {
+  /* Grey background for the user-details */
+    padding: 15px; /* Padding inside the user-details box */
+    border: 1px solid #FFFFFF; /* White border around the user-details box */
+    border-radius: 5px; /* Rounded corners for the user-details box */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    margin-bottom: 20px; /* Adds space below the user details section */
+}
+
+.user-details p {
+    font-size: 1.1em; /* Slightly larger font for user details */
+    margin-bottom: 10px; /* Space between user details items */
+}
+
+/* Action Buttons Styling */
+ul {
+    list-style-type: none; /* Removes bullet points from the list */
+    padding: 0; /* Removes default padding */
+/* Display as a flex container to line up action buttons horizontally */
+    gap: 10px; /* Space between action buttons */
+}
+
+ul li {
+    flex: 1; /* Each list item will take up equal space */
+}
+
+ul li a {
+    display: block; /* Allows you to style the full area of the link */
+    text-align: center; /* Center the text inside the link */
+    padding: 10px; /* Space inside the button */
+    border-radius: 5px; /* Rounded corners for buttons */
+    transition: background-color 0.2s;
+    color: #FFFFFF;/* Smooth background color transition for hover effects */
+    font-weight: bold;
+}
+
+ul li a:hover {
+    background-color: #5f6368; /* Darker grey background on hover */
+    color: #FFFFFF; /* White text on hover */
+}
+
+/* Logout Button Styling (if you want it to stand out) */
+ul li a[href="{{ url_for('logout') }}"] {
+    background-color: #FF4C4C; /* Red background color for logout */
+    color: #FFFFFF; /* White text color for logout */
+}
+
+ul li a[href="{{ url_for('logout') }}"]:hover {
+    background-color: #CC0000; /* Darker red on hover for logout */
+}
+
+/* For any other special buttons or unique elements, you can add specific styles here. */
+
+
+/* index.html image size */
+
+.responsive-image {
+    max-width: 20%; /* or any specific value you prefer */
+    height: auto;
+    margin: 10px 20px 10px 20px;
+}
+
+/* author name for index.html */
+.author-name {
+    font-weight: bold;
+    font-size: 1.2em;
+    /* other styling properties as needed */
+}
+

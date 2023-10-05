@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Search Form -->
+    <div class="search-form">
+        <form action="{{ url_for('authors') }}" method="GET">
+            <!-- Text input for search query -->
+            <input type="text" name="query" placeholder="Search for an author...">
+            <!-- Submit button for search -->
+            <input type="submit" value="Search">
+        </form>
+    </div>
+
+    <h1>Top 15 Authors</h1>
+
+    <!-- Top Authors List -->
+    <div class="top-authors">
+        <ol>
+        <li><a href="{{ url_for('author_quotes', author='Oscar Wilde') }}">Oscar Wilde</a></li>
+        <li><a href="{{ url_for('author_quotes', author='William Shakespeare') }}">William Shakespeare</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Mark Twain') }}">Mark Twain</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Friedrich Nietzsche') }}">Friedrich Nietzsche</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Albert Einstein') }}">Albert Einstein</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Ralph Waldo Emerson') }}">Ralph Waldo Emerson</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Johann Wolfgang von Goethe') }}">Johann Wolfgang von Goethe</a></li>
+        <li><a href="{{ url_for('author_quotes', author='George Bernard Shaw') }}">George Bernard Shaw</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Winston Churchill') }}">Winston Churchill</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Benjamin Franklin') }}">Benjamin Franklin</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Abraham Lincoln') }}">Abraham Lincoln</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Mahatma Gandhi') }}">Mahatma Gandhi</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Voltaire') }}">Voltaire</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Buddha') }}">Buddha</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Thomas Jefferson') }}">Thomas Jefferson</a></li>
+     </ol>
+</div>
+
+    <h2>Selected Authors</h2>
+
+    <!-- Dynamically Generated Selected Authors List -->
+    <div class="selected-authors">
+        <ul>
+            <!-- Looping through each author in selected_authors and creating a link to their quotes page -->
+            {% for author in selected_authors %}
+                <li><a href="{{ url_for('author_quotes', author=author) }}">{{ author }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Display Search Results if a search query is present -->
+    {% if query %}
+        <h3>Search Results for "{{ query }}"</h3>
+        <ul>
+            <!-- Looping through each author in the search results and creating a link to their quotes page -->
+            {% for author in authors %}
+                <li><a href="{{ url_for('author_quotes', author=author) }}">{{ author }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
+
+
+
+
+

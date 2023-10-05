@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Quotes by {{ author }}</h1>
+
+    <!-- Author Image -->
+    {% if author_image_url %}
+        <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}"
+             alt="{{ author }}"
+             class="author-image"/>
+    {% endif %}
+
+    <!-- Container for all quotes -->
+    <div class="quotes-container">
+        <!-- Looping over each quote in quotes list -->
+        {% for quote in quotes %}
+            <div class="quote-card">
+                <!-- Quote Content -->
+                <div class="quote-content">
+                    <p>{{ quote.quote }}</p>
+
+                    <!-- Button to toggle More Info Section -->
+                    <button class="more-info-button"
+                            onclick="toggleMoreInfo({{ loop.index }}, '{{ quote.quote|replace("'", "\\'")|replace('"', '&quot;') }}', '{{ author|replace("'", "\\'")|replace('"', '&quot;') }}')">
+                        More Info
+                    </button>
+
+                    <!-- Form to add quote to collection -->
+                    <form action="{{ url_for('collections.add_to_collection') }}"
+                          method="POST"
+                          class="inline-form">
+                        <!-- Dropdown to select collection -->
+                        <select name="collection_id">
+                            {% for collection in current_user.collections %}
+                                <option value="{{ collection.id }}">{{ collection.name }}</option>
+                            {% endfor %}
+                            <option value="new">Create New Collection</option>
+                        </select>
+                        <!-- Hidden input to store quote_id -->
+                        <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                        <!-- Submit button to add to collection -->
+                        <input type="submit" value="Add to Collection">
+                    </form>
+
+                    <!-- More Information Section (Initially hidden) -->
+                    <div id="more-info-section-{{ loop.index }}" class="more-info-section">
+                        <h3>Additional Information</h3>
+                        <!-- Placeholder for OpenAI generated content -->
+                        <p class="openai-info"></p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination Navigation -->
+    <div class="pagination">
+        <ul>
+            <!-- Looping over each page in pagination -->
+            {% for page_num in pagination.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != pagination.page %}
+                        <li><a href="{{ url_for('author_quotes', author=author, page=page_num) }}">{{ page_num }}</a></li>
+                    {% else %}
+                        <!-- Active Page -->
+                        <li class="active">{{ page_num }}</li>
+                    {% endif %}
+                {% else %}
+                    <!-- Placeholder for skipped pages in pagination -->
+                    <li class="disabled">...</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        function toggleMoreInfo(index, quote, author) {
+            // Toggling more info section visibility and fetching additional info if not already fetched
+            const moreInfoSection = document.getElementById(`more-info-section-${index}`);
+            if (moreInfoSection.style.display === 'none') {
+                if (!moreInfoSection.dataset.fetched) {
+                    fetch('/get_more_info', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({quote: quote, author_name: author})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const infoPara = moreInfoSection.querySelector('.openai-info');
+                        infoPara.innerHTML = data.info;
+                        moreInfoSection.dataset.fetched = true;
+                    });
+                }
+                moreInfoSection.style.display = 'block';
+            } else {
+                moreInfoSection.style.display = 'none';
+            }
+        }
+    </script>
+{% endblock %}

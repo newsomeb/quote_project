@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Adding a title to the page -->
+    <title>Authors</title>
+
+    <!-- Linking the stylesheet for the page -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <h1>Authors</h1>
+
+    <!-- List of Authors -->
+    <ul>
+        <!-- Loop through each author in the authors list -->
+        {% for author in authors %}
+            <!-- Create a list item with a link to the author_quotes view for each author -->
+            <li><a href="{{ url_for('author_quotes', author=author.author) }}">{{ author.author }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
