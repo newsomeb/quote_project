@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <h2>My Collections</h2>
+
+    {% for collection in user_collections %}
+    <div class="quote-container">
+        <h3 class="collection-name">{{ collection.name }}</h3>
+        <p class="collection-description">Description: {{ collection.description }}</p>
+        <p>Public: {% if collection.public %}Yes{% else %}No{% endif %}</p>
+
+        <!-- Collection actions -->
+        <div class="collection-actions">
+            <a href="{{ url_for('collections.view_collection', collection_id=collection.id) }}" class="btn">View Collection</a>
+
+            <form action="{{ url_for('collections.update_privacy', collection_id=collection.id) }}" method="POST" style="display: inline-block;">
+                <label class="public-label">
+                    Public:
+                    <input type="checkbox" name="public" class="publicCheckbox" data-public="{{ 'true' if collection.public else 'false' }}">
+                </label>
+                <input type="submit" value="Update Privacy" class="btn">
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    const publicCheckboxes = document.querySelectorAll('.publicCheckbox');
+    publicCheckboxes.forEach(checkbox => {
+        const isPublic = checkbox.getAttribute('data-public') === 'true';
+        if (isPublic) {
+            checkbox.checked = true;
+        }
+    });
+</script>
+
+{% endblock %}

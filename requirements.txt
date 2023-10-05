@@ -1,0 +1,13 @@
+flask
+sqlalchemy
+openai
+wtforms
+flask_login
+python_dotenv
+bcrypt
+flask_mail
+werkzeug
+itsdangerous
+flask_wtf
+flask_limiter
+flask_caching

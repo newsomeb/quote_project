@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="quote-details">
+    <h2>Quote by {{ quote.author }}</h2>
+
+    <!-- Author Image -->
+    {% if quote.image_url %}
+        <img src="{{ url_for('static', filename='author_images/' + quote.image_url) }}" alt="{{ quote.author }}" class="author-image"/>
+    {% endif %}
+
+    <blockquote>{{ quote.quote }}</blockquote>
+    <p>Birthdate: {{ quote.birthday.strftime('%B %d, %Y') }}</p>
+    <p>Summary: {{ quote.summary }}</p>
+</div>
+
+<div class="quote-actions">
+    <a href="#" class="report-quote-button" onclick="reportQuote({{ quote.id }})">Report</a>
+    <a href="#" class="copy-link-button" onclick="copyQuoteLink({{ quote.id }})">Copy Link</a>
+    <a href="#" class="more-info-button" onclick="toggleMoreInfo()">More</a>
+</div>
+
+<div id="more-info-section" style="display: none;">
+    <h3>Additional Information</h3>
+    <p>{{ quote.openai_generated_content }}</p>
+</div>
+
+<div class="chat-interface" id="chat-interface">
+    <div class="chat-container" id="chat-container">
+        <div class="chat-messages" id="chat-messages">
+        </div>
+        <div class="user-input">
+            <input type="text" id="user-input" placeholder="Type your question">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleMoreInfo() {
+        const moreInfoSection = document.getElementById('more-info-section');
+        if (moreInfoSection.style.display === 'none') {
+            if (!moreInfoSection.dataset.fetched) {
+                fetch('/get_more_info', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({quote: '{{quote.quote}}', author_name: '{{quote.author}}'})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const infoPara = moreInfoSection.querySelector('p');
+                    infoPara.innerHTML = data.info;
+                    moreInfoSection.dataset.fetched = true;
+                });
+            }
+            moreInfoSection.style.display = 'block';
+        } else {
+            moreInfoSection.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

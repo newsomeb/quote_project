@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <h2>{{ collection.name }}</h2>
+    <p>{{ collection.description }}</p>
+
+    <!-- Privacy Update Form -->
+    <form action="{{ url_for('collections.update_privacy', collection_id=collection.id) }}" method="POST">
+        <!-- Your form content here, if any -->
+    </form>
+
+    <div class="quotes-container">
+    {% for quote in collection.quotes %}
+        <div class="quote-card" style="display: flex; align-items: center;">
+            <!-- Author Image -->
+            {% if quote.image_url %}
+            <img src="{{ url_for('static', filename='author_images/' + quote.image_url) }}" alt="{{ quote.author }}" class="author-image-small responsive-image"/>
+            {% endif %}
+
+            <div class="quote-content">
+                <p>{{ quote.quote }} - {{ quote.author }}</p>
+                <div class="quote-actions">
+                    <!-- More Info button -->
+                    <button class="more-info-button" onclick="toggleMoreInfo({{ loop.index }}, '{{ quote.quote.replace("'", "\\'").replace('"', '&quot;') }}', '{{ quote.author.replace("'", "\\'").replace('"', '&quot;') }}')">More Info</button>
+
+                    <!-- Add any additional buttons or actions here if needed -->
+                </div>
+
+                <!-- More Information Section (Initially hidden) -->
+                <div id="more-info-section-{{ loop.index }}" class="more-info-section" style="display: none;">
+                    <h3>Additional Information</h3>
+                    <p class="openai-info"></p> <!-- Placeholder for AI generated content -->
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleMoreInfo(index, quote, author) {
+        const moreInfoSection = document.getElementById(`more-info-section-${index}`);
+        if (moreInfoSection.style.display === 'none') {
+            if (!moreInfoSection.dataset.fetched) {
+                fetch('/get_more_info', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({quote: quote, author_name: author})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const infoPara = moreInfoSection.querySelector('.openai-info');
+                    infoPara.innerHTML = data.info;
+                    moreInfoSection.dataset.fetched = true;
+                });
+            }
+            moreInfoSection.style.display = 'block';
+        } else {
+            moreInfoSection.style.display = 'none';
+        }
+    }
+</script>
+
+{% endblock %}

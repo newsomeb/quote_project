@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Create a New Collection</h2>
+
+    <!-- Form to Create New Collection -->
+    <form action="{{ url_for('collections.create_collection') }}" method="post">
+        <!-- Collection Name Field -->
+        <div class="form-group">
+            <!-- Label for Collection Name -->
+            <label for="name">Collection Name:</label>
+            <!-- Input for Collection Name; "required" attribute ensures the field must be filled out -->
+            <input type="text" name="name" required>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+            <!-- Label for Description -->
+            <label for="description">Description:</label>
+            <!-- Textarea for Description; user can write a multiline text here -->
+            <textarea name="description"></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <input type="submit" value="Create">
+    </form>
+</div>
+{% endblock %}
