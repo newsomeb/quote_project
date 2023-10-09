@@ -6,7 +6,6 @@ import openai
 from models import Quote
 from wtforms import ValidationError
 from datetime import datetime, timedelta
-from wtforms.validators import Optional
 from quote_collections.routes import collections_bp
 from wtforms.validators import EqualTo
 from flask import Flask, render_template, redirect, flash, url_for
@@ -17,7 +16,7 @@ from extensions import db
 from dotenv import load_dotenv
 from models import User
 from wtforms.validators import Length
-from flask_mail import Mail, Message
+from flask_mail import Mail
 from flask_bcrypt import Bcrypt
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
@@ -31,6 +30,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
 import logging
+import requests
 
 
 load_dotenv()
@@ -46,11 +46,16 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["10 per minute"])
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key')
+
+    # use this for connecting to production database
     app.config[
         'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/tripleyeti/quote_project/create_quote_db_clean_data/quotes_cleaned.db'
 
- 
+    # use this for local testing
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
 
+    app.config['MAILGUN_API_KEY'] = os.environ.get('MAILGUN_API_KEY')
+    app.config['MAILGUN_DOMAIN'] = os.environ.get('MAILGUN_DOMAIN')
 
     app.config['CHATGPT_API_KEY'] = os.environ.get('CHATGPT_API_KEY')
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
@@ -148,11 +153,6 @@ def home(year=None, month=None, day=None):
 
 
 
-@app.route('/test_db')
-def test_db():
-    # Sample database query
-    result = YourModel.query.first()
-    return f"Database Result: {result}"
 
 
 @app.route('/authors/', methods=['GET', 'POST'])
@@ -173,35 +173,11 @@ def authors():
 
 
 class UpdateAccountForm(FlaskForm):
-    current_password = PasswordField('Current Password', validators=[DataRequired()])
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=25)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('New Password', validators=[Optional(), Length(min=8)])
-    confirm_password = PasswordField('Confirm New Password', validators=[Optional(), EqualTo('password')])
     submit = SubmitField('Update')
 
 
-@app.route("/update_account", methods=['GET', 'POST'])
-@login_required
-def update_account():
-    form = UpdateAccountForm()
-    if form.validate_on_submit():
-        if not check_password_hash(current_user.password, form.current_password.data):  # New password check
-            flash('Incorrect current password.', 'danger')
-            return render_template('update_account.html', form=form)
-
-        # If password field is not empty, update the password
-        if form.password.data:
-            current_user.password = generate_password_hash(form.password.data, method='sha256')
-
-        db.session.commit()
-        flash('Your account has been updated!', 'success')
-        return redirect(url_for('dashboard'))
-    elif request.method == 'GET':
-        # Populate form with current user data
-        form.username.data = current_user.username
-        form.email.data = current_user.email
-    return render_template('update_account.html', form=form)
 
 
 @app.route('/authors/<letter>/')
@@ -378,7 +354,8 @@ class RegistrationForm(FlaskForm):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.query(User).get(int(user_id))
+
 
 @app.route('/')
 def index():
@@ -405,7 +382,11 @@ def login():
             flash('Account locked due to multiple failed login attempts. Try again later.', 'danger')
             return redirect(url_for('login'))
 
-        if check_password_hash(user.password, form.password.data):
+        if not user.email_confirmed:
+            flash('Please confirm your email before logging in.', 'warning')
+            return redirect(url_for('login'))
+
+        if bcrypt.check_password_hash(user.password, form.password.data):
             user.failed_login_attempts = 0  # reset on successful login
             login_user(user, remember=form.remember.data)
             session.permanent = True
@@ -421,38 +402,63 @@ def login():
     return render_template('login.html', title='Login', form=form)
 
 
+
+def send_simple_message(to, subject, text):
+    return requests.post(
+        f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
+        auth=("api", app.config['MAILGUN_API_KEY']),
+        data={
+            "from": "Think Exist <mailgun@thinkexist.net>",
+            "to": [to],
+            "subject": subject,
+            "text": text
+        }
+    )
+
+
+
+@app.route('/confirm-email-prompt')
+def confirm_email_prompt():
+    return render_template('confirm_email_prompt.html')
+
+
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
 
     if form.validate_on_submit():
         user_exists = User.query.filter_by(username=form.username.data).first()
+        email_exists = User.query.filter_by(email=form.email.data).first()
 
         if user_exists:
             flash('Username already taken. Please choose another one.', 'danger')
             return render_template('register.html', form=form)
+        if email_exists:
+            flash('Email already in use. Please use a different email or login.', 'danger')
+            return render_template('register.html', form=form)
 
-        hashed_password = generate_password_hash(form.password.data, method='sha256')
-        new_user = User(username=form.username.data, password=hashed_password)
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        new_user = User(username=form.username.data, password=hashed_password, email=form.email.data)
 
         # Email confirmation
         token = s.dumps(new_user.email, salt='email-confirmation')
-        new_user.email_confirmation_token = token
+        confirmation_link = url_for('confirm_email', token=token, _external=True)
 
         try:
             db.session.add(new_user)
             db.session.commit()
-
-            confirmation_link = url_for('confirm_email', token=token, _external=True)
             send_confirmation_email(new_user.email, confirmation_link)
-
-            flash('Registration successful! Please check your email to confirm your account.', 'success')
-            return redirect(url_for('login'))
+            flash('Registration successful! Please check your email to verify your account.', 'success')
+            return redirect(url_for('confirm_email_prompt'))
         except Exception as e:
             db.session.rollback()
-            flash(f"Registration failed due to error: {e}", 'danger')
+            flash(f"Registration failed due to an unexpected error: {e}", 'danger')
+            return render_template('register.html', form=form)
 
     return render_template('register.html', form=form)
+
+
 
 
 @app.errorhandler(404)
@@ -466,22 +472,18 @@ def account():
     form = UpdateAccountForm()
 
     if form.validate_on_submit():
-        # If the form is submitted and validated:
-
         current_user.username = form.username.data
         current_user.email = form.email.data
-
         db.session.commit()
-
         flash('Your account has been updated!', 'success')
-        return redirect(url_for('account'))  # Redirect to the same account page
+        return redirect(url_for('account'))
 
-    # If it's a GET request or the form hasn't been submitted:
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.email.data = current_user.email
 
     return render_template('account.html', form=form)
+
 
 
 
@@ -527,7 +529,8 @@ def delete_account():
         logout_user()  # Log the user out
 
         # Fetch the actual user object using the user_id
-        user_to_delete = User.query.get(user_id)
+        user_to_delete = db.session.query(User).get(int(user_id))
+
 
         if user_to_delete:  # Ensure the user exists
             db.session.delete(user_to_delete)  # Delete the user record
@@ -575,13 +578,17 @@ def confirm_email(token):
 
 
 def send_confirmation_email(email, confirmation_link):
-    try:
-        msg = Message('Email Confirmation', recipients=[email])
-        msg.body = f'Please click the following link to confirm your email: {confirmation_link}'
-        mail.send(msg)
-        print(f"Confirmation email sent to: {email}")
-    except Exception as e:
-        print(f"Failed to send confirmation email due to error: {e}")
+    return requests.post(
+        f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
+        auth=("api", app.config['MAILGUN_API_KEY']),
+        data={
+            "from": "Think Exist <mailgun@thinkexist.net>",
+            "to": [email],
+            "subject": "Email Confirmation",
+            "text": f"Please click the following link to confirm your email: {confirmation_link}"
+        }
+    )
+
 
 
 

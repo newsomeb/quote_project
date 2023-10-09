@@ -45,7 +45,7 @@ class User(db.Model):
     lockout_until = db.Column(db.DateTime, nullable=True)
     failed_login_attempts = db.Column(db.Integer, default=0)
     email_confirmed = db.Column(db.Boolean, default=False)
-    email_confirmation_token = db.Column(db.String(200))
+
 
     # Relationship fields
     def get_owned_collections(self):
