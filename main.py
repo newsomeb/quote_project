@@ -59,12 +59,8 @@ def create_app():
 
     app.config['CHATGPT_API_KEY'] = os.environ.get('CHATGPT_API_KEY')
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USE_SSL'] = False
-    app.config['MAIL_USERNAME'] = 'benjaminanewsome@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'kfsq wxnx jzor ihxt'
+
+
     logging.basicConfig(filename='app.log', level=logging.DEBUG)  # Log to a file
 
     app.send_file_max_age_default = timedelta(hours=1)
