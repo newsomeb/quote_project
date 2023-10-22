@@ -39,6 +39,8 @@ load_dotenv()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 mail = Mail()
+BASE_URL = 'https://thinkexist.net'
+
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["10 per minute"])
 
@@ -573,7 +575,9 @@ def confirm_email(token):
     return redirect(url_for('login'))
 
 
-def send_confirmation_email(email, confirmation_link):
+def send_confirmation_email(email, token):
+    confirmation_link = f"{BASE_URL}/confirm_email/{token}"
+
     return requests.post(
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
         auth=("api", app.config['MAILGUN_API_KEY']),
@@ -584,9 +588,6 @@ def send_confirmation_email(email, confirmation_link):
             "text": f"Please click the following link to confirm your email: {confirmation_link}"
         }
     )
-
-
-
 
 
 if __name__ == "__main__":
