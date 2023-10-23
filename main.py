@@ -39,7 +39,7 @@ load_dotenv()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 mail = Mail()
-BASE_URL = 'https://thinkexist.net'
+BASE_URL = 'thinkexist.net'
 
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["10 per minute"])
