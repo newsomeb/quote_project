@@ -576,7 +576,7 @@ def confirm_email(token):
 
 
 def send_confirmation_email(email, token):
-    confirmation_link = f"{BASE_URL}/confirm_email/{token}"
+    confirmation_link = url_for('confirm_email', token=token, _external=True)
 
     return requests.post(
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
@@ -588,6 +588,7 @@ def send_confirmation_email(email, token):
             "text": f"Please click the following link to confirm your email: {confirmation_link}"
         }
     )
+
 
 
 if __name__ == "__main__":
