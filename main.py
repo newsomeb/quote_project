@@ -442,6 +442,8 @@ def register():
         # Email confirmation
         token = s.dumps(new_user.email, salt='email-confirmation')
         confirmation_link = url_for('confirm_email', token=token, _external=True)
+        print("Generated Token:", token)
+        print("Confirmation Link:", confirmation_link)
 
         try:
             db.session.add(new_user)
@@ -577,9 +579,10 @@ def confirm_email(token):
 
 def send_confirmation_email(email, token):
     confirmation_link = f"http://{BASE_URL}/confirm_email/{token}"
+    print("Email to:", email)
+    print("Confirmation Link:", confirmation_link)
 
-
-    return requests.post(
+    response = requests.post(
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
         auth=("api", app.config['MAILGUN_API_KEY']),
         data={
@@ -589,6 +592,8 @@ def send_confirmation_email(email, token):
             "text": f"Please click the following link to confirm your email: {confirmation_link}"
         }
     )
+    print("Email Response:", response.status_code, response.text)
+
 
 
 
