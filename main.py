@@ -1,6 +1,6 @@
 import os
 from datetime import date
-from flask import jsonify, request
+from flask import jsonify
 from sqlalchemy import extract, func
 import openai
 from models import Quote
@@ -8,9 +8,8 @@ from wtforms import ValidationError
 from datetime import datetime, timedelta
 from quote_collections.routes import collections_bp
 from wtforms.validators import EqualTo
-from flask import Flask, render_template, redirect, flash, url_for
+from flask import Flask, render_template
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from flask import session
 from flask import current_app
 from extensions import db
 from dotenv import load_dotenv
@@ -31,7 +30,7 @@ from flask_limiter.util import get_remote_address
 from flask_caching import Cache
 import logging
 import requests
-
+from flask import request, flash, redirect, url_for, session
 
 load_dotenv()
 
@@ -553,8 +552,6 @@ def forbidden_error(error):
     return render_template('403.html'), 403
 
 
-
-
 @app.route('/confirm_email/<token>')
 def confirm_email(token):
     try:
@@ -571,6 +568,9 @@ def confirm_email(token):
         user.email_confirmed = True
         db.session.commit()
         flash('Email confirmed!', 'success')
+
+        # Log the user in after confirming their email
+        login_user(user)
 
     return redirect(url_for('login'))
 
