@@ -22,6 +22,8 @@
         <!-- Navigation Links -->
         <a href="{{ url_for('home') }}">Home</a>
         <a href="{{ url_for('authors') }}">Authors</a>
+        <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
+        <a href="{{ url_for('topics') }}">Topics</a>
         <a href="{{ url_for('collections.my_collections') }}">
             {% if current_user.is_authenticated %}
                 {{ current_user.username }}'s Collections
@@ -36,8 +38,6 @@
                 Account
             {% endif %}
         </a>
-        <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
-        <a href="{{ url_for('topics') }}">Topics</a>
     </div>
 
     <!-- Content Block - To be overridden by child templates -->
