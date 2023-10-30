@@ -140,7 +140,6 @@ body {
 }
 
 .navbar a {
-    float: left;
     display: block;
     color: #E8EAED;
     text-align: center;
@@ -152,6 +151,17 @@ body {
     background-color: #3a3b3d;
     color: white;
 }
+
+/* Right-align links */
+.right-links {
+    float: right;
+}
+
+/* Style for all navigation links (including right-aligned ones) */
+.navbar .right-links a {
+    padding: 14px 16px; /* Adjust padding for right-aligned links */
+}
+
 
 /* Quote Styles */
 .quote {
