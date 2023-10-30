@@ -133,13 +133,13 @@ body {
 
 
 /* Navbar Styles */
-/* Navbar Styles */
 .navbar {
     background-color: #2d2e30;
     overflow: hidden;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     display: flex; /* Add this line to make links appear in a single line */
     justify-content: space-between; /* Add this line to evenly space the links */
+    align-items: center; /* Add this line to vertically align items in the center */
 }
 
 .navbar a {
@@ -158,12 +158,18 @@ body {
 /* Right-aligned links */
 .right-links {
     display: flex; /* Add this line to make right-aligned links appear in a row */
+    align-items: center; /* Vertically align right-aligned links with the rest of the navbar */
 }
 
 .right-links a {
     margin-left: 20px; /* Adjust as needed to separate the links */
+    color: #E8EAED; /* Set color for right-aligned links */
 }
 
+.right-links a:hover {
+    background-color: #3a3b3d;
+    color: white; /* Set hover color for right-aligned links */
+}
 
 
 /* Quote Styles */
