@@ -5,61 +5,34 @@
 {% block content %}
     <h1>Register</h1>
 
-    <!-- Display flashed messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
+    <!-- Display flashed messages for registration errors -->
+    {% with reg_messages = get_flashed_messages(category_filter=['danger']) %}
+        {% if reg_messages %}
+            <div class="alert alert-danger">
+                {% for message in reg_messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
         {% endif %}
     {% endwith %}
+
     <form method="post" action="{{ url_for('register') }}">
         {{ form.hidden_tag() }}
         <div>
             {{ form.username.label }}
             {{ form.username(class="form-control") }}
-            {% if form.username.errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.username.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
         </div>
         <div>
             {{ form.email.label }}
             {{ form.email(class="form-control") }}
-            {% if form.email.errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.email.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
         </div>
         <div>
             {{ form.password.label }}
             {{ form.password(class="form-control") }}
-            {% if form.password.errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.password.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
         </div>
         <div>
             {{ form.confirm.label }}
             {{ form.confirm(class="form-control") }}
-            {% if form.confirm.errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.confirm.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
         </div>
         <div>
             {{ form.submit(class="btn btn-primary") }}
@@ -67,3 +40,4 @@
     </form>
 {% endblock %}
 </html>
+
