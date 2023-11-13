@@ -34,7 +34,7 @@ from flask import request, flash, redirect, url_for, session
 
 load_dotenv()
 
-# Instantiate extensions
+
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 mail = Mail()
@@ -45,6 +45,10 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["10 per minute"])
 
 
 def create_app():
+    """
+    Implements the create_app functionality.
+    """
+
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key')
 
@@ -71,7 +75,7 @@ def create_app():
     limiter.init_app(app)
 
 
-    # Other initializations...
+    # Other initializations
     bcrypt.init_app(app)
     db.init_app(app)
     mail.init_app(app)
@@ -87,29 +91,45 @@ def create_app():
 
     @app.template_filter('basename')
     def basename_filter(s):
+
+
         return basename(s)
 
     @app.errorhandler(429)
     def ratelimit_error(e):
+
+
         return jsonify(success=False, error="ratelimit exceeded %s" % e.description), 429
 
-    return app, s  # if you need limiter outside create_app, otherwise just return app, s
+    return app, s 
 
 
-app, s = create_app()  # if you need limiter outside create_app, otherwise just app, s = create_app()
+app, s = create_app()  
 
 @app.errorhandler(429)
 def ratelimit_error(e):
+    """
+    Implements the ratelimit_error functionality.
+    """
+
     return jsonify(success=False, error="ratelimit exceeded %s" % e.description), 429
 
 
 class MyForm(FlaskForm):
+    """
+    Defines the MyForm class.
+    """
+
     my_field = StringField('My Field', [validators.Length(min=1, max=100)])
 
 
 @app.route('/')
 @app.route('/<int:year>/<int:month>/<int:day>')
 def home(year=None, month=None, day=None):
+    """
+    Implements the home functionality.
+    """
+
     # Set today's date to either provided date or current date
     today = date(year, month, day) if year and month and day else date.today()
 
@@ -154,6 +174,10 @@ def home(year=None, month=None, day=None):
 
 @app.route('/authors/', methods=['GET', 'POST'])
 def authors():
+    """
+    Implements the authors functionality.
+    """
+
     query = request.args.get('query', "")
     if query:
         # Use ilike for case-insensitive search
@@ -170,6 +194,10 @@ def authors():
 
 
 class UpdateAccountForm(FlaskForm):
+    """
+    Defines the UpdateAccountForm class.
+    """
+
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=25)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Update')
@@ -179,6 +207,10 @@ class UpdateAccountForm(FlaskForm):
 
 @app.route('/authors/<letter>/')
 def authors_by_letter(letter):
+    """
+    Implements the authors_by_letter functionality.
+    """
+
     last_name_initial = Quote.author.ilike(f'% {letter}%')
     authors = Quote.query.with_entities(Quote.author).filter(last_name_initial).distinct().all()
     return render_template('authors_by_letter.html', authors=authors)
@@ -186,6 +218,10 @@ def authors_by_letter(letter):
 
 @app.route('/quotes/<author>')
 def author_quotes(author):
+    """
+    Implements the author_quotes functionality.
+    """
+
     page = request.args.get('page', 1, type=int)
     pagination = Quote.query.filter_by(author=author).paginate(page=page, per_page=20)
     quotes = pagination.items
@@ -201,6 +237,10 @@ def author_quotes(author):
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
+    """
+    Implements the search functionality.
+    """
+
     query = request.args.get('query', default="", type=str)
     page = request.args.get('page', 1, type=int)
     PER_PAGE = 10
@@ -232,6 +272,10 @@ def search():
 
 @app.route('/get_more_info', methods=['POST'])
 def get_more_info():
+    """
+    Implements the get_more_info functionality.
+    """
+
     quote_text = request.json.get('quote')
     author_name = request.json.get('author_name', "an unknown author")
     info = generate_openai_content(quote_text, author_name)
@@ -239,6 +283,10 @@ def get_more_info():
 
 
 def generate_openai_content(quote_text, author_name="an unknown author"):
+    """
+    Implements the generate_openai_content functionality.
+    """
+
     openai.api_key = current_app.config['CHATGPT_API_KEY']
 
     messages = [
@@ -281,18 +329,30 @@ def generate_openai_content(quote_text, author_name="an unknown author"):
 @app.route("/logout")
 @login_required
 def logout():
+    """
+    Implements the logout functionality.
+    """
+
     logout_user()
     return redirect(url_for('home'))
 
 
 @app.route('/quote/<int:quote_id>')
 def quote_display(quote_id):
+    """
+    Implements the quote_display functionality.
+    """
+
     quote = Quote.query.get_or_404(quote_id)
     quote.openai_generated_content = generate_openai_content(quote.quote, quote.author)
     return render_template('quote_display.html', quote=quote)
 
 @app.route('/topics')
 def topics():
+    """
+    Implements the topics functionality.
+    """
+
     popular_topics = [
         "Love",
         "Inspiration",
@@ -322,12 +382,12 @@ def topics():
     return render_template('topics.html', topics=popular_topics, half_length=half_length)
 
 
-# Assuming the beginning of your main.py has already imported the necessary modules/packages.
-
-# Remove the Blueprint instantiation since we won't be using it.
-# account_bp = Blueprint('account', __name__)
 
 class LoginForm(FlaskForm):
+    """
+    Defines the LoginForm class.
+    """
+
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
@@ -336,12 +396,20 @@ class LoginForm(FlaskForm):
 
 
 def validate_password_match(form, field):
+    """
+    Implements the validate_password_match functionality.
+    """
+
     if field.data != form.password.data:
         raise ValidationError('Passwords must match.')
 
 
 
 class RegistrationForm(FlaskForm):
+    """
+    Defines the RegistrationForm class.
+    """
+
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=25)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     submit = SubmitField('Register')
@@ -351,21 +419,37 @@ class RegistrationForm(FlaskForm):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Implements the load_user functionality.
+    """
+
     return db.session.query(User).get(int(user_id))
 
 
 @app.route('/')
 def index():
+    """
+    Implements the index functionality.
+    """
+
     return render_template('index.html')
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    """
+    Implements the dashboard functionality.
+    """
+
     return render_template('dashboard.html', username=current_user.username)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Implements the login functionality.
+    """
+
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -401,6 +485,10 @@ def login():
 
 
 def send_simple_message(to, subject, text):
+    """
+    Implements the send_simple_message functionality.
+    """
+
     return requests.post(
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
         auth=("api", app.config['MAILGUN_API_KEY']),
@@ -416,12 +504,20 @@ def send_simple_message(to, subject, text):
 
 @app.route('/confirm-email-prompt')
 def confirm_email_prompt():
+    """
+    Implements the confirm_email_prompt functionality.
+    """
+
     return render_template('confirm_email_prompt.html')
 
 
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    """
+    Implements the register functionality.
+    """
+
     form = RegistrationForm()
 
     if form.validate_on_submit():
@@ -460,12 +556,20 @@ def register():
 
 @app.errorhandler(404)
 def page_not_found(e):
+    """
+    Implements the page_not_found functionality.
+    """
+
     return render_template('404.html'), 404
 
 
 @app.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
+    """
+    Implements the account functionality.
+    """
+
     form = UpdateAccountForm()
 
     if form.validate_on_submit():
@@ -485,6 +589,10 @@ def account():
 
 
 class ChangePasswordForm(FlaskForm):
+    """
+    Defines the ChangePasswordForm class.
+    """
+
     current_password = PasswordField('Current Password', validators=[DataRequired()])
     new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=8)])
     confirm_new_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password', message='Passwords must match.')])
@@ -496,6 +604,10 @@ class ChangePasswordForm(FlaskForm):
 @app.route('/change_password', methods=['GET', 'POST'])
 @login_required
 def change_password():
+    """
+    Implements the change_password functionality.
+    """
+
     form = ChangePasswordForm()
 
     if form.validate_on_submit():
@@ -514,12 +626,20 @@ def change_password():
     return render_template('change_password.html', form=form)
 
 class DeleteAccountForm(FlaskForm):
+    """
+    Defines the DeleteAccountForm class.
+    """
+
     submit = SubmitField('Delete Account')
 
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 @login_required
 def delete_account():
+    """
+    Implements the delete_account functionality.
+    """
+
     form = DeleteAccountForm()
     if form.validate_on_submit():
         user_id = current_user.id  # Get the id of the logged-in user
@@ -540,20 +660,36 @@ def delete_account():
 
 @app.errorhandler(404)
 def not_found_error(error):
+    """
+    Implements the not_found_error functionality.
+    """
+
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
 def internal_error(error):
+    """
+    Implements the internal_error functionality.
+    """
+
     db.session.rollback()  # If you're using a database, it's good to rollback any changes in case of errors
     return render_template('500.html'), 500
 
 @app.errorhandler(403)
 def forbidden_error(error):
+    """
+    Implements the forbidden_error functionality.
+    """
+
     return render_template('403.html'), 403
 
 
 @app.route('/confirm_email/<token>')
 def confirm_email(token):
+    """
+    Implements the confirm_email functionality.
+    """
+
     try:
         email = s.loads(token, salt='email-confirmation', max_age=3600)  # token valid for 1 hour
     except:
@@ -576,6 +712,10 @@ def confirm_email(token):
 
 
 def send_confirmation_email(email, token):
+    """
+    Implements the send_confirmation_email functionality.
+    """
+
     confirmation_link = token  # Just use the token directly
 
     return requests.post(
