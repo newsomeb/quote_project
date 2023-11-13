@@ -10,6 +10,10 @@ quote_collection = db.Table('quote_collection',
 )
 
 class Quote(db.Model):
+    """
+    Represents the Quote entity with associated fields and behaviors.
+    """
+
     __tablename__ = 'quotes_cleaned'
     id = Column(Integer, primary_key=True)
     quote = Column(String(1024), nullable=False)
@@ -22,6 +26,10 @@ class Quote(db.Model):
     image_url = db.Column(db.String)
 
 class Collection(db.Model):
+    """
+    Represents the Collection entity with associated fields and behaviors.
+    """
+
     __tablename__ = 'collection'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -31,9 +39,13 @@ class Collection(db.Model):
     public = db.Column(db.Boolean)
     user = db.relationship('User', back_populates='collections')
 
-    # Remove owner_id and owner relationship
+
 
 class User(db.Model):
+    """
+    Represents the User entity with associated fields and behaviors.
+    """
+
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -49,19 +61,29 @@ class User(db.Model):
 
     # Relationship fields
     def get_owned_collections(self):
+
+
         return self.user_collections.all()
 
     @property
     def is_active(self):
+ 
+
         return self._is_active
 
     @property
     def is_authenticated(self):
+
+
         return True
 
     @property
     def is_anonymous(self):
+
+
         return False
 
     def get_id(self):
+
+
         return str(self.id)
