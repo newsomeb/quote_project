@@ -42,6 +42,21 @@ body {
 }
 
 
+/* Style for author links */
+.quote-content .author-name .author-link {
+    color: #E8EAED !important; /* Matches the general text color */
+    text-decoration: none !important; /* Removes the underline */
+    font-family: Arial, sans-serif; /* Ensures consistent font with the rest of the page */
+}
+
+/* Style for author links on hover */
+.quote-content .author-name .author-link:hover {
+    text-decoration: underline !important; /* Adds underline on hover for indication */
+    color: #ffffff !important; /* Slightly brighter color on hover for contrast */
+}
+
+
+
 
 
 .date-navigation {
@@ -153,7 +168,6 @@ body {
     color: white;
 }
 
-/* Quote Styles */
 
 
 
@@ -211,12 +225,12 @@ body {
 }
 
 .account-btn {
-    /* ... Retaining your styles ... */
     border: 0;
     outline: none;
     box-shadow: none;
 }
 
+/* ... Retaining your styles ... */
 .account-btn:hover {
     background-color: #5f6368;
     color: #E8EAED;
@@ -244,9 +258,9 @@ button:hover, input[type="submit"]:hover {
     padding: 4px 10px;  /* Adjust padding to make button smaller or larger */
     font-size: 10px;    /* Adjust font-size if necessary */
     cursor: pointer;
-    /* ... any other styles specific to this button */
 }
 
+/* ... any other styles specific to this button */
  .quote-card {
     border: 1px solid #ccc;
     padding: 10px;
@@ -263,52 +277,15 @@ button:hover, input[type="submit"]:hover {
 .quote-actions select {
     padding: -5px;  /* Adjust padding to make dropdown smaller or larger */
     font-size: 10px;    /* Adjust font-size if necessary */
-    /* ... any other styles specific to this dropdown */
 }
 
 /* Style for the Add to Collection button inside the .quote-actions */
 .quote-actions input[type="submit"] {
     padding: -5px;  /* Adjust padding to make this input-button smaller or larger */
     font-size: 10px;    /* Adjust font-size if necessary */
-    /* ... any other styles specific to this input-button */
-}
-
-/* Style for author link */
-.author-link {
-    text-decoration: none;     /* Remove underline */
-    color: #FFFFFF;            /* White color */
-    font-weight: bold;         /* Bold text */
-        /* Italic text */
-}
-
-/* Hover effect for author link */
-.author-link:hover {
-    color: #CCCCCC;            /* A light grey color on hover */
- /* Add an underline on hover */
-    background-color: #333333; /* A dark grey background to contrast with the white text */
-}
-
-/* Style for author link */
-.author-link {
-    text-decoration: none;
-    color: #FFFFFF;
-    font-weight: bold;
 }
 
 
-
-/* Hover effect for author link */
-.author-link:hover {
-    text-decoration: underline; /* Add an underline on hover */
-    color: #CCCCCC;            /* A light grey color on hover */
-    background-color: #333333; /* A dark grey background to contrast with the white text */
-}
-
-.selected-authors .author-link {
-    text-decoration: none;
-    color: #FFFFFF;
-    font-weight: bold;
-}
 
 
 
@@ -325,25 +302,6 @@ button:hover, input[type="submit"]:hover {
     font-size: 10px;
 }
 
-/* Style for author link */
-.author-link {
-    text-decoration: none;
-    color: #FFFFFF;
-    font-weight: bold;
-}
-
-/* Hover effect for author link */
-.author-link:hover {
-    text-decoration: underline;
-    color: #CCCCCC;
-    background-color: #333333;
-}
-
-.selected-authors .author-link {
-    text-decoration: none;
-    color: #FFFFFF;
-    font-weight: bold;
-}
 
 /* Style for the dropdown content */
 .dropdown-content {
@@ -563,7 +521,6 @@ button:hover, input[type="submit"]:hover {
 
 /* User Details Styling */
 .user-details {
-  /* Grey background for the user-details */
     padding: 15px; /* Padding inside the user-details box */
     border: 1px solid #FFFFFF; /* White border around the user-details box */
     border-radius: 5px; /* Rounded corners for the user-details box */
@@ -571,6 +528,7 @@ button:hover, input[type="submit"]:hover {
     margin-bottom: 20px; /* Adds space below the user details section */
 }
 
+/* Grey background for the user-details */
 .user-details p {
     font-size: 1.1em; /* Slightly larger font for user details */
     margin-bottom: 10px; /* Space between user details items */
@@ -580,10 +538,10 @@ button:hover, input[type="submit"]:hover {
 ul {
     list-style-type: none; /* Removes bullet points from the list */
     padding: 0; /* Removes default padding */
-/* Display as a flex container to line up action buttons horizontally */
     gap: 10px; /* Space between action buttons */
 }
 
+/* Display as a flex container to line up action buttons horizontally */
 ul li {
     flex: 1; /* Each list item will take up equal space */
 }
@@ -613,21 +571,20 @@ ul li a[href="{{ url_for('logout') }}"]:hover {
     background-color: #CC0000; /* Darker red on hover for logout */
 }
 
-/* For any other special buttons or unique elements, you can add specific styles here. */
 
+/* CSS for author images */
+.author-image {
+    width: 200px; /* Fixed width */
+    height: auto; /* Height adjusts to maintain aspect ratio */
+    display: block; /* Ensures the image takes up the full width defined */ /* Centers the image if it's in a block element */
 
-/* index.html image size */
-
-.responsive-image {
-    max-width: 20%; /* or any specific value you prefer */
-    height: auto;
-    margin: 10px 20px 10px 20px;
 }
+
+
 
 /* author name for index.html */
 .author-name {
     font-weight: bold;
     font-size: 1.2em;
-    /* other styling properties as needed */
 }
 

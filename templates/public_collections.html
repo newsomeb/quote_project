@@ -1,11 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+<!-- Search Bar Form for Collections -->
+<form action="{{ url_for('collections_search') }}" method="get" class="search-form">
+    <input type="text" name="query" placeholder="Search for collections...">
+    <input type="submit" value="Search">
+</form>
+
 <div class="container">
     <h2>Public Collections</h2>
 
     {% for collection in collections %}
     <div class="quote-container">
+        {% if collection.image_url %}
+            <img src="{{ url_for('static', filename='author_images/' + data['quote'].image_url) }}" alt="{{ data['quote'].author }}" class="author-image responsive-image"/>
+        {% endif %}
         <h3 class="collection-name">{{ collection.name }}</h3>
         <p class="collection-description">Description: {{ collection.description }}</p>
 

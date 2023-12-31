@@ -5,55 +5,50 @@
 
     <!-- Author Image -->
     {% if author_image_url %}
-        <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}"
-             alt="{{ author }}"
-             class="author-image"/>
+        <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}" alt="{{ author }}" class="author-image"/>
     {% endif %}
 
     <!-- Container for all quotes -->
     <div class="quotes-container">
-        <!-- Looping over each quote in quotes list -->
         {% for quote in quotes %}
             <div class="quote-card">
                 <!-- Quote Content -->
                 <div class="quote-content">
                     <p>{{ quote.quote }}</p>
 
-                    <!-- Button to toggle More Info Section -->
-                    <button class="more-info-button"
-                            onclick="toggleMoreInfo({{ loop.index }}, '{{ quote.quote|replace("'", "\\'")|replace('"', '&quot;') }}', '{{ author|replace("'", "\\'")|replace('"', '&quot;') }}')">
-                        More Info
-                    </button>
+                    <!-- Quote Actions -->
+                    <div class="quote-actions">
+                        <!-- Favorite Button -->
+                        <button class="favorite-button" onclick="toggleFavorite({{ quote.id }}, this)">Favorite</button>
+                        <p class="error-message" style="display: none; color: red;"></p>
 
-                    <!-- Form to add quote to collection -->
-                    <form action="{{ url_for('collections.add_to_collection') }}"
-                          method="POST"
-                          class="inline-form">
-                        <!-- Dropdown to select collection -->
-                        <select name="collection_id">
-                            {% for collection in current_user.collections %}
-                                <option value="{{ collection.id }}">{{ collection.name }}</option>
-                            {% endfor %}
-                            <option value="new">Create New Collection</option>
-                        </select>
-                        <!-- Hidden input to store quote_id -->
-                        <input type="hidden" name="quote_id" value="{{ quote.id }}">
-                        <!-- Submit button to add to collection -->
-                        <input type="submit" value="Add to Collection">
-                    </form>
+                        <!-- Share Button -->
+                        <button class="share-button" onclick="showSharePopup('http://thinkexist.net/quote_detail/{{ quote.id }}', this)">Share</button>
+                        <div class="share-popup" style="display: none;">
+                            <p>Share this quote:</p>
+                            <input type="text" value="http://thinkexist.net/quote_detail/{{ quote.id }}" readonly>
+                            <button onclick="copyToClipboard(this)">Copy</button>
+                            <button onclick="closeSharePopup(this)">Close</button>
+                        </div>
 
-                    <!-- More Information Section (Initially hidden) -->
-                    <div id="more-info-section-{{ loop.index }}" class="more-info-section">
-                        <h3>Additional Information</h3>
-                        <!-- Placeholder for OpenAI generated content -->
-                        <p class="openai-info"></p>
+                        <!-- Form to Add Quote to Collection -->
+                        <form action="{{ url_for('collections.add_to_collection') }}" method="POST" class="inline-form">
+                            <select name="collection_id">
+                                {% for collection in current_user.collections %}
+                                    <option value="{{ collection.id }}">{{ collection.name }}</option>
+                                {% endfor %}
+                                <option value="new">Create New Collection</option>
+                            </select>
+                            <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                            <input type="submit" value="Add to Collection">
+                        </form>
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
 
-    <!-- Pagination Navigation -->
+        <!-- Pagination Navigation -->
     <div class="pagination">
         <ul>
             <!-- Looping over each page in pagination -->
@@ -74,27 +69,45 @@
     </div>
 
     <script>
-        function toggleMoreInfo(index, quote, author) {
-            // Toggling more info section visibility and fetching additional info if not already fetched
-            const moreInfoSection = document.getElementById(`more-info-section-${index}`);
-            if (moreInfoSection.style.display === 'none') {
-                if (!moreInfoSection.dataset.fetched) {
-                    fetch('/get_more_info', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({quote: quote, author_name: author})
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        const infoPara = moreInfoSection.querySelector('.openai-info');
-                        infoPara.innerHTML = data.info;
-                        moreInfoSection.dataset.fetched = true;
-                    });
+        function toggleFavorite(quoteId, buttonElement) {
+            fetch(`/toggle_favorite/${quoteId}`, { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    // Update UI to reflect favorite status change
+                    // E.g., change the button text or style
+                } else if (response.status === 401) { // 401 status code for Unauthorized
+                    buttonElement.nextElementSibling.textContent = 'Must be logged in to favorite quotes';
+                    buttonElement.nextElementSibling.style.display = 'block';
+                } else {
+                    buttonElement.nextElementSibling.textContent = 'Failed to toggle favorite status.';
+                    buttonElement.nextElementSibling.style.display = 'block';
                 }
-                moreInfoSection.style.display = 'block';
-            } else {
-                moreInfoSection.style.display = 'none';
-            }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                buttonElement.nextElementSibling.textContent = 'An error occurred.';
+                buttonElement.nextElementSibling.style.display = 'block';
+            });
+        }
+
+        function showSharePopup(shareUrl, buttonElement) {
+            let popup = buttonElement.nextElementSibling;
+            popup.style.display = 'block';
+            let inputField = popup.querySelector('input');
+            inputField.value = shareUrl;
+            inputField.select();
+        }
+
+        function closeSharePopup(buttonElement) {
+            let popup = buttonElement.parentElement;
+            popup.style.display = 'none';
+        }
+
+        function copyToClipboard(buttonElement) {
+            let inputField = buttonElement.parentElement.querySelector('input');
+            inputField.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
         }
     </script>
 {% endblock %}

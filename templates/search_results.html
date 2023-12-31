@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Removed the <head> tag since it is only supposed to be in base.html -->
 <h1>Search Results for "{{ query }}"</h1>
 <div class="quotes-container">
     {% for quote in quotes %}
@@ -11,7 +10,12 @@
             <img src="{{ url_for('static', filename='author_images/' + quote.image_url) }}" alt="{{ quote.author }}" class="author-image"/>
         {% endif %}
 
-        <p class="author">Author: {{ quote.author }}</p>
+        <!-- Linking the author's name to their quotes page -->
+        <p class="author">Author:
+            <a href="https://thinkexist.net/quotes/{{ quote.author|replace(' ', '%20') }}" class="author-link">
+                {{ quote.author }}
+            </a>
+        </p>
 
         <!-- Add the "More Info" button -->
         <button class="more-info-button" onclick="toggleMoreInfo({{ loop.index }}, '{{ quote.quote.replace("'", "\\'").replace('"', '&quot;') }}', '{{ quote.author.replace("'", "\\'").replace('"', '&quot;') }}')">More Info</button>
@@ -83,7 +87,6 @@
                 .then(data => {
                     const infoPara = moreInfoSection.querySelector('.openai-info');
                     infoPara.innerHTML = data.info;
-
                     moreInfoSection.dataset.fetched = true;
                 });
             }

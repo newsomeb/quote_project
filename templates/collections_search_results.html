@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Search Results for "{{ query }}"</h2>
+
+    <!-- Check if there are any matching collections -->
+    {% if collections %}
+        <div class="collections-container">
+            {% for collection in collections %}
+                <div class="collection-card">
+                    <h3>{{ collection.name }}</h3>
+                    <p>{{ collection.description }}</p>
+                    <a href="{{ url_for('collections.view_collection', collection_id=collection.id) }}" class="btn">View Collection</a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            {% for page_num in pagination.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != page %}
+                        <a href="{{ url_for('collections_search', query=query, page=page_num) }}">{{ page_num }}</a>
+                    {% else %}
+                        <span class="current-page">{{ page_num }}</span>
+                    {% endif %}
+                {% else %}
+                    <span>...</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No collections found for "{{ query }}".</p>
+    {% endif %}
+</div>
+
+{% endblock %}

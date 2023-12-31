@@ -40,7 +40,6 @@ def my_collections():
 
 
 @collections_bp.route('/collection/<int:collection_id>', methods=['GET'])
-@login_required
 def view_collection(collection_id):
     collection = Collection.query.get_or_404(collection_id)
 
@@ -171,3 +170,20 @@ def validate_collection_access(collection_id):
 
 def get_collection(collection_id):
     return current_user.collections.first() if collection_id == 0 else Collection.query.get(collection_id)
+
+@collections_bp.route('/add_to_favorites/<int:quote_id>', methods=['POST'])
+@login_required
+def add_to_favorites(quote_id):
+    quote = Quote.query.get_or_404(quote_id)
+    favorites = Collection.query.filter_by(user_id=current_user.id, is_favorite=True).first()
+
+    if quote not in favorites.quotes:
+        favorites.quotes.append(quote)
+        try:
+            db.session.commit()
+            flash('Quote added to Favorites successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error adding quote to Favorites: {str(e)}", "danger")
+
+    return redirect(url_for('collections.view_collection', collection_id=favorites.id))

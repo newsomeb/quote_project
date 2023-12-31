@@ -5,7 +5,7 @@ from sqlalchemy import extract, func
 import openai
 from models import Quote
 from wtforms import ValidationError
-from datetime import datetime, timedelta
+from datetime import timedelta
 from quote_collections.routes import collections_bp
 from wtforms.validators import EqualTo
 from flask import Flask, render_template
@@ -13,7 +13,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask import current_app
 from extensions import db
 from dotenv import load_dotenv
-from models import User
+from models import User, Collection
 from wtforms.validators import Length
 from flask_mail import Mail
 from flask_bcrypt import Bcrypt
@@ -28,13 +28,20 @@ from wtforms import StringField, validators
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
-import logging
 import requests
 from flask import request, flash, redirect, url_for, session
+from datetime import datetime
+import pytz
+from elasticsearch import Elasticsearch
+import logging
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 load_dotenv()
 
-# Instantiate extensions
+
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 mail = Mail()
@@ -44,7 +51,13 @@ BASE_URL = 'thinkexist.net'
 limiter = Limiter(key_func=get_remote_address, default_limits=["10 per minute"])
 
 
+
+
 def create_app():
+    """
+    Implements the create_app functionality.
+    """
+
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key')
 
@@ -53,7 +66,22 @@ def create_app():
         'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/tripleyeti/quote_project/create_quote_db_clean_data/quotes_cleaned.db'
 
     # use this for local testing
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
+    #app.config[
+        #'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
+
+    # Elasticsearch Configuration
+    es_host = os.environ.get('ES_HOST', 'http://167.71.169.219:9200')
+    es_username = os.environ.get('ES_USERNAME')
+    es_password = os.environ.get('ES_PASSWORD')
+
+    app.es = Elasticsearch(
+        [es_host],
+        http_auth=(es_username, es_password),
+        verify_certs=False
+    )
+
+    db.init_app(app)
+
 
     app.config['MAILGUN_API_KEY'] = os.environ.get('MAILGUN_API_KEY')
     app.config['MAILGUN_DOMAIN'] = os.environ.get('MAILGUN_DOMAIN')
@@ -71,9 +99,9 @@ def create_app():
     limiter.init_app(app)
 
 
-    # Other initializations...
+    # Other initializations
     bcrypt.init_app(app)
-    db.init_app(app)
+
     mail.init_app(app)
 
     # Initialize login manager
@@ -87,33 +115,102 @@ def create_app():
 
     @app.template_filter('basename')
     def basename_filter(s):
+
+
         return basename(s)
 
     @app.errorhandler(429)
     def ratelimit_error(e):
+
+
         return jsonify(success=False, error="ratelimit exceeded %s" % e.description), 429
 
-    return app, s  # if you need limiter outside create_app, otherwise just return app, s
+    return app, s
 
 
-app, s = create_app()  # if you need limiter outside create_app, otherwise just app, s = create_app()
+app, s = create_app()
+
 
 @app.errorhandler(429)
 def ratelimit_error(e):
+    """
+    Implements the ratelimit_error functionality.
+    """
+
     return jsonify(success=False, error="ratelimit exceeded %s" % e.description), 429
 
 
 class MyForm(FlaskForm):
+    """
+    Defines the MyForm class.
+    """
+
     my_field = StringField('My Field', [validators.Length(min=1, max=100)])
+
+@app.route('/set_timezone', methods=['POST'])
+def set_timezone():
+    timezone = request.json.get('timezone')
+    session['user_timezone'] = timezone
+    return '', 200
+
+# Dictionary mapping each month to a list of keywords for themes
+seasonal_keywords = {
+    'January': ['new year', 'resolution', 'beginning'],
+    'February': ['love', 'valentine', 'affection'],
+    'March': ['spring', 'growth', 'renewal'],
+    'April': ['rain', 'blossom', 'fresh'],
+    'May': ['flowers', 'mother', 'growth'],
+    'June': ['sun', 'father', 'bright'],
+    'July': ['independence', 'summer', 'celebration'],
+    'August': ['heat', 'vacation', 'relaxation'],
+    'September': ['school', 'learning', 'autumn'],
+    'October': ['fall', 'halloween', 'harvest'],
+    'November': ['thanksgiving', 'gratitude', 'family'],
+    'December': ['holiday', 'winter', 'celebrate']
+}
+
+used_quote_ids = set()  # A set to keep track of already used quote IDs
+def get_monthly_keywords(date):
+    # Dictionary mapping each month to a list of keywords for themes
+    seasonal_keywords = {
+        1: ['new year', 'resolution', 'beginning'],
+        2: ['love', 'valentine', 'affection'],
+        3: ['spring', 'growth', 'renewal'],
+        4: ['rain', 'blossom', 'fresh'],
+        5: ['flowers', 'mother', 'growth'],
+        6: ['sun', 'father', 'bright'],
+        7: ['independence', 'summer', 'celebration'],
+        8: ['heat', 'vacation', 'relaxation'],
+        9: ['school', 'learning', 'autumn'],
+        10: ['fall', 'halloween', 'harvest'],
+        11: ['thanksgiving', 'gratitude', 'family'],
+        12: ['holiday', 'winter', 'celebrate']
+    }
+
+    month = date.month
+    return seasonal_keywords.get(month, [])
+
+
 
 
 @app.route('/')
 @app.route('/<int:year>/<int:month>/<int:day>')
 def home(year=None, month=None, day=None):
-    # Set today's date to either provided date or current date
-    today = date(year, month, day) if year and month and day else date.today()
+    """
+    Implements the home functionality, displaying quotes related to authors' birthdays.
+    """
+    # Get the user's time zone from the session, defaulting to UTC
+    user_timezone = session.get('user_timezone', 'UTC')
+    timezone = pytz.timezone(user_timezone)
 
-    # Get authors with birthdays today, limit to 3 distinct authors
+    # Convert UTC now to user's local time
+    utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+    local_now = utc_now.astimezone(timezone)
+
+    # Determine the date for birthday quotes
+    today = local_now.date() if year is None or month is None or day is None else datetime(year, month, day).date()
+
+    # Fetch birthday quotes for the day
     authors_birthday_today = (
         Quote.query
         .with_entities(Quote.author, func.strftime('%Y-%m-%d', Quote.birthday),
@@ -125,7 +222,7 @@ def home(year=None, month=None, day=None):
         .all()
     )
 
-    # Retrieve one quote per author and prepare data for the template
+    # Prepare data for the template
     birthday_quotes_data = [{
         'quote': Quote.query.filter_by(author=author).order_by(func.random()).first(),
         'birthday': datetime.strptime(birthday, '%Y-%m-%d') if birthday else None,
@@ -145,31 +242,40 @@ def home(year=None, month=None, day=None):
         current_date=today,
         yesterday=yesterday,
         tomorrow=tomorrow,
-        is_today=today == date.today(),
+        is_today=today == local_now.date(),
     )
-
-
-
 
 
 @app.route('/authors/', methods=['GET', 'POST'])
 def authors():
+    """
+    Implements the authors functionality.
+    """
+
     query = request.args.get('query', "")
     if query:
-        # Use ilike for case-insensitive search
         matched_authors = [result[0] for result in Quote.query.with_entities(Quote.author).filter(Quote.author.ilike(f"%{query}%")).distinct().all()]
-        selected_authors = []  # setting it to an empty list here
+        selected_authors_with_quotes = {}  # Empty dictionary for this case
     else:
-        matched_authors = []  # setting it to an empty list here
+        matched_authors = []
         selected_authors = [result[0] for result in Quote.query.with_entities(Quote.author).order_by(func.random()).distinct().limit(10).all()]
 
-    return render_template('authors.html', authors=matched_authors, selected_authors=selected_authors, query=query)
+        # Fetching a quote for each selected author
+        selected_authors_with_quotes = {
+            author: Quote.query.filter_by(author=author).order_by(func.random()).first().quote
+            for author in selected_authors
+        }
 
+    return render_template('authors.html', authors=matched_authors, selected_authors_with_quotes=selected_authors_with_quotes, query=query)
 
 
 
 
 class UpdateAccountForm(FlaskForm):
+    """
+    Defines the UpdateAccountForm class.
+    """
+
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=25)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Update')
@@ -179,6 +285,10 @@ class UpdateAccountForm(FlaskForm):
 
 @app.route('/authors/<letter>/')
 def authors_by_letter(letter):
+    """
+    Implements the authors_by_letter functionality.
+    """
+
     last_name_initial = Quote.author.ilike(f'% {letter}%')
     authors = Quote.query.with_entities(Quote.author).filter(last_name_initial).distinct().all()
     return render_template('authors_by_letter.html', authors=authors)
@@ -186,6 +296,10 @@ def authors_by_letter(letter):
 
 @app.route('/quotes/<author>')
 def author_quotes(author):
+    """
+    Implements the author_quotes functionality.
+    """
+
     page = request.args.get('page', 1, type=int)
     pagination = Quote.query.filter_by(author=author).paginate(page=page, per_page=20)
     quotes = pagination.items
@@ -201,6 +315,10 @@ def author_quotes(author):
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
+    """
+    Implements the search functionality.
+    """
+
     query = request.args.get('query', default="", type=str)
     page = request.args.get('page', 1, type=int)
     PER_PAGE = 10
@@ -232,6 +350,10 @@ def search():
 
 @app.route('/get_more_info', methods=['POST'])
 def get_more_info():
+    """
+    Implements the get_more_info functionality.
+    """
+
     quote_text = request.json.get('quote')
     author_name = request.json.get('author_name', "an unknown author")
     info = generate_openai_content(quote_text, author_name)
@@ -239,6 +361,10 @@ def get_more_info():
 
 
 def generate_openai_content(quote_text, author_name="an unknown author"):
+    """
+    Implements the generate_openai_content functionality.
+    """
+
     openai.api_key = current_app.config['CHATGPT_API_KEY']
 
     messages = [
@@ -281,18 +407,30 @@ def generate_openai_content(quote_text, author_name="an unknown author"):
 @app.route("/logout")
 @login_required
 def logout():
+    """
+    Implements the logout functionality.
+    """
+
     logout_user()
     return redirect(url_for('home'))
 
 
 @app.route('/quote/<int:quote_id>')
 def quote_display(quote_id):
+    """
+    Implements the quote_display functionality.
+    """
+
     quote = Quote.query.get_or_404(quote_id)
     quote.openai_generated_content = generate_openai_content(quote.quote, quote.author)
     return render_template('quote_display.html', quote=quote)
 
 @app.route('/topics')
 def topics():
+    """
+    Implements the topics functionality.
+    """
+
     popular_topics = [
         "Love",
         "Inspiration",
@@ -322,12 +460,12 @@ def topics():
     return render_template('topics.html', topics=popular_topics, half_length=half_length)
 
 
-# Assuming the beginning of your main.py has already imported the necessary modules/packages.
-
-# Remove the Blueprint instantiation since we won't be using it.
-# account_bp = Blueprint('account', __name__)
 
 class LoginForm(FlaskForm):
+    """
+    Defines the LoginForm class.
+    """
+
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
@@ -336,12 +474,20 @@ class LoginForm(FlaskForm):
 
 
 def validate_password_match(form, field):
+    """
+    Implements the validate_password_match functionality.
+    """
+
     if field.data != form.password.data:
         raise ValidationError('Passwords must match.')
 
 
 
 class RegistrationForm(FlaskForm):
+    """
+    Defines the RegistrationForm class.
+    """
+
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=25)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     submit = SubmitField('Register')
@@ -351,21 +497,37 @@ class RegistrationForm(FlaskForm):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Implements the load_user functionality.
+    """
+
     return db.session.query(User).get(int(user_id))
 
 
 @app.route('/')
 def index():
+    """
+    Implements the index functionality.
+    """
+
     return render_template('index.html')
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    """
+    Implements the dashboard functionality.
+    """
+
     return render_template('dashboard.html', username=current_user.username)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Implements the login functionality.
+    """
+
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -401,6 +563,10 @@ def login():
 
 
 def send_simple_message(to, subject, text):
+    """
+    Implements the send_simple_message functionality.
+    """
+
     return requests.post(
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
         auth=("api", app.config['MAILGUN_API_KEY']),
@@ -416,56 +582,83 @@ def send_simple_message(to, subject, text):
 
 @app.route('/confirm-email-prompt')
 def confirm_email_prompt():
+    """
+    Implements the confirm_email_prompt functionality.
+    """
+
     return render_template('confirm_email_prompt.html')
 
 
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    """
+    Implements the register functionality.
+    """
     form = RegistrationForm()
 
     if form.validate_on_submit():
+        # Check if username or email already exists
         user_exists = User.query.filter_by(username=form.username.data).first()
         email_exists = User.query.filter_by(email=form.email.data).first()
 
         if user_exists:
             flash('Username already taken. Please choose another one.', 'danger')
             return render_template('register.html', form=form)
+
         if email_exists:
             flash('Email already in use. Please use a different email or login.', 'danger')
             return render_template('register.html', form=form)
 
+        # Hash password and create new user instance
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        new_user = User(username=form.username.data, password=hashed_password, email=form.email.data)
-
-        # Email confirmation
-        token = s.dumps(new_user.email, salt='email-confirmation')
-        confirmation_link = url_for('confirm_email', token=token, _external=True)
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
 
         try:
+            # Add new user to the database
             db.session.add(new_user)
             db.session.commit()
+
+            # Create a default Favorites collection for the new user
+            favorites_collection = Collection(name="Favorites", user_id=new_user.id, is_favorite=True)
+            db.session.add(favorites_collection)
+            db.session.commit()
+
+            # Generate email confirmation token and send email
+            token = s.dumps(new_user.email, salt='email-confirmation')
+            confirmation_link = url_for('confirm_email', token=token, _external=True)
             send_confirmation_email(new_user.email, confirmation_link)
+
             flash('Registration successful! Please check your email to verify your account.', 'success')
             return redirect(url_for('confirm_email_prompt'))
+
         except Exception as e:
+            # Rollback in case of any error
             db.session.rollback()
             flash(f"Registration failed due to an unexpected error: {e}", 'danger')
-            return render_template('register.html', form=form)
 
     return render_template('register.html', form=form)
 
 
 
 
+
 @app.errorhandler(404)
 def page_not_found(e):
+    """
+    Implements the page_not_found functionality.
+    """
+
     return render_template('404.html'), 404
 
 
 @app.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
+    """
+    Implements the account functionality.
+    """
+
     form = UpdateAccountForm()
 
     if form.validate_on_submit():
@@ -485,6 +678,10 @@ def account():
 
 
 class ChangePasswordForm(FlaskForm):
+    """
+    Defines the ChangePasswordForm class.
+    """
+
     current_password = PasswordField('Current Password', validators=[DataRequired()])
     new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=8)])
     confirm_new_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password', message='Passwords must match.')])
@@ -496,6 +693,10 @@ class ChangePasswordForm(FlaskForm):
 @app.route('/change_password', methods=['GET', 'POST'])
 @login_required
 def change_password():
+    """
+    Implements the change_password functionality.
+    """
+
     form = ChangePasswordForm()
 
     if form.validate_on_submit():
@@ -514,12 +715,20 @@ def change_password():
     return render_template('change_password.html', form=form)
 
 class DeleteAccountForm(FlaskForm):
+    """
+    Defines the DeleteAccountForm class.
+    """
+
     submit = SubmitField('Delete Account')
 
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 @login_required
 def delete_account():
+    """
+    Implements the delete_account functionality.
+    """
+
     form = DeleteAccountForm()
     if form.validate_on_submit():
         user_id = current_user.id  # Get the id of the logged-in user
@@ -540,20 +749,36 @@ def delete_account():
 
 @app.errorhandler(404)
 def not_found_error(error):
+    """
+    Implements the not_found_error functionality.
+    """
+
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
 def internal_error(error):
+    """
+    Implements the internal_error functionality.
+    """
+
     db.session.rollback()  # If you're using a database, it's good to rollback any changes in case of errors
     return render_template('500.html'), 500
 
 @app.errorhandler(403)
 def forbidden_error(error):
+    """
+    Implements the forbidden_error functionality.
+    """
+
     return render_template('403.html'), 403
 
 
 @app.route('/confirm_email/<token>')
 def confirm_email(token):
+    """
+    Implements the confirm_email functionality.
+    """
+
     try:
         email = s.loads(token, salt='email-confirmation', max_age=3600)  # token valid for 1 hour
     except:
@@ -576,6 +801,10 @@ def confirm_email(token):
 
 
 def send_confirmation_email(email, token):
+    """
+    Implements the send_confirmation_email functionality.
+    """
+
     confirmation_link = token  # Just use the token directly
 
     return requests.post(
@@ -589,7 +818,157 @@ def send_confirmation_email(email, token):
         }
     )
 
+@app.route('/es_search', methods=['GET'])
+def es_search():
+    query = request.args.get('query', default="", type=str)
+    page = request.args.get('page', 1, type=int)
+    PER_PAGE = 10
+    offset = (page - 1) * PER_PAGE
 
+    # Construct an advanced Elasticsearch query
+    query_body = {
+        "query": {
+            "bool": {
+                "should": [
+                    {"match": {"author": {"query": query, "boost": 5}}},
+                    {"match": {"quote": {"query": query, "boost": 1}}},
+                    {"match": {"summary": {"query": query, "boost": 1}}}
+                ],
+                "minimum_should_match": 1
+            }
+        }
+    }
+
+    # Elasticsearch search query
+    response = app.es.search(index='quotes', body=query_body, size=PER_PAGE, from_=offset)
+
+    # Process the search results
+    matching_quotes = [
+        {
+            'quote': hit['_source']['quote'],
+            'author': hit['_source']['author'],
+            'image_url': hit['_source'].get('image_url'),
+            'id': hit['_id']
+        } for hit in response['hits']['hits']
+    ]
+
+    total_quotes = response['hits']['total']['value']
+    total_pages = (total_quotes + PER_PAGE - 1) // PER_PAGE
+
+    # Simple pagination object with a custom iter_pages method
+    class Pagination:
+        def __init__(self, page, total_pages):
+            self.page = page
+            self.total_pages = total_pages
+
+        def iter_pages(self):
+            return range(1, self.total_pages + 1)
+
+    pagination = Pagination(page, total_pages)
+
+    return render_template(
+        'search_results_es.html',
+        quotes=matching_quotes,
+        query=query,
+        page=page,
+        pagination=pagination,
+        total_pages=total_pages
+    )
+
+
+@app.route('/test/es_data', methods=['GET'])
+def test_es_data():
+    # Safely retrieve the Elasticsearch client
+    es_client = getattr(current_app, 'es', None)
+    if not es_client:
+        # Handle the error appropriately if es_client is not available
+        return jsonify(error="Elasticsearch client not initialized"), 500
+
+    response = es_client.search(index="quotes", query={"match_all": {}}, size=10)
+    documents = [hit["_source"] for hit in response['hits']['hits']]
+    return jsonify(documents)
+
+@app.route('/autocomplete', methods=['GET'])
+def autocomplete():
+    query = request.args.get('query', '')
+    suggest_body = {
+        "suggest": {
+            "quote-suggest": {
+                "prefix": query,
+                "completion": {
+                    "field": "suggest"
+                }
+            }
+        }
+    }
+    response = app.es.search(index='quotes', body=suggest_body)
+    suggestions = [option['_source'] for option in response['suggest']['quote-suggest'][0]['options']]
+    return jsonify(suggestions)
+
+@app.route('/collections_search', methods=['GET'])
+def collections_search():
+    query = request.args.get('query', default="", type=str)
+    page = request.args.get('page', 1, type=int)
+    PER_PAGE = 10
+    offset = (page - 1) * PER_PAGE
+
+    # Elasticsearch query for collections
+    query_body = {
+        "query": {
+            "multi_match": {
+                "query": query,
+                "fields": ["name", "description"]  # fields in your collections index
+            }
+        },
+        "from": offset,
+        "size": PER_PAGE
+    }
+
+    response = app.es.search(index='collections', body=query_body)
+
+    # Process search results
+    matching_collections = [
+        {
+            'name': hit['_source']['name'],
+            'description': hit['_source'].get('description'),
+            'id': hit['_id']
+        } for hit in response['hits']['hits']
+    ]
+
+    total_collections = response['hits']['total']['value']
+    total_pages = (total_collections + PER_PAGE - 1) // PER_PAGE
+
+    # Pagination and rendering logic (similar to es_search)
+
+    return render_template(
+        'collections_search_results.html',  # You'll need to create this template
+        collections=matching_collections,
+        query=query,
+        pagination=pagination
+    )
+
+
+@app.route('/quote/<int:quote_id>')
+def quote_page(quote_id):
+    # Retrieve the quote based on quote_id from the database
+    quote = Quote.query.get_or_404(quote_id)
+
+    # Optionally, fetch the author's image URL if needed
+    author_image_url = quote.image_url if quote.image_url else None
+
+    # Render the template with the retrieved quote and author's image URL
+    return render_template('quote_page.html', quote=quote, author_image_url=author_image_url)
+
+
+@app.route('/quote_detail/<int:quote_id>')
+def quote_detail(quote_id):
+    quote = Quote.query.get_or_404(quote_id)
+
+    # Optionally, fetch the author's image URL if needed
+    author_image_url = quote.image_url if quote.image_url else None
+
+    # Render the template with the retrieved quote and author's image URL
+    return render_template('quote_page.html', quote=quote, author_image_url=author_image_url)
 
 
 if __name__ == "__main__":

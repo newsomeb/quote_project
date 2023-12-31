@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Topics</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
@@ -15,7 +15,8 @@
         <div class="left-column">
             {% for topic in topics[:half_length] %}
                 <div class="topic-card">
-                    <a href="{{ url_for('search', query=topic) }}">{{ topic }}</a>
+                    <!-- Update the link to use the new Elasticsearch-based search -->
+                    <a href="{{ url_for('es_search', query=topic) }}">{{ topic }}</a>
                 </div>
             {% endfor %}
         </div>
@@ -23,12 +24,13 @@
         <div class="right-column">
             {% for topic in topics[half_length:] %}
                 <div class="topic-card">
-                    <a href="{{ url_for('search', query=topic) }}">{{ topic }}</a>
+                    <a href="{{ url_for('es_search', query=topic) }}">{{ topic }}</a>
                 </div>
             {% endfor %}
         </div>
     </div>
 {% endblock %}
+
 
 
 
