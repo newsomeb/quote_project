@@ -38,6 +38,7 @@ class Collection(db.Model):
     description = db.Column(db.String(500))
     public = db.Column(db.Boolean)
     user = db.relationship('User', back_populates='collections')
+    is_favorite = db.Column(db.Boolean, default=False, nullable=False)
 
 
 

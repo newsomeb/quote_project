@@ -1,0 +1,101 @@
+
+
+    <!-- Displaying the individual quote -->
+{% extends "base.html" %}
+
+{% block content %}
+
+    <!-- Displaying the individual quote -->
+    <div class="quote-container">
+        <div class="quote-card">
+            <!-- Display the author image if available -->
+            {% if author_image_url %}
+                <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}" alt="{{ quote.author }}" class="author-image"/>
+            {% endif %}
+
+            <!-- Display the quote -->
+            <p class="quote">{{ quote.quote }}</p>
+
+            <!-- Display the author and link to their quotes page -->
+            <p class="author"><a href="{{ url_for('author_quotes', author=quote.author) }}">{{ quote.author }}</a></p>
+
+
+
+            <!-- Quote Actions -->
+            <div class="quote-actions">
+                <!-- Favorite Button -->
+                <button class="favorite-button" onclick="toggleFavorite({{ quote.id }}, this)">Favorite</button>
+                <p class="error-message" style="display: none; color: red;"></p>
+
+                <!-- Share Button -->
+                <button class="share-button" onclick="showSharePopup('http://thinkexist.net/quote_detail/{{ quote.id }}', this)">Share</button>
+                <div class="share-popup" style="display: none;">
+                    <p>Share this quote:</p>
+                    <input type="text" value="http://thinkexist.net/quote_detail/{{ quote.id }}" readonly>
+                    <button onclick="copyToClipboard(this)">Copy</button>
+                    <button onclick="closeSharePopup(this)">Close</button>
+                </div>
+
+                <!-- Add to Collection Form -->
+                <form action="{{ url_for('collections.add_to_collection') }}" method="POST">
+                    <select name="collection_id">
+                        {% for collection in current_user.collections %}
+                            <option value="{{ collection.id }}">{{ collection.name }}</option>
+                        {% endfor %}
+                        <option value="new">Create New Collection</option>
+                    </select>
+                    <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                    <input type="submit" value="Add to Collection">
+                </form>
+            </div>
+        </div>
+    </div>
+
+        <script>
+        function toggleFavorite(quoteId, buttonElement) {
+            fetch(`/toggle_favorite/${quoteId}`, { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+            // Update UI to reflect favorite status change
+                } else if (response.status === 401) { // 401 status code for Unauthorized
+            // Find the next sibling element with the class 'error-message' and display the error
+                    buttonElement.nextElementSibling.textContent = 'Must be logged in to favorite quotes';
+                    buttonElement.nextElementSibling.style.display = 'block';
+                } else {
+                    buttonElement.nextElementSibling.textContent = 'Must be logged in to favorite quotes';
+                    buttonElement.nextElementSibling.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                buttonElement.nextElementSibling.textContent = 'An error occurred.';
+                buttonElement.nextElementSibling.style.display = 'block';
+            });
+        }
+
+
+        // Function to share quote
+        function showSharePopup(shareUrl, buttonElement) {
+            let popup = buttonElement.nextElementSibling;
+            popup.style.display = 'block';
+            let inputField = popup.querySelector('input');
+            inputField.value = shareUrl;
+            inputField.select();
+        }
+
+        function closeSharePopup(buttonElement) {
+            let popup = buttonElement.parentElement;
+            popup.style.display = 'none';
+        }
+
+
+        function copyToClipboard(buttonElement) {
+            let inputField = buttonElement.parentElement.querySelector('input');
+            inputField.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!'); // Or use a more subtle notification
+        }
+    </script>
+<!-- JavaScript for the Favorite and Share buttons would be similar to what you have on the main page -->
+
+{% endblock %}

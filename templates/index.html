@@ -1,105 +1,122 @@
-{% extends "base.html" %} <!-- Extending base.html for using a common structure and styles across the templates -->
+{% extends "base.html" %}
 
-{% block content %} <!-- Main content of the page will be here, defined within the block content tags -->
+{% block content %}
 
-    <!-- Search Bar Form -->
-    <form action="{{ url_for('search') }}" method="get" class="search-form"> <!-- Form action directed to search URL -->
-        <input type="text" name="query" placeholder="Search for authors and quotes..."> <!-- Search input field -->
-        <input type="submit" value="Search"> <!-- Submit button for the search form -->
+    <!-- Elasticsearch Search Bar Form -->
+    <form action="{{ url_for('es_search') }}" method="get" class="search-form">
+        <input type="text" name="query" placeholder="Search for authors and quotes...">
+        <input type="submit" value="Search">
     </form>
 
-    <!-- This is a test comment for Git workflow -->
-
-
     <!-- Displaying Birthdays Headings -->
-    <h2>Birthdays occurring on {{ current_date.strftime('%B %d') }}:</h2> <!-- Displaying the current date, formatted to show the Month and Day -->
+    <h2>Birthdays on {{ current_date.strftime('%B %d') }}:</h2>
 
     <!-- Container for Displaying Quotes -->
-    <div class="quotes-container"> <!-- Main container for quote cards -->
-        {% for data in quotes_data %} <!-- Loop through each item in quotes_data -->
-            <div class="quote-card" style="display: flex; align-items: center;"> <!-- Individual quote card with styling -->
+    <div class="quotes-container">
+        {% for data in quotes_data %}
+            <div class="quote-card" style="display: flex; align-items: center;">
 
                 <!-- Displaying Author Image -->
-                {% if data['quote'].image_url %} <!-- Check if image_url exists for the quote -->
-                    <img src="{{ url_for('static', filename='author_images/' + data['quote'].image_url) }}" alt="{{ data['quote'].author }}" class="author-image-small responsive-image"/> <!-- Displaying author image -->
+                {% if data['quote'].image_url %}
+                    <img src="{{ url_for('static', filename='author_images/' + data['quote'].image_url) }}" alt="{{ data['quote'].author }}" class="author-image"/>
                 {% endif %}
 
                 <!-- Displaying Quote Content -->
-                <div class="quote-content"> <!-- Container for quote content and actions -->
-                    <p>{{ data['quote'].quote }}</p> <!-- Displaying the quote -->
-                    <p class="author-name">{{ data['quote'].author }}</p> <!-- Displaying the author's name -->
+                <div class="quote-content">
+                    <p>{{ data['quote'].quote }}</p>
+                    <p class="author-name"><a href="https://thinkexist.net/quotes/{{ data['quote'].author|replace(' ', '%20') }}">{{ data['quote'].author }}</a></p>
+                </div>
 
-                    <!-- Quote Actions (More Info, Add to Collection) -->
-                    <div class="quote-actions"> <!-- Container for action buttons and forms related to the quote -->
+                <!-- Quote Actions -->
+                <div class="quote-actions">
+                    <!-- Inside your quote-actions div -->
+                    <button class="favorite-button" onclick="toggleFavorite({{ data['quote'].id }}, this)">Favorite</button>
+                    <p class="error-message" style="display: none; color: red;"></p>
 
-                        <!-- More Info Button with Inline JavaScript to toggle more info -->
-                        <button class="more-info-button" onclick="toggleMoreInfo({{ loop.index }}, '{{ data['quote'].quote|replace("'", "\\'") }}', '{{ data['quote'].author|replace("'", "\\'") }}')">More Info</button>
 
-                        <!-- Form to Add Quote to Collection -->
-                        <form action="{{ url_for('collections.add_to_collection') }}" method="POST" style="display: inline;"> <!-- Inline form for adding quote to a collection -->
-                            <select name="collection_id"> <!-- Dropdown for selecting collection -->
-                                {% for collection in current_user.collections %} <!-- Loop through each collection of the current user -->
-                                    <option value="{{ collection.id }}">{{ collection.name }}</option> <!-- Display collection as an option in the dropdown -->
-                                {% endfor %}
-                                <option value="new">Create New Collection</option> <!-- Option to create a new collection -->
-                            </select>
-                            <input type="hidden" name="quote_id" value="{{ data['quote'].id }}"> <!-- Hidden input to send quote_id with the form -->
-                            <input type="submit" value="Add to Collection"> <!-- Submit button to add quote to collection -->
-                        </form>
+                    <!-- Share Button -->
+
+                    <!-- Inside your quote-actions div -->
+                    <!-- Inside your quote-actions div -->
+                    <button class="share-button" onclick="showSharePopup('http://thinkexist.net/quote_detail/{{ data['quote'].id }}', this)">Share</button>
+
+                    <div class="share-popup" style="display: none;">
+                        <p>Share this quote:</p>
+                        <input type="text" value="" readonly>
+                        <button onclick="copyToClipboard(this)">Copy</button>
+                        <button onclick="closeSharePopup(this)">Close</button>
                     </div>
 
-                    <!-- Hidden Section for More Information -->
-                    <div id="more-info-section-{{ loop.index }}" style="display: none;"> <!-- Container for more information, initially hidden -->
-                        <h3>Additional Information</h3> <!-- Heading for additional information section -->
-                        <p class="openai-info"></p> <!-- Placeholder for AI-generated content -->
-                    </div>
+
+                    <!-- Add to Collection Form -->
+                    <form action="{{ url_for('collections.add_to_collection') }}" method="POST">
+                        <select name="collection_id">
+                            {% for collection in current_user.collections %}
+                                <option value="{{ collection.id }}">{{ collection.name }}</option>
+                            {% endfor %}
+                            <option value="new">Create New Collection</option>
+                        </select>
+                        <input type="hidden" name="quote_id" value="{{ data['quote'].id }}">
+                        <input type="submit" value="Add to Collection">
+                    </form>
                 </div>
             </div>
         {% endfor %}
     </div>
 
     <!-- Navigation Links for Dates -->
-    <div class="date-navigation"> <!-- Container for navigation links related to dates -->
-        <!-- Links to navigate to quotes for Yesterday, Today, and Tomorrow -->
+    <div class="date-navigation">
         <a href="{{ url_for('home', year=yesterday.year, month=yesterday.month, day=yesterday.day) }}">Yesterday ({{ yesterday.strftime('%B %d, %Y') }})</a>
-        {% if not is_today %} <!-- Check if the displayed date is not today -->
-            <a href="{{ url_for('home') }}">Today</a> <!-- Link to navigate back to today's date -->
+        {% if not is_today %}
+            <a href="{{ url_for('home') }}">Today</a>
         {% endif %}
-        <a href="{{ url_for('home', year=tomorrow.year, month=tomorrow.month, day=tomorrow.day) }}">Tomorrow ({{ tomorrow.strftime('%B %d, %Y') }})</a> <!-- Link to navigate to tomorrow's date -->
+        <a href="{{ url_for('home', year=tomorrow.year, month=tomorrow.month, day=tomorrow.day) }}">Tomorrow ({{ tomorrow.strftime('%B %d, %Y') }})</a>
     </div>
 
-    <!-- JavaScript for Toggling More Info and Fetching Additional Information -->
     <script>
-        // Function to toggle visibility of more info section and fetch additional information from the server if needed
-        function toggleMoreInfo(index, quote, author) {
-            // Locate the more info section using its ID
-            const moreInfoSection = document.getElementById(`more-info-section-${index}`);
-
-            // Toggle the display of the more info section and fetch additional information if not already fetched
-            if (moreInfoSection.style.display === 'none') { // If more info section is hidden
-                if (!moreInfoSection.dataset.fetched) { // If additional information has not been fetched yet
-                    // Send a POST request to the server to get more info
-                    fetch('/get_more_info', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json' // Specify content type as JSON
-                        },
-                        body: JSON.stringify({quote: quote, author_name: author}) // Send quote and author name as JSON
-                    })
-                    .then(response => response.json()) // Parse response as JSON
-                    .then(data => {
-                        // Locate the paragraph element for AI-generated content and insert the received information
-                        const infoPara = moreInfoSection.querySelector('.openai-info');
-                        infoPara.innerHTML = data.info;
-                        moreInfoSection.dataset.fetched = true; // Mark the information as fetched
-                    });
+        function toggleFavorite(quoteId, buttonElement) {
+            fetch(`/toggle_favorite/${quoteId}`, { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+            // Update UI to reflect favorite status change
+                } else if (response.status === 401) { // 401 status code for Unauthorized
+            // Find the next sibling element with the class 'error-message' and display the error
+                    buttonElement.nextElementSibling.textContent = 'Must be logged in to favorite quotes';
+                    buttonElement.nextElementSibling.style.display = 'block';
+                } else {
+                    buttonElement.nextElementSibling.textContent = 'Must be logged in to favorite quotes';
+                    buttonElement.nextElementSibling.style.display = 'block';
                 }
-                moreInfoSection.style.display = 'block'; // Show the more info section
-            } else {
-                moreInfoSection.style.display = 'none'; // Hide the more info section
-            }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                buttonElement.nextElementSibling.textContent = 'An error occurred.';
+                buttonElement.nextElementSibling.style.display = 'block';
+            });
+        }
+
+
+        // Function to share quote
+        function showSharePopup(shareUrl, buttonElement) {
+            let popup = buttonElement.nextElementSibling;
+            popup.style.display = 'block';
+            let inputField = popup.querySelector('input');
+            inputField.value = shareUrl;
+            inputField.select();
+        }
+
+        function closeSharePopup(buttonElement) {
+            let popup = buttonElement.parentElement;
+            popup.style.display = 'none';
+        }
+
+
+        function copyToClipboard(buttonElement) {
+            let inputField = buttonElement.parentElement.querySelector('input');
+            inputField.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!'); // Or use a more subtle notification
         }
     </script>
 
-{% endblock %} <!-- End of content block -->
-
+{% endblock %}

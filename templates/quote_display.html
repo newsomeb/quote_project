@@ -1,39 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="quote-details">
-    <h2>Quote by {{ quote.author }}</h2>
-
-    <!-- Author Image -->
-    {% if quote.image_url %}
-        <img src="{{ url_for('static', filename='author_images/' + quote.image_url) }}" alt="{{ quote.author }}" class="author-image"/>
-    {% endif %}
-
-    <blockquote>{{ quote.quote }}</blockquote>
-    <p>Birthdate: {{ quote.birthday.strftime('%B %d, %Y') }}</p>
-    <p>Summary: {{ quote.summary }}</p>
-</div>
-
-<div class="quote-actions">
-    <a href="#" class="report-quote-button" onclick="reportQuote({{ quote.id }})">Report</a>
-    <a href="#" class="copy-link-button" onclick="copyQuoteLink({{ quote.id }})">Copy Link</a>
-    <a href="#" class="more-info-button" onclick="toggleMoreInfo()">More</a>
-</div>
-
-<div id="more-info-section" style="display: none;">
-    <h3>Additional Information</h3>
-    <p>{{ quote.openai_generated_content }}</p>
-</div>
-
-<div class="chat-interface" id="chat-interface">
-    <div class="chat-container" id="chat-container">
-        <div class="chat-messages" id="chat-messages">
-        </div>
-        <div class="user-input">
-            <input type="text" id="user-input" placeholder="Type your question">
-            <button onclick="sendMessage()">Send</button>
-        </div>
+<div class="authors-section">
+    <!-- Search Form -->
+    <div class="search-form">
+        <form action="{{ url_for('authors') }}" method="GET">
+            <input type="text" name="query" placeholder="Search for an author...">
+            <input type="submit" value="Search">
+        </form>
     </div>
+
+    <h1>Top 15 Authors</h1>
+    <div class="top-authors">
+        <!-- Top Authors List (Static) -->
+        <!-- ... -->
+    </div>
+
+    <h2>Selected Authors</h2>
+    <div class="selected-authors">
+        <ul>
+            {% for author, quote in selected_authors_with_quotes.items() %}
+                <li>
+                    <div class="author-details">
+                        <a href="{{ url_for('author_quotes', author=author) }}">{{ author }}</a>
+                        <p class="author-quote">"{{ quote }}"</p>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% if query %}
+        <h3>Search Results for "{{ query }}"</h3>
+        <ul class="search-results">
+            {% for author in authors %}
+                <li><a href="{{ url_for('author_quotes', author=author) }}">{{ author }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 </div>
 
 <script>
