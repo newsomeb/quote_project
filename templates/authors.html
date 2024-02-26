@@ -4,7 +4,7 @@
     <!-- Search Form -->
     <!-- New Elasticsearch Search Bar Form -->
     <form action="{{ url_for('es_search') }}" method="get" class="search-form">
-        <input type="text" name="query" placeholder="Elasticsearch: Search for authors and quotes...">
+        <input type="text" name="query" placeholder="Search for authors and quotes...">
         <input type="submit" value="Search">
     </form>
 
@@ -33,45 +33,8 @@
      </ol>
 </div>
 
-        <h2>Selected Authors</h2>
-    <div class="quotes-container">
-        {% for author, quote in selected_authors_with_quotes.items() %}
-            <div class="quote-card" style="display: flex; align-items: center;">
-                <div class="quote-content">
-                    <p>{{ quote }}</p>
-                    <p class="author-name"><a href="{{ url_for('author_quotes', author=author) }}">{{ author }}</a></p>
 
-                    <!-- Quote Actions -->
-                    <div class="quote-actions">
-                        <!-- Favorite Button -->
-                        <button class="favorite-button" onclick="toggleFavorite({{ quote.id }}, this)">Favorite</button>
-                        <p class="error-message" style="display: none; color: red;"></p>
 
-                        <!-- Share Button -->
-                        <button class="share-button" onclick="showSharePopup('http://thinkexist.net/quote_detail/{{ quote.id }}', this)">Share</button>
-                        <div class="share-popup" style="display: none;">
-                            <p>Share this quote:</p>
-                            <input type="text" value="http://thinkexist.net/quote_detail/{{ quote.id }}" readonly>
-                            <button onclick="copyToClipboard(this)">Copy</button>
-                            <button onclick="closeSharePopup(this)">Close</button>
-                        </div>
-
-                        <!-- Form to Add Quote to Collection -->
-                        <form action="{{ url_for('collections.add_to_collection') }}" method="POST">
-                            <select name="collection_id">
-                                {% for collection in current_user.collections %}
-                                    <option value="{{ collection.id }}">{{ collection.name }}</option>
-                                {% endfor %}
-                                <option value="new">Create New Collection</option>
-                            </select>
-                            <input type="hidden" name="quote_id" value="{{ quote.id }}">
-                            <input type="submit" value="Add to Collection">
-                        </form>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
 
     {% if query %}
         <h3>Search Results for "{{ query }}"</h3>
@@ -83,46 +46,7 @@
     {% endif %}
 
     <script>
-        function toggleFavorite(quoteId, buttonElement) {
-            fetch(`/toggle_favorite/${quoteId}`, { method: 'POST' })
-            .then(response => {
-                if (response.ok) {
-                    // Update UI to reflect favorite status change
-                    // E.g., change the button text or style
-                } else if (response.status === 401) { // 401 status code for Unauthorized
-                    buttonElement.nextElementSibling.textContent = 'Must be logged in to favorite quotes';
-                    buttonElement.nextElementSibling.style.display = 'block';
-                } else {
-                    buttonElement.nextElementSibling.textContent = 'Failed to toggle favorite status.';
-                    buttonElement.nextElementSibling.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                buttonElement.nextElementSibling.textContent = 'An error occurred.';
-                buttonElement.nextElementSibling.style.display = 'block';
-            });
-        }
 
-        function showSharePopup(shareUrl, buttonElement) {
-            let popup = buttonElement.nextElementSibling;
-            popup.style.display = 'block';
-            let inputField = popup.querySelector('input');
-            inputField.value = shareUrl;
-            inputField.select();
-        }
-
-        function closeSharePopup(buttonElement) {
-            let popup = buttonElement.parentElement;
-            popup.style.display = 'none';
-        }
-
-        function copyToClipboard(buttonElement) {
-            let inputField = buttonElement.parentElement.querySelector('input');
-            inputField.select();
-            document.execCommand('copy');
-            alert('Link copied to clipboard!');
-        }
     </script>
 {% endblock %}
 

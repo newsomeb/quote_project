@@ -1,63 +1,368 @@
-/* General Body and Font Styles */
+/* CSS Variables */
+:root {
+    --primary-color: #007BFF;     // No change, primary color for interactive elements
+    --secondary-color: #333;       // Secondary color, used for less prominent elements or possibly text
+    --text-color: #000000;         // Text color, changed to black for better contrast on white backgrounds
+    --background-color: #FFFFFF;   // Overall background color, changed to white
+    --link-hover-color: #0056b3;   // Color for link hover states
+    --border-color: #ccc;          // Border color for elements that need it
+    --border-radius: 4px;          // Border radius for rounded corners
+    --hover-bg-color: #f4f4f4;     // Background color for hover states
+    --navbar-bg-color: #2d2e30;    // Navbar background color, can remain dark if design calls for it
+    --navbar-hover-bg-color: #3a3b3d;// Navbar link hover background color
+    --quote-border-color: #3a3b3d; // Border color for quotes, consider changing if needed for contrast
+    --button-hover-color: #5f6368; // Button hover state color
+    --topic-card-bg-color: #FFFFFF; // Background color for topic cards, changed to white
+    --header-font-size: 40px;      // Font size for headers
+    --quote-font-size: 40px;       // Font size for quotes
+    --author-font-size: 20px;      // Font size for author names
+}
+
+/* Base styles (Mobile First) */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #202124;
-    color: #E8EAED;
+    font-family: 'Inter', sans-serif
+    background-color: var(--background-color);
+    color: var(--text-color);
+    padding: 15px;
 }
 
-.search-form {
-    text-align: center;
-    padding: 20px 0;
-}
 
-.search-form input[type="text"] {
+/* General input styles */
+input[type="text"],
+input[type="submit"],
+button {
+    border-radius: var(--border-radius);
+    color: var(--text-color);
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+}
+/* Unified styles for all text input fields */
+/* Unified styles for all text input fields */
+.register-page input[type="text"],
+.register-page input[type="email"],
+.register-page input[type="password"] {
+    background-color: #E8F0FE; /* Lighter blue, resembling a default look */
+    color: black; /* Adjust text color as needed */
+ /* A standard blue for border */
+    border-radius: 4px;
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 250px; /* You had different width values, choose which is appropriate */
-    background-color: #333; /* Dark gray background */
-    color: #E8EAED; /* Text color */
 }
 
+
+/* If you have other specific input types, add them to the list above */
+
+/* Adjusted styles for buttons, if needed, to ensure they don't conflict */
+.register-page input[type="submit"],
+.register-page button {
+    background-color: black; /* Keep or adjust button background color */
+    color: white; /* Text color for buttons */
+    border-radius: 4px;
+    padding: 10px;
+    border: 1px solid #333; /* Adjust as needed */
+}
+
+
+/* Headers */
+.header {
+    font-size: var(--header-font-size);
+    font-weight: bold; /* Assuming headers are bold */
+    color: var(--text-color); /* Using the existing text color variable */
+    /* ... other header styles ... */
+}
+
+input[type="text"] {
+    width: 100%; /* Fluid width for mobile */
+}
+
+input[type="submit"]:hover,
+button:hover {
+    background-color: var(--button-hover-color);
+}
+
+
+.public_collection_container {
+    margin-bottom: 20px; /* Add space below each collection */
+    padding: 10px; /* Optional: Add some padding inside each collection container for better spacing of content */
+}
+
+/* Increase font size for titles within the public collections */
+.public_collection h2 {
+    font-size: 24px; /* Adjust the size as needed for collection titles */
+}
+
+/* Increase font size for collection names */
+.public_collection_container .collection-name {
+    font-size: 30px; /* Larger font size for collection names */
+}
+
+/* Increase font size for collection descriptions */
+.public_collection_container .collection-description {
+    font-size: 15px; /* Larger font size for descriptions */
+}
+
+
+
+/* Base Styles for the Search Form */
+.search-form {
+    display: flex;
+    justify-content: center; /* Center the search form horizontally */
+    align-items: center; /* Center the search form vertically */
+    padding: 20px;
+    gap: 10px; /* Spacing between input field and submit button */
+}
+
+/* Styling for the Input Field */
+.search-form input[type="text"] {
+    width: 60%; /* Adjustable based on preference */
+    padding: 8px 15px;
+    border: 2px solid #ddd; /* Light grey border */
+    border-radius: 25px; /* Rounded edges */
+    font-size: 16px; /* Readable font size */
+    color: #333; /* Dark grey color for contrast */
+    background-color: #fff; /* White background */
+    outline: none; /* Removes the outline to keep it minimal */
+    transition: border-color 0.3s; /* Smooth transition for focus */
+}
+
+/* Focus State for Input Field */
+.search-form input[type="text"]:focus {
+    border-color: #007bff; /* Highlight color when focused */
+}
+
+/* Styling for the Submit Button */
 .search-form input[type="submit"] {
-    padding: 10px 15px;
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
+    padding: 8px 20px;
+    border: none; /* Removes the border */
+    border-radius: 25px; /* Rounded edges */
+    font-size: 16px; /* Matching font size with the input field */
+    color: #fff; /* White text */
+    background-color: black; /* Button color */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background-color 0.3s; /* Smooth background transition */
 }
 
+/* Hover State for Submit Button */
 .search-form input[type="submit"]:hover {
-    background-color: #0056b3;
+    background-color: #0056b3; /* Darker shade on hover */
 }
 
-.inline-form {
-    display: inline;
+
+/* Navbar */
+.navbar {
+    background-color: var(--navbar-bg-color);
+    overflow: hidden;
+
 }
 
-.more-info-section {
-    display: none;
+.navbar a {
+    float: left;
+    display: block;
+    color: var(--text-color);
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
 }
+
+.navbar a:hover {
+    background-color: var(--navbar-hover-bg-color);
+}
+
+/* Quotes and Author Sections */
+.quote, .topic-card {
+    border: 1px solid var(--quote-border-color);
+    padding: 8px;
+    margin: 5px 0;
+    background-color: var(--topic-card-bg-color);
+    color: var(--text-color);
+    border-radius: var(--border-radius);
+    font-size: var(--quote-font-size);
+}
+/* Existing styles for .author-name a */
+.author-name a {
+    color: black; /* Color of the link set to black */
+    text-decoration: none; /* Removes underline from links */
+    /* ... other styles ... */
+}
+
+/* Hover effect for .author-name a */
+.author-name a:hover {
+    color: grey; /* Changes text color to slightly grey on hover */
+    /* Add any other hover effects if needed */
+}
+
+/* Existing styles for .author-name */
+.author-name {
+    font-size: var(--author-font-size);
+    text-align: right;
+    /* ... other styles ... */
+}
+
+/* Custom Login Styles */
+.content {
+    max-width: 400px;
+    margin: auto;
+    background-color: var(--background-color);
+    padding: 20px;
+
+
+}
+
+/* Account Page Styles */
+.account-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.account-container h1,
+.account-container p,
+.account-container a {
+    font-family: Arial, sans-serif;
+}
+
+.user-details p,
+.account-options li {
+    font-size: 16px;
+    color: #333;
+}
+
+.account-options li {
+    margin-bottom: 10px;
+}
+
+.btn-primary,
+.account-options a {
+    background-color: black;
+    color: white;
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: 10px 20px; /* Adjust padding as needed */
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+
+    width: 180px; /* Fixed width for all buttons */
+    text-align: center; /* Centers the text within the button */
+}
+
+.btn-primary:hover,
+.account-options a:hover {
+    background-color: grey;
+    border-color: grey;
+}
+
+.alert {
+    padding: 15px;
+    background-color: #f44336;
+    color: white;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.alert-danger {
+    background-color: #dc3545;
+}
+
+.form-control {
+    width: 100%;
+    padding: 15px 10px;
+    border-radius: 4px;
+    border: 2px solid var(--border-color); /* Adjust this variable as needed */
+    background-color: var(--secondary-color); /* Adjust this variable as needed */
+    color: var(--text-color); /* Adjust this variable as needed */
+}
+
+.form-label {
+    margin-bottom: 5px;
+    display: block;
+}
+
+
+.form-group {
+    margin-bottom: 15px; /* Spacing between form groups */
+}
+
+.form-label {
+    display: block; /* Ensures the label takes up the full width, placing the input below */
+    margin-bottom: 5px; /* Spacing between label and input */
+}
+
+
+.btn-primary {
+
+    background-color: black;
+    border-color: black;
+    color: white;
+    border-radius: 4px; /* Directly specifying the value to test */
+    padding: 10px;
+    border: 1px solid black;
+}
+
+.btn-primary:hover {
+    background-color: grey; /* Changes the background to grey on hover */
+    border-color: grey; /* Optionally, also change the border color on hover */
+}
+
+
+.form-control {
+    width: 100%;
+    padding: 15px 10px;
+    border-radius: 4px;
+    border: 2px solid var(--border-color);
+    background-color: var(--secondary-color); /* Adjust this to match your desired input background */
+    color: var(--text-color);
+}
+
+order-color: var(--button-hover-color);
+}
+
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+a {
+    color: var(--primary-color);
+}
+
+a:hover {
+    color: var(--link-hover-color);
+}
+
+
+@media (min-width: 768px) {
+    .search-form input[type="text"] {
+        width: 40%; /* Adjust width for larger screens if needed */
+    }
+}
+
+/* Further responsive adjustments for even larger screens */
+@media (min-width: 1024px) {
+    /* Styles for desktops and larger screens */
+}
+/* THIS IS WHERE THE OLD CSS STARTS
+
+/* General Body and Font Styles */
 
 
 /* Style for author links */
 .quote-content .author-name .author-link {
-    color: #E8EAED !important; /* Matches the general text color */
-    text-decoration: none !important; /* Removes the underline */
-    font-family: Arial, sans-serif; /* Ensures consistent font with the rest of the page */
+    color: var(--text-color);
+    text-decoration: none;
+    font-family: Arial, sans-serif;
+    display: flex;
 }
 
-/* Style for author links on hover */
 .quote-content .author-name .author-link:hover {
-    text-decoration: underline !important; /* Adds underline on hover for indication */
-    color: #ffffff !important; /* Slightly brighter color on hover for contrast */
+    text-decoration: underline;
+    color: var(--link-hover-color);
+    display: flex;
 }
-
-
-
-
 
 .date-navigation {
     display: flex;
@@ -79,108 +384,6 @@ body {
 }
 
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #202124;
-    color: #E8EAED;
-}
-
-.search-form {
-    text-align: center;
-    padding: 20px 0;
-}
-
-.search-form input[type="text"],
-.search-form input[type="submit"] {
-    display: inline-block;   /* Makes the input fields appear inline */
-    margin: 0 5px;          /* Small margin to space them out a bit */
-}
-
-.search-form input[type="text"] {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    width: 60%;
-    max-width: 500px;
-    background-color: #333; /* Dark gray background */
-    color: #E8EAED; /* Text color */
-}
-
-.search-form input[type="submit"] {
-    padding: 10px 15px;
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.search-form input[type="submit"]:hover {
-    background-color: #0056b3;
-}
-
-
-
-
-
-
-.search-form input[type="text"] {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 250px; /* Or whatever width you desire */
-}
-
-.search-form input[type="submit"] {
-    padding: 10px 15px;
-    background-color: #333;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.search-form input[type="submit"]:hover {
-    background-color: #555;
-}
-
-
-/* Navbar Styles */
-.navbar {
-    background-color: #2d2e30;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.navbar a {
-    float: left;
-    display: block;
-    color: #E8EAED;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-
-.navbar a:hover {
-    background-color: #3a3b3d;
-    color: white;
-}
-
-
-
-
-
-/* Quote Styles */
-.quote {
-    border: 1px solid #3a3b3d;
-    padding: 8px;
-    margin: 5px 0;
-    background-color: #2d2e30;
-    color: #E8EAED;
-    border-radius: 8px;
-}
 
 .quote button {
     padding: 2px 2px;
@@ -236,16 +439,56 @@ body {
     color: #E8EAED;
 }
 
-/* Inputs, Forms, and Buttons */
-input, select, button {
-    background-color: #3a3b3d;
-    color: #E8EAED;
-    border: 1px solid #5f6368;
-    padding: 4px 10px;  /* Adjusted to match the desired size */
-    margin: 4px 1px;  /* Adjusted 10 to 10px for consistency */
-    border-radius: 4px;
-    font-size: 10px;   /* Adjusted to match the desired size */
-    transition: background-color 0.2s;
+
+.quote-actions button {
+ /* Fixed width */
+    height: 40px; /* Fixed height */
+ /* Adjust padding as needed */
+    font-size: 16px; /* Consistent font size */
+ /* Optional: space between buttons */
+    /* Other styling such as border, background, etc. */
+}
+
+.quote-actions button:hover {
+    color: var(--button-hover-color); /* Changes text color */
+    border-color: var(--button-hover-color); /* Changes border color */
+    /* Optionally add other changes like background-color or text-decoration */
+}
+
+
+.quote-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quote-flex-container {
+    display: flex;
+    align-items: center; /* Aligns children to the top */
+
+}
+
+
+.author-image-container {
+
+    margin-right: 30px;
+    /* Other styles */
+}
+
+.author-image {
+    height: auto; /* Fixed height */
+    width: 250px;
+    float: left;
+/* Adjusts width to maintain aspect ratio */
+ /* Ensures the image covers the area without distortion */
+ /* Centers the image */
+}
+
+
+.quote-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
 }
 
@@ -262,22 +505,104 @@ button:hover, input[type="submit"]:hover {
 
 /* ... any other styles specific to this button */
  .quote-card {
-    border: 1px solid #ccc;
+    display: flex;
+    align-items: flex-start;
     padding: 10px;
     margin-bottom: 10px;
     }
 
+
+.quote-content-actions {
+    min-width: 750px; /* Ensures it doesn't get smaller than this */
+    max-width: 750px; /* Ensures it doesn't grow larger than this */
+    width: 100%; /* This will now effectively ensure it tries to fill the space up to 750px */
+    border-bottom: 1px solid #ccc;
+    /* Your other styles */
+}
+
+
+.quote-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 5; /* Adjust the number of lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer; /* Optional: changes the mouse cursor on hover */
+}
+
+.expanded {
+    -webkit-line-clamp: none;
+    display: block;
+}
+
+/* Base styles for larger screens */
+.author-specific-image-container {
+    margin-right: 30px;
+    /* Add any other base styling as needed, just for author image */
+}
+
+.author-specific-image {
+    width: 250px; /* Adjust size as needed */
+    height: auto;
+    /* Other specific styles for the author image */
+
+}
+
+
+
+/* Styles for mobile and small screens */
+@media screen and (max-width: 1050px) { /* Adjust the max-width as needed for your design */
+    .quote-flex-container {
+        flex-direction: column; /* Stack children vertically */
+    }
+
+
+    .author-specific-image-container {
+        width: 100%; /* Full width */
+        order: -1; /* Ensure image is above quotes */
+    }
+
+    .author-specific-image {
+        width: 100%; /* Responsive width */
+        height: auto; /* Maintain aspect ratio */
+        /* Adjust the image size or alignment here if needed for mobile */
+    }
+
+
+    .quote-content-actions {
+        min-width: auto; /* Reset the minimum width */
+        max-width: 100%; /* Allow the element to expand fully within its container */
+        width: 100%; /* Ensure the element takes full width of its container */
+    }
+}
+
+
+/* Existing styles for .quote-actions */
 .quote-actions {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: flex-start; /* Aligns children (buttons) to the left */
+    gap: 10px; /* Adjust the gap between buttons */
+    /* ... other styles ... */
 }
 
 /* Style for the dropdown inside the .quote-actions */
 .quote-actions select {
-    padding: -5px;  /* Adjust padding to make dropdown smaller or larger */
-    font-size: 10px;    /* Adjust font-size if necessary */
+    padding: -5px; /* Adjust padding to make dropdown smaller or larger */
+    font-size: 10px; /* Adjust font-size if necessary */
+    /* ... other styles ... */
 }
+
+/* Hover effect for buttons inside .quote-actions */
+.quote-actions button:hover,
+.quote-actions input[type="submit"]:hover {
+    background-color: white; /* Background color set to white */
+    color: grey; /* Button text becomes slightly grey */
+    border: none; /* Removes border if there is any */
+}
+
+
 
 /* Style for the Add to Collection button inside the .quote-actions */
 .quote-actions input[type="submit"] {
@@ -286,8 +611,413 @@ button:hover, input[type="submit"]:hover {
 }
 
 
+/* ... other styles ... */
+
+/* Combined Navbar Container */
+.navbar-container {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: space-between; /* Align items at start and end */
+    padding: 10px;
+    background-color: var(--navbar-bg-color);
+}
 
 
+.navbar a {
+    color: var(--text-color); /* Or use a specific color like purple if that's what the login button is */
+ /* If the login button is underlined */
+    /* Adjust padding, font size, and other properties to match the login button */
+}
+
+
+/* Hamburger Button - Visible in Mobile */
+.hamburger {
+    display: none;
+;/* Ensure it's visible in mobile view */
+}
+
+/* Navbar Links - Hidden in Mobile, Displayed in Desktop */
+.navbar {
+ /* Hide in mobile view */
+    flex-grow: 1;
+     display: flex;
+     align-items: center;
+     justify-content: center;/* Allow it to grow to use available space */
+}
+
+
+
+/* Login Button - Style to match Navbar links */
+.login-button {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 14px 16px;
+    order: 3; /* Set third in order */
+    margin-left: auto; /* Push it to the right */
+    /* Additional styling */
+}
+
+.login-button {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 14px 16px;
+    margin-left: auto; /* Push to the right on desktop */
+    /* Additional styling */
+}
+/* The Quote Archive Button - General Styling */
+.quote-archive-button {
+    color: var(--text-color);
+    text-decoration: none;
+    /* Additional styling */
+}
+
+/* Mobile View */
+@media (max-width: 768px) {
+    /* Adjust navbar-container for mobile layout */
+    .navbar-container {
+        display: flex; /* Use flexbox for layout */
+        justify-content: flex-start; /* Align items to the start */
+        align-items: center; /* Align items vertically */
+    }
+
+    .hamburger {
+        display: block; /* Show hamburger menu */
+        margin-right: 10px; /* Adjust space between hamburger and next item */
+    }
+
+    .navbar {
+        display: none; /* Hide navbar links in mobile view */
+    }
+
+    .quote-archive-button {
+        /* Additional styling if needed */
+    }
+
+    .login-button {
+        margin-left: auto; /* Push it to the right */
+    }
+
+    .navbar.expanded {
+        display: block; /* Show navbar links when hamburger is clicked */
+        width: 100%; /* Full width */
+    }
+
+    .mobile-nav a {
+        display: block; /* Each link takes the full width of the container */
+        text-align: left; /* Align text to the left */
+        padding: 10px 20px; /* Adjust padding */
+        color: var(--text-color); /* Adjust text color */
+        text-decoration: none; /* Remove underline */
+        border-bottom: 1px solid #e1e1e1; /* Add border for separation */
+        font-size: 1em; /* Adjust font size */
+    }
+
+    .mobile-nav-button {
+        display: block; /* Ensure it's visible and takes full width */
+        margin: 5px 0; /* Add vertical spacing between buttons */
+        /* Additional button styling here */
+    }
+}
+
+
+@media (min-width: 769px) {
+    .hamburger {
+        display: none; /* Hide hamburger menu */
+    }
+
+    .navbar {
+        display: flex; /* Show navbar links */
+        align-items: center;
+        justify-content: center; /* Center navbar links */
+
+        margin-left: auto; /* This ensures the navbar is centered */
+        margin-right: auto; /* This ensures the navbar is centered */
+    }
+
+    /* Ensure login button appears in desktop view */
+    .login-button {
+        margin-left: auto; /* Keep login button on the right */
+        margin-right: 0; /* Reset margin */
+        /* Additional styling for desktop */
+    }
+
+    .quote-archive-button {
+        /* Additional styling for desktop */
+    }
+}
+
+/* Style for the mobile navigation menu */
+.mobile-nav {
+    display: none; /* Hidden by default */
+    position: relative; /* Position relative to the parent container */
+ /* Directly below the hamburger button */
+    left: 0;
+    right: 0; /* Align to the full width of the navbar container */
+    background-color: #fff; /* Change as per your design */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1); /* Optional: adds a shadow for better visibility */
+    z-index: 999; /* High z-index to be above all other content */
+    /* Removed properties related to full-screen display */
+}
+
+.mobile-nav.show {
+    display: block; /* Show the menu */
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px; /* Adjust as needed */
+    right: 10px; /* Adjust as needed */
+    font-size: 24px; /* Adjust size as needed */
+    color: #000; /* Color of the 'X' icon */
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+
+.close-btn i {
+    color: inherit; /* Icon inherits the color of the button */
+}
+/* Show the navigation menu when hamburger is clicked */
+.mobile-nav.show {
+    display: block; /* Show the overlay */
+}
+
+/* Style for each link in the expanded mobile menu */
+.mobile-nav a {
+    text-align: left; /* Align text to the left */
+    padding: 10px 20px; /* Adjust padding */
+    color: var(--text-color); /* Adjust text color */
+    text-decoration: none; /* Remove underline */
+    border-bottom: 1px solid #e1e1e1; /* Adjust border color */
+    font-size: 1em; /* Adjust font size */
+}
+
+/* Hover effect for links */
+.mobile-nav a:hover {
+    background-color: #f5f5f5; /* Adjust hover background color */
+}
+
+/* Style for quote buttons */
+.favorite-button {
+    border: none;
+    color: var(--text-color); /* Adjust the color */
+    background-color: transparent; /* Or any color */
+    cursor: pointer; /* Cursor changes to pointer to indicate it's clickable */
+    font-size: 16px; /* Adjust font size as needed */
+    display: flex; /* To align icon and text */
+    align-items: center; /* Center items vertically */
+    justify-content: center; /* Center items horizontally */
+    /* Other styles... */
+}
+
+.favorite-button i {
+    margin-right: 5px; /* Space between icon and text */
+    transition: color 0.3s; /* Smooth transition for color change */
+}
+
+.favorite-button:hover i {
+    color: #darker-color; /* Replace with the darker color you want */
+}
+
+.favorite-active {
+    color: red; /* Change color to red */
+}
+
+
+.share-popup {
+/* Initially hidden */
+    display: none;
+    position: absolute; /* Positioning related to its relative parent */
+    background-color: #fff; /* Background color */
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Dropdown shadow */
+    z-index: 1; /* Ensure it's above other content */
+    width: 100%; /* Full width */
+    text-align: left; /* Align text to the left */
+}
+
+.share-popup p {
+    padding: 10px 20px; /* Consistent padding with mobile nav links */
+    margin: 0; /* Remove default margin */
+    border-bottom: 1px solid #e1e1e1; /* Add border for separation */
+}
+
+.share-popup input {
+    padding: 10px 20px; /* Input field padding */
+    border: none; /* Remove border */
+    width: calc(100% - 40px); /* Adjust width to account for padding */
+    display: block; /* Ensure it takes full width */
+}
+
+.share-popup button {
+    display: block; /* Ensure it's visible and takes full width */
+    width: 100%; /* Full width for consistency */
+    padding: 10px 20px; /* Adjust padding */
+    text-align: left; /* Align text to the left */
+    background-color: transparent; /* Transparent background */
+    border: none; /* Remove border */
+    color: var(--text-color); /* Adjust text color */
+    font-size: 1em; /* Adjust font size */
+}
+
+
+
+.dropdown-content {
+    max-height: 200px; /* Adjust based on your needs */
+    overflow-y: auto; /* Allows scrolling but does not explicitly show the scrollbar */
+
+    /* Hide scrollbar for Internet Explorer, Edge, and Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+
+    /* Hide scrollbar for Chrome, Safari, Opera */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.dropdown-content button {
+    padding: 10px;
+    width: 100%; /* Full width */
+    border: none;
+    background-color: #f9f9f9; /* Slightly different background for button */
+    text-align: center;
+}
+
+
+
+.add-to-collection-dropdown .flex-container {
+    display: flex; /* This will align children (button and message) inline */
+    align-items: center; /* Aligns items vertically in the center */
+}
+
+/* Update your .dropdown-content related styles if needed */
+.add-to-collection-dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    max-height: 200px;
+    overflow-y: auto;
+    width: auto; /* You may need to adjust this if it doesn't position as expected */
+    border-radius: 5px;
+    margin-top: 5px; /* Adjust if necessary */
+}
+
+.message-placeholder {
+    margin-left: 8px;
+    display: none;
+/* Adjust as needed */
+}
+
+.add-success {
+    border: 2px solid black; /* Adds a solid black border */
+    border-radius: 4px; /* Adjusts corners to be slightly rounded */
+    color: black; /* Keeps the icon color as black */
+    display: flex; /* To center the icon inside the button */
+    justify-content: center; /* Centers the child horizontally */
+    align-items: center; /* Centers the child vertically */
+    width: 30px; /* Sets the width of the square */
+    height: 30px; /* Sets the height of the square to match the width */
+}
+
+.bold-collection {
+    font-weight: bold; /* Makes the text bold */
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  border-radius: 5px; /* Optional: for rounded corners */
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+
+
+
+
+
+
+.quote-content p {
+    font-size: 35px;
+    line-height: 1.5;
+     /* Example: Adjust line height for better readability */
+}
 
 
 /* Style for the dropdown inside the .quote-actions */
@@ -302,14 +1032,32 @@ button:hover, input[type="submit"]:hover {
     font-size: 10px;
 }
 
-
-/* Style for the dropdown content */
-.dropdown-content {
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-    z-index: 1;
-    display: inline-block;
-    margin-left: 10px;
+.page-container {
+    max-width: 1200px; /* Adjust based on your design */
+    margin: 0 auto; /* Center the container */
+    padding: 50px;
 }
+
+.content-flex-container {
+    display: flex;
+    align-items: flex-start; /* Align items at the top */
+}
+
+.author-quotes-page .quotes-container {
+    /* Styling for the container that holds all quote cards */
+    flex-grow: 1; /* Take up remaining space */
+    margin-left: 20px; /* Space between image and quotes */
+}
+
+
+
+
+
+
+
+/* Ensure these styles are correctly applied within the context of .author-quotes-page to only affect the author quotes template */
+
+
 
 .quote-container {
     border: 1px solid #ccc;
@@ -519,20 +1267,6 @@ button:hover, input[type="submit"]:hover {
 
 
 
-/* User Details Styling */
-.user-details {
-    padding: 15px; /* Padding inside the user-details box */
-    border: 1px solid #FFFFFF; /* White border around the user-details box */
-    border-radius: 5px; /* Rounded corners for the user-details box */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
-    margin-bottom: 20px; /* Adds space below the user details section */
-}
-
-/* Grey background for the user-details */
-.user-details p {
-    font-size: 1.1em; /* Slightly larger font for user details */
-    margin-bottom: 10px; /* Space between user details items */
-}
 
 /* Action Buttons Styling */
 ul {
@@ -546,45 +1280,14 @@ ul li {
     flex: 1; /* Each list item will take up equal space */
 }
 
-ul li a {
-    display: block; /* Allows you to style the full area of the link */
-    text-align: center; /* Center the text inside the link */
-    padding: 10px; /* Space inside the button */
-    border-radius: 5px; /* Rounded corners for buttons */
-    transition: background-color 0.2s;
-    color: #FFFFFF;/* Smooth background color transition for hover effects */
-    font-weight: bold;
-}
-
-ul li a:hover {
-    background-color: #5f6368; /* Darker grey background on hover */
-    color: #FFFFFF; /* White text on hover */
-}
-
-/* Logout Button Styling (if you want it to stand out) */
-ul li a[href="{{ url_for('logout') }}"] {
-    background-color: #FF4C4C; /* Red background color for logout */
-    color: #FFFFFF; /* White text color for logout */
-}
-
-ul li a[href="{{ url_for('logout') }}"]:hover {
-    background-color: #CC0000; /* Darker red on hover for logout */
-}
 
 
-/* CSS for author images */
-.author-image {
-    width: 200px; /* Fixed width */
-    height: auto; /* Height adjusts to maintain aspect ratio */
-    display: block; /* Ensures the image takes up the full width defined */ /* Centers the image if it's in a block element */
+/* Existing styles for desktop ... */
 
-}
+/* Existing desktop styles... */
+
+/* Existing desktop styles... */
 
 
-
-/* author name for index.html */
-.author-name {
-    font-weight: bold;
-    font-size: 1.2em;
-}
-
+/* Mobile and Tablet styles */
+/* ... [Existing CSS] ... */

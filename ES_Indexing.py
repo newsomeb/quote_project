@@ -1,107 +1,163 @@
-from datetime import datetime
-from elasticsearch import Elasticsearch
-from sqlalchemy import create_engine
+import time
+import logging
+from elasticsearch import Elasticsearch, helpers
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-from models import Quote, Collection  # Import the models
+from models import Quote, Collection
+from elasticsearch.helpers import bulk
+
+import logging
+
+# Set up logging to file
+logging.basicConfig(filename='es_indexing.log',
+                    filemode='a',  # Append mode, so logs are added to the file
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)  # Set the logging level
+
+# Test logging
+logging.info("Starting the Elasticsearch indexing process")
+
+# Disable urllib3 warnings
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
 # Function to create Elasticsearch index
 def create_es_index(es_client, index_name, index_mappings):
-    es_client.indices.create(index=index_name, body=index_mappings, ignore=400)
+    try:
+        if not es_client.indices.exists(index=index_name):
+            es_client.indices.create(index=index_name, body=index_mappings)
+            logging.info(f"Created Elasticsearch index: {index_name}")
+    except Exception as e:
+        logging.error(f"Error creating Elasticsearch index {index_name}: {e}")
 
+# Function to index quotes in batches
+# Function to index quotes individually
+# Function to index quotes individually with null value handling
+def index_quotes(es_client, session, batch_size=100):
+    try:
+        total_quotes = session.query(func.count(Quote.id)).scalar()
+        for offset in range(0, total_quotes, batch_size):
+            batch = session.query(
+                Quote.id, Quote.quote, Quote.author, Quote.summary
+            ).order_by(Quote.id).limit(batch_size).offset(offset).all()
 
-# Function to index quotes
-def index_quotes(es_client, session):
-    quotes_data = session.query(
-        Quote.id, Quote.quote, Quote.author, Quote.summary
-    ).all()
-
-    for quote_id, quote_text, author, summary in quotes_data:
-        try:
-            doc = {
-                'quote': quote_text,
-                'author': author,
-                'summary': summary,
-                'suggest': {
-                    'input': [quote_text, author, summary]  # Including summary for autocomplete
+            for quote in batch:
+                doc = {
+                    'quote': quote.quote,
+                    'author': quote.author,
+                    'summary': quote.summary,
+                    'suggest': {
+                        'input': list(filter(None, [quote.quote, quote.author, quote.summary]))
+                    }
                 }
-            }
-            es_client.index(index='quotes', id=quote_id, document=doc)
-            print(f"Indexed quote ID {quote_id}")
-        except Exception as e:
-            print(f"Error indexing quote ID {quote_id}: {e}")
+
+                try:
+                    es_client.index(index='quotes', id=quote.id, document=doc)
+                    logging.info(f"Indexed quote ID {quote.id}")
+                except Exception as e:
+                    logging.error(f"Error indexing quote ID {quote.id}: {e}")
+    except Exception as e:
+        logging.error(f"Error during bulk indexing: {e}")
 
 
-# Function to index collections
-def index_collections(es_client, session):
-    collections_data = session.query(Collection).all()
+# Function to index collections in batches with enhanced error logging
+def index_collections(es_client, session, batch_size=100):
+    try:
+        total_collections = session.query(func.count(Collection.id)).scalar()
+        for offset in range(0, total_collections, batch_size):
+            batch = session.query(Collection).order_by(Collection.id).limit(batch_size).offset(offset).all()
+            actions = [
+                {
+                    "_index": "collections",
+                    "_id": collection.id,
+                    "_source": {
+                        'name': collection.name,
+                        'description': collection.description,
+                        'public': collection.public
+                    }
+                } for collection in batch
+            ]
 
-    for collection in collections_data:
-        try:
-            collection_doc = {
-                'name': collection.name,
-                'description': collection.description,
-                'public': collection.public
-                # Add other fields as necessary
-            }
-            es_client.index(index='collections', id=collection.id, document=collection_doc)
-            print(f"Indexed collection ID {collection.id}")
-        except Exception as e:
-            print(f"Error indexing collection ID {collection.id}: {e}")
+            resp = helpers.bulk(es_client, actions, stats_only=False)
+            success, failed = resp[0], resp[1]
 
+            # Log details of failed documents
+            for failure in failed:
+                logging.error(f"Bulk index failure for collection ID {failure['_id']}: {failure['error']}")
+
+            logging.info(f"Indexed collections batch: {offset}-{offset+batch_size}. Success: {success}, Failed: {len(failed)}")
+            time.sleep(1)
+    except Exception as e:
+        logging.error(f"Error indexing collections: {e}")
 
 def main():
-    # Elasticsearch client configuration
-    es_client = Elasticsearch(
-        "https://localhost:9200",
-        basic_auth=("elastic", "J0*lP_fjAlRJx9dL0EOk"),
-        verify_certs=False
-    )
+    try:
+        # Elasticsearch client configuration
+        # PRODUCTION
+        # es_client = Elasticsearch(
+        #    ["http://167.71.169.219:9200"],
+        #    http_auth=("elastic", "Pooppoop"),
+        #    verify_certs=False
+        # )
 
-    # Define index mappings for quotes
-    quote_index_mappings = {
-        "settings": { ... },  # Add your settings (analysis etc.)
-        "mappings": {
-            "properties": {
-                "quote": {"type": "text"},
-                "author": {"type": "keyword"},
-                "summary": {"type": "text"},
-                "suggest": {"type": "completion"}  # For autocomplete
+        # LOCAL
+        es_client = Elasticsearch(
+            ["http://localhost:9200"],
+            verify_certs=False
+        )
+
+        # Define index mappings
+        # Define index mappings for quotes and collections (replace with your mappings)
+        quote_index_mappings = {
+            "mappings": {
+                "properties": {
+                    "quote": {"type": "text"},
+                    "author": {"type": "text"},
+                    "summary": {"type": "text"},
+                    "suggest": {"type": "completion"}
+                }
             }
         }
-    }
 
-    # Define index mappings for collections
-    collection_index_mappings = {
-        "settings": { ... },  # Add your settings
-        "mappings": {
-            "properties": {
-                "name": {"type": "text"},
-                "description": {"type": "text"},
-                "public": {"type": "boolean"}  # Boolean field for public/private
+        collection_index_mappings = {
+            "mappings": {
+                "properties": {
+                    "name": {"type": "text"},
+                    "description": {"type": "text"},
+                    "public": {"type": "boolean"}
+                }
             }
         }
-    }
 
-    # Create Elasticsearch indices
-    create_es_index(es_client, 'quotes', quote_index_mappings)
-    create_es_index(es_client, 'collections', collection_index_mappings)
+        # Database connection and session management
+        # PRODUCTIONDATABASE_URI = 'sqlite:////home/tripleyeti/quote_project/create_quote_db_clean_data/quotes_cleaned.db'
+        # LOCAL
+        DATABASE_URI = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
+        engine = create_engine(DATABASE_URI)
+        Session = sessionmaker(bind=engine)
+        session = Session()
 
-    # Database connection and session management
-    DATABASE_URI = 'sqlite:////home/tripleyeti/quote_project/create_quote_db_clean_data/quotes_cleaned.db'
-    engine = create_engine(DATABASE_URI)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+        # Create Elasticsearch indices
+        create_es_index(es_client, 'quotes', quote_index_mappings)
+        create_es_index(es_client, 'collections', collection_index_mappings)
 
-    # Index quotes and collections
-    index_quotes(es_client, session)
-    index_collections(es_client, session)
+        # Query for total quotes and collections
+        total_quotes = session.query(func.count(Quote.id)).scalar()
+        total_collections = session.query(func.count(Collection.id)).scalar()
 
-    # Close the session
-    session.close()
+        # Print the total counts
+        print(f"Total Quotes: {total_quotes}")
+        print(f"Total Collections: {total_collections}")
 
+        # Index data in batches
+        index_quotes(es_client, session)
+        index_collections(es_client, session)
+
+        session.close()
+
+    except Exception as e:
+        logging.error(f"Error in main function: {e}")
 
 if __name__ == "__main__":
     main()
+

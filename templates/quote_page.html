@@ -1,100 +1,325 @@
-
-
-    <!-- Displaying the individual quote -->
 {% extends "base.html" %}
 
 {% block content %}
-
+<div class="container">
     <!-- Displaying the individual quote -->
-    <div class="quote-container">
-        <div class="quote-card">
-            <!-- Display the author image if available -->
-            {% if author_image_url %}
-                <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}" alt="{{ quote.author }}" class="author-image"/>
+    <div class="quote-card" data-quote-id="{{ quote.id }}">
+        <!-- Flex Container for Quote -->
+        <div class="quote-flex-container">
+
+            <!-- Conditional Displaying Author Image -->
+            {% if quote.image_url %}
+            <div class="author-image-container">
+                <img src="{{ url_for('static', filename='author_images/' + quote.image_url) }}" alt="{{ quote.author }}" class="author-image"/>
+            </div>
             {% endif %}
 
-            <!-- Display the quote -->
-            <p class="quote">{{ quote.quote }}</p>
-
-            <!-- Display the author and link to their quotes page -->
-            <p class="author"><a href="{{ url_for('author_quotes', author=quote.author) }}">{{ quote.author }}</a></p>
-
-
-
-            <!-- Quote Actions -->
-            <div class="quote-actions">
-                <!-- Favorite Button -->
-                <button class="favorite-button" onclick="toggleFavorite({{ quote.id }}, this)">Favorite</button>
-                <p class="error-message" style="display: none; color: red;"></p>
-
-                <!-- Share Button -->
-                <button class="share-button" onclick="showSharePopup('http://thinkexist.net/quote_detail/{{ quote.id }}', this)">Share</button>
-                <div class="share-popup" style="display: none;">
-                    <p>Share this quote:</p>
-                    <input type="text" value="http://thinkexist.net/quote_detail/{{ quote.id }}" readonly>
-                    <button onclick="copyToClipboard(this)">Copy</button>
-                    <button onclick="closeSharePopup(this)">Close</button>
+            <!-- Container for Quote Content, Actions, and Author Name -->
+            <div class="quote-content-actions">
+                <!-- Displaying Quote Content -->
+                <div class="quote-content">
+                    <p>{{ quote.quote }}</p>
                 </div>
 
-                <!-- Add to Collection Form -->
-                <form action="{{ url_for('collections.add_to_collection') }}" method="POST">
-                    <select name="collection_id">
-                        {% for collection in current_user.collections %}
-                            <option value="{{ collection.id }}">{{ collection.name }}</option>
-                        {% endfor %}
-                        <option value="new">Create New Collection</option>
-                    </select>
-                    <input type="hidden" name="quote_id" value="{{ quote.id }}">
-                    <input type="submit" value="Add to Collection">
-                </form>
-            </div>
-        </div>
+                <!-- Container for Quote Actions and Author Name -->
+                <div class="quote-details">
+                    <!-- Quote Actions -->
+                    <div class="quote-actions">
+                        <!-- Favorite Button -->
+                        <button class="favorite-button" onclick="toggleFavorite({{ quote.id }}, this)">
+                            <i class="fa-regular fa-heart"></i> <!-- Adjust icon as per your CSS library -->
+                        </button>
+                        <p class="error-message" style="display: none; color: red;"></p>
+
+                        <!-- Share Button -->
+                        <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="http://thinkexist.net/quote_detail/{{ quote.id }}">
+                            <i class="fa-solid fa-share"></i> <!-- Adjust icon as per your CSS library -->
+                        </button>
+
+                        <!-- Share Popup -->
+                        <div class="share-popup" style="display: none;">
+                            <p>Share this quote:</p>
+                            <input type="text" value="http://thinkexist.net/quote_detail/{{ quote.id }}" readonly>
+                            <button onclick="copyToClipboard(this.previousElementSibling); event.preventDefault();" type="button">Copy</button>
+                        </div>
+
+                        <!-- Add to Collection Dropdown, adjusted to match your requirements -->
+                        <div class="add-to-collection-dropdown">
+                            <button type="button" class="plus-button" data-quote-id="{{ quote.id }}" onclick="toggleCollectionDropdown(this)">
+                                <i class="fa-solid fa-plus"></i> <!-- Plus icon -->
+                            </button>
+                            <div class="dropdown-content" style="display: none;">
+                                {% for collection in current_user.collections %}
+                                <button onclick="addToCollection('{{ collection.id }}', '{{ quote.id }}', this.parentElement.previousElementSibling)">
+                                    {{ collection.name }}
+                                </button>
+                                {% endfor %}
+                                <button class="create-new-collection-btn" data-quote-id="{{ quote.id }}">Create New Collection</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Author Name -->
+                    <p class="author-name">
+                        <a href="{{ url_for('author_quotes', author=quote.author) }}">
+                            {{ quote.author }}
+                        </a>
+                    </p>
+                </div> <!-- End of quote-details -->
+            </div> <!-- End of quote-content-actions -->
+        </div> <!-- End of quote-flex-container -->
     </div>
+</div>
+{% endblock %}
 
-        <script>
-        function toggleFavorite(quoteId, buttonElement) {
-            fetch(`/toggle_favorite/${quoteId}`, { method: 'POST' })
-            .then(response => {
-                if (response.ok) {
-            // Update UI to reflect favorite status change
-                } else if (response.status === 401) { // 401 status code for Unauthorized
-            // Find the next sibling element with the class 'error-message' and display the error
-                    buttonElement.nextElementSibling.textContent = 'Must be logged in to favorite quotes';
-                    buttonElement.nextElementSibling.style.display = 'block';
-                } else {
-                    buttonElement.nextElementSibling.textContent = 'Must be logged in to favorite quotes';
-                    buttonElement.nextElementSibling.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                buttonElement.nextElementSibling.textContent = 'An error occurred.';
-                buttonElement.nextElementSibling.style.display = 'block';
+
+    <script>
+
+        // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select all elements with the class 'quote-content'
+        var quotes = document.querySelectorAll('.quote-content');
+
+        // Add click event listener to each quote
+        quotes.forEach(function(quote) {
+            quote.addEventListener('click', function() {
+                // Toggle the 'expanded' class on click
+                this.classList.toggle('expanded');
             });
-        }
+        });
+    });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    function toggleFavorite(quoteId, buttonElement) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`/add_to_favorites/${quoteId}`, {
+            method: 'POST',
+            credentials: 'include', // Ensure cookies for session are included
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken // Include CSRF token in request headers
+            },
+            body: JSON.stringify({}) // You may or may not need to send a body depending on your backend requirements
+        })
+        .then(response => {
+            if (response.ok && response.headers.get("Content-Type").includes("application/json")) {
+                return response.json(); // Proceed if the response is JSON
+            } else if (response.status === 401 || !response.headers.get("Content-Type").includes("application/json")) {
+                // Handle unauthenticated user or unexpected content type
+                throw new Error('You must be logged in to favorite');
+            }
+        })
+        .then(data => {
+            // Handle success
+            console.log('Success:', data);
+            buttonElement.classList.add('favorite-active');
+            buttonElement.querySelector('i').classList.replace('fa-regular', 'fa-solid');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Show error message to user
+            const errorMessageElement = buttonElement.nextElementSibling;
+            if (errorMessageElement) {
+                errorMessageElement.textContent = error.message; // Use the actual error message
+                errorMessageElement.style.display = 'block';
+            }
+        });
+    }
 
 
-        // Function to share quote
-        function showSharePopup(shareUrl, buttonElement) {
-            let popup = buttonElement.nextElementSibling;
-            popup.style.display = 'block';
+
+
+
+
+
+    function copyToClipboard(inputElement) {
+        // Prevent any default action triggered by the button click, if not already handled
+        event.preventDefault();
+
+        // Use the Clipboard API to copy the text from the input field
+        navigator.clipboard.writeText(inputElement.value).then(() => {
+            alert('Link copied to clipboard'); // Success feedback
+        }).catch(err => {
+            console.error('Could not copy text:', err); // Error feedback
+        });
+    }
+
+
+    function toggleCollectionDropdown(element) {
+        var dropdownContent = element.nextElementSibling;
+        dropdownContent.style.display = dropdownContent.style.display === "none" ? "block" : "none";
+    }
+
+
+    function toggleSharePopup(buttonElement) {
+        // Assuming .quote-actions is the parent of the button
+        let quoteActions = buttonElement.closest('.quote-actions');
+
+        let popup = buttonElement.nextElementSibling;
+        popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+
+        if (popup.style.display === 'block') {
             let inputField = popup.querySelector('input');
-            inputField.value = shareUrl;
+            inputField.value = buttonElement.getAttribute('data-share-url');
             inputField.select();
-        }
 
-        function closeSharePopup(buttonElement) {
-            let popup = buttonElement.parentElement;
-            popup.style.display = 'none';
+            // Get the computed style of the .quote-actions to include margins if any
+            let quoteActionsStyle = window.getComputedStyle(quoteActions);
+
+            // Calculate the total height including margins
+            let quoteActionsHeight = quoteActions.offsetHeight +
+                                     parseInt(quoteActionsStyle.marginTop) +
+                                     parseInt(quoteActionsStyle.marginBottom);
+
+            // Set the top property of the popup to this height
+            popup.style.top = quoteActionsHeight + 'px';
         }
+    }
 
 
-        function copyToClipboard(buttonElement) {
-            let inputField = buttonElement.parentElement.querySelector('input');
-            inputField.select();
-            document.execCommand('copy');
-            alert('Link copied to clipboard!'); // Or use a more subtle notification
+    function toggleCollectionList(buttonElement) {
+        let list = buttonElement.nextElementSibling;
+        list.style.display = list.style.display === "block" ? "none" : "block";
+    }
+
+    function addToCollection(collectionId, quoteId) {
+        // Prepare data to be sent in the request
+        const data = {
+            collection_id: collectionId,
+            quote_id: quoteId,
+        };
+
+        fetch('/path/to/add_to_collection_route', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Include CSRF token as header if needed
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            // Handle success, such as displaying a confirmation message
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            // Handle errors, such as displaying an error message
+        });
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var toggleButtons = document.querySelectorAll('.toggle-dropdown');
+
+        console.log("Found toggle buttons:", toggleButtons.length); // Debug: Check how many buttons are found
+
+        toggleButtons.forEach(function(button, index) {
+            console.log("Attaching listener to button", index); // Debug: Indicate which button is being processed
+            button.addEventListener('click', function() {
+                console.log("Button clicked", index); // Debug: Confirm button click is registered
+                var dropdownContent = this.nextElementSibling;
+                console.log("Dropdown content before toggle:", dropdownContent.style.display); // Debug: Check current display status
+                dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
+                console.log("Dropdown content after toggle:", dropdownContent.style.display); // Debug: Check display status after toggle
+            });
+        });
+    });
+
+    var csrf_token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    function addToCollection(collectionId, quoteId, plusButton) {
+        const data = {
+            collection_id: collectionId,
+            quote_id: quoteId,
+        };
+
+        fetch('/add_to_collection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrf_token
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Keep the border around the plus button for success indication
+                plusButton.classList.add('add-success');
+
+                // Bold the collection name in the dropdown
+                const dropdownContent = plusButton.nextElementSibling;
+                const collectionButtons = dropdownContent.querySelectorAll(`button[data-collection-id='${collectionId}']`);
+                collectionButtons.forEach(btn => {
+                    btn.classList.add('bold-collection'); // Ensure you have defined this class in your CSS
+                });
+            } else {
+                console.error('Failed to add the quote to the collection.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    function toggleCreateCollectionForm() {
+        var form = document.getElementById('create-collection-form');
+        if (form.style.display === "none" || !form.style.display) {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
         }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Bind click events to all "Create New Collection" buttons
+        document.querySelectorAll('.create-new-collection-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                // Use the data-quote-id attribute to target the specific modal for each quote
+                var quoteId = this.getAttribute('data-quote-id');
+                var modalId = 'createCollectionModal-' + quoteId;
+                var modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.style.display = "block";
+                }
+            });
+        });
+
+        // Close modal functionality
+        document.querySelectorAll('.close').forEach(function(span) {
+            span.addEventListener('click', function() {
+                this.closest('.modal').style.display = "none";
+            });
+        });
+
+        // Clicking outside to close modals
+        window.addEventListener('click', function(event) {
+            document.querySelectorAll('.modal').forEach(function(modal) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        });
+    });
+
+
+
     </script>
 <!-- JavaScript for the Favorite and Share buttons would be similar to what you have on the main page -->
 

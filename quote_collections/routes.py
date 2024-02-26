@@ -3,22 +3,34 @@ from flask_login import login_required, current_user
 from extensions import db
 from models import Collection, Quote, quote_collection
 from flask import Blueprint
+import logging
+from flask import jsonify
+from flask import request, jsonify, abort
+from flask_wtf import FlaskForm
+from wtforms import StringField, TextAreaField, SubmitField
+from wtforms.validators import DataRequired
 
 collections_bp = Blueprint('collections', __name__)
 
+class CollectionForm(FlaskForm):
+    name = StringField('Collection Name', validators=[DataRequired()])
+    description = TextAreaField('Description')
+    submit = SubmitField('Create')
 
 @collections_bp.route('/create_collection', methods=['GET', 'POST'])
 @login_required
 def create_collection():
+    form = CollectionForm()
     quote_id = request.args.get('quote_id')
-    existing_collections = Collection.query.filter_by(user_id=current_user.id).all()
 
-    if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        new_collection = Collection(name=name, description=description, user=current_user, public=True)
+    if form.validate_on_submit():
+        new_collection = Collection(
+            name=form.name.data,
+            description=form.description.data,
+            user=current_user,
+            public=True
+        )
 
-        # Associate quote with the new collection if quote_id is provided
         if quote_id:
             quote = Quote.query.get_or_404(quote_id)
             new_collection.quotes.append(quote)
@@ -29,7 +41,9 @@ def create_collection():
         flash('Collection created successfully!', 'success')
         return redirect(url_for('collections.my_collections'))
 
-    return render_template('create_collection.html', existing_collections=existing_collections)
+
+    existing_collections = Collection.query.filter_by(user_id=current_user.id).all()
+    return render_template('create_collection.html', form=form, existing_collections=existing_collections)
 
 
 @collections_bp.route('/my_collections')
@@ -47,33 +61,50 @@ def view_collection(collection_id):
     quotes_in_collection = Quote.query.join(quote_collection).filter(
         quote_collection.c.collection_id == collection_id).all()
 
-    return render_template('view_collection.html', collection=collection, quotes=quotes_in_collection)
+    form = CollectionForm()
+
+    return render_template('view_collection.html', collection=collection, quotes=quotes_in_collection, form=form,)
 
 
 @collections_bp.route('/add_to_collection', methods=['POST'])
 @login_required
 def add_to_collection():
-    quote_id = validate_id(request.form.get('quote_id'))
-    collection_id = request.form.get('collection_id')
+    data = request.get_json()
 
-    if collection_id == 'new':
-        return redirect(url_for('collections.create_collection', quote_id=quote_id))
+    if not data:
+        abort(400, description="Bad Request: No JSON data received.")
 
-    if not quote_id or not validate_collection_access(collection_id):
+    try:
+        quote_id = validate_id(data.get('quote_id'))
+        collection_id = data.get('collection_id')
+    except TypeError as e:
+        abort(400, description=f"Bad Request: {str(e)}")
+
+    logging.info(f"Adding quote_id {quote_id} to collection_id {collection_id}")
+
+    try:
+        if collection_id == 'new':
+            return redirect(url_for('collections.create_collection', quote_id=quote_id))
+
+        if not quote_id or not validate_collection_access(collection_id):
+            logging.warning(f"Invalid quote_id or collection_id: {quote_id}, {collection_id}")
+            return redirect(url_for('main.home'))
+
+        collection = get_collection(collection_id)
+        quote = Quote.query.get_or_404(quote_id)
+
+        collection.quotes.append(quote)
+        db.session.commit()
+        flash('Quote added to collection successfully!', 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Exception in add_to_collection: {str(e)}")
+        flash(f"Error adding quote to collection: {str(e)}", "danger")
         return redirect(url_for('main.home'))
 
     collection = get_collection(collection_id)
-    quote = Quote.query.get_or_404(quote_id)
-
-    collection.quotes.append(quote)
-    try:
-        db.session.commit()
-        flash('Quote added to collection successfully!', 'success')
-        return redirect(url_for('collections.view_collection', collection_id=collection.id))
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error adding quote to collection: {str(e)}", "danger")
-        return redirect(url_for('main.home'))
+    return jsonify({'success': True, 'message': f"Added to '{collection.name}'"}), 200
 
 
 @collections_bp.route('/delete_collection/<int:collection_id>', methods=['POST'])
@@ -171,19 +202,37 @@ def validate_collection_access(collection_id):
 def get_collection(collection_id):
     return current_user.collections.first() if collection_id == 0 else Collection.query.get(collection_id)
 
-@collections_bp.route('/add_to_favorites/<int:quote_id>', methods=['POST'])
+
+@collections_bp.route('/add_to_favorites/<string:quote_id>', methods=['POST'])
 @login_required
 def add_to_favorites(quote_id):
-    quote = Quote.query.get_or_404(quote_id)
-    favorites = Collection.query.filter_by(user_id=current_user.id, is_favorite=True).first()
+    logging.info(f"Adding quote_id {quote_id} to favorites")
 
-    if quote not in favorites.quotes:
-        favorites.quotes.append(quote)
-        try:
+    try:
+        quote = Quote.query.get_or_404(quote_id)
+        favorites = Collection.query.filter_by(user_id=current_user.id, is_favorite=True).first()
+
+        # Create a new favorites collection if it doesn't exist
+        if not favorites:
+            favorites_description = f"{current_user.username}'s Favorites"
+            favorites = Collection(name="Favorites", description=favorites_description, user_id=current_user.id, is_favorite=True)
+            db.session.add(favorites)
+            db.session.commit()
+            logging.info(f"Created new favorites collection for user {current_user.id}")
+
+        if quote in favorites.quotes:
+            flash('Quote is already in Favorites', 'info')
+        else:
+            favorites.quotes.append(quote)
             db.session.commit()
             flash('Quote added to Favorites successfully!', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Error adding quote to Favorites: {str(e)}", "danger")
+            logging.info(f"Quote with ID {quote_id} added to favorites for user {current_user.id}")
 
-    return redirect(url_for('collections.view_collection', collection_id=favorites.id))
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Exception in add_to_favorites for quote ID {quote_id}: {str(e)}")
+        flash(f"Error adding quote to Favorites: {str(e)}", "danger")
+        return redirect(url_for('main.home'))
+
+    return jsonify({'message': 'Quote added to Favorites successfully!'}), 200
+

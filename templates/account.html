@@ -1,62 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <!-- Main container for account information -->
-    <div class="account-container">
+<div class="content"> <!-- Changed from "account-container" to "content" -->
+    {% if current_user.is_authenticated %}
         <h1>My Account</h1>
-
-        <!-- Block for authenticated users -->
-        {% if current_user.is_authenticated %}
-            <div class="user-details">
-                <!-- Displaying user's details -->
-                <p><strong>Username:</strong> {{ current_user.username }}</p>
-                <p><strong>Email:</strong> {{ current_user.email }}</p>
-            </div>
-
-            <ul class="account-options">
-                <!-- Account management options for authenticated users -->
-                <li><a href="{{ url_for('change_password') }}">Change Password</a></li>
-                <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                <li>
-                    <a href="{{ url_for('delete_account') }}"
-                       onclick="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
-                        Delete Account
-                    </a>
-                </li>
-            </ul>
-        {% else %}
-            <!-- Registration form for non-authenticated users -->
-            <h2>Create an Account</h2>
-
-            <form method="post" action="{{ url_for('account') }}" class="account-form">
-                <!-- CSRF protection hidden tag -->
-                {{ registration_form.hidden_tag() }}
-
-                <!-- Username Input -->
-                <div class="form-group">
-                    {{ registration_form.username.label }}
-                    {{ registration_form.username(class="form-control") }}
-                </div>
-                <!-- Email Input -->
-                <div class="form-group">
-                    {{ registration_form.email.label }}
-                    {{ registration_form.email(class="form-control") }}
-                </div>
-                <!-- Password Input -->
-                <div class="form-group">
-                    {{ registration_form.password.label }}
-                    {{ registration_form.password(class="form-control") }}
-                </div>
-                <!-- Password Confirmation Input -->
-                <div class="form-group">
-                    {{ registration_form.confirm.label }}
-                    {{ registration_form.confirm(class="form-control") }}
-                </div>
-                <!-- Submit Button -->
-                <div class="form-group">
-                    {{ registration_form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
-        {% endif %}
-    </div>
+        <div class="user-details">
+            <p><strong>Username:</strong> {{ current_user.username }}</p>
+            <p><strong>Email:</strong> {{ current_user.email }}</p>
+        </div>
+        <ul class="account-options">
+            <li><a href="{{ url_for('change_password') }}">Change Password</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            <li>
+                <a href="{{ url_for('delete_account') }}"
+                   onclick="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+                    Delete Account
+                </a>
+            </li>
+        </ul>
+    {% else %}
+        <!-- Redirect non-authenticated users or show a message -->
+        <p>Please <a href="{{ url_for('login') }}">login</a> to view this page.</p>
+    {% endif %}
+</div>
 {% endblock %}
+

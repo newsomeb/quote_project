@@ -3,6 +3,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="content"> <!-- This div wraps the entire form and content, applying the .content styles -->
     <h1>Register</h1>
 
     <!-- Display flashed messages for registration errors -->
@@ -16,28 +17,31 @@
         {% endif %}
     {% endwith %}
 
+    <div class="register-page">
     <form method="post" action="{{ url_for('register') }}">
         {{ form.hidden_tag() }}
-        <div>
-            {{ form.username.label }}
+        <div class="form-group">
+            {{ form.username.label(class="form-label") }}
             {{ form.username(class="form-control") }}
         </div>
-        <div>
-            {{ form.email.label }}
+        <div class="form-group">
+            {{ form.email.label(class="form-label") }}
             {{ form.email(class="form-control") }}
         </div>
-        <div>
-            {{ form.password.label }}
+        <div class="form-group">
+            {{ form.password.label(class="form-label") }}
             {{ form.password(class="form-control") }}
         </div>
-        <div>
-            {{ form.confirm.label }}
+        <div class="form-group">
+            {{ form.confirm.label(class="form-label") }}
             {{ form.confirm(class="form-control") }}
         </div>
-        <div>
+        <div class="form-group">
             {{ form.submit(class="btn btn-primary") }}
         </div>
     </form>
+    </div>
+</div>
 {% endblock %}
 </html>
 

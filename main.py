@@ -35,6 +35,11 @@ import pytz
 from elasticsearch import Elasticsearch
 import logging
 import urllib3
+import random
+from flask_wtf.csrf import CSRFProtect
+from flask_wtf import FlaskForm
+from wtforms import StringField, TextAreaField, SubmitField
+from wtforms.validators import DataRequired
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -66,11 +71,25 @@ def create_app():
         'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/tripleyeti/quote_project/create_quote_db_clean_data/quotes_cleaned.db'
 
     # use this for local testing
-    #app.config[
-        #'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
+    # app.config[
+        # 'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
 
+    # Elasticsearch Configuration FOR LOCAL TESTING
     # Elasticsearch Configuration
+    # es_host = 'http://localhost:9200'
+    # es_username = 'elasticsearch'  # Replace with your Elasticsearch username
+    # es_password = 'J0*lP_fjAlRJx9dL0EOk'  # Replace with your Elasticsearch password
+
+    # app.es = Elasticsearch(
+        # [es_host],
+        # http_auth=(es_username, es_password)
+    # )
+
+    csrf = CSRFProtect(app)
+
+    # Elasticsearch Configuration FOR PRODUCTION
     es_host = os.environ.get('ES_HOST', 'http://167.71.169.219:9200')
+
     es_username = os.environ.get('ES_USERNAME')
     es_password = os.environ.get('ES_PASSWORD')
 
@@ -79,7 +98,6 @@ def create_app():
         http_auth=(es_username, es_password),
         verify_certs=False
     )
-
     db.init_app(app)
 
 
@@ -191,28 +209,32 @@ def get_monthly_keywords(date):
     return seasonal_keywords.get(month, [])
 
 
-
+class CollectionForm(FlaskForm):
+    name = StringField('Collection Name', validators=[DataRequired()])
+    description = TextAreaField('Description')
+    submit = SubmitField('Create')
 
 @app.route('/')
 @app.route('/<int:year>/<int:month>/<int:day>')
 def home(year=None, month=None, day=None):
     """
-    Implements the home functionality, displaying quotes related to authors' birthdays.
+    Implements the home functionality, displaying quotes related to authors' birthdays
+    and a random 'Quote of the Day' from a special collection.
     """
-    # Get the user's time zone from the session, defaulting to UTC
+    # Timezone handling
     user_timezone = session.get('user_timezone', 'UTC')
     timezone = pytz.timezone(user_timezone)
-
-    # Convert UTC now to user's local time
     utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
     local_now = utc_now.astimezone(timezone)
+
 
     # Determine the date for birthday quotes
     today = local_now.date() if year is None or month is None or day is None else datetime(year, month, day).date()
 
+    form = CollectionForm()
     # Fetch birthday quotes for the day
     authors_birthday_today = (
-        Quote.query
+        db.session.query(Quote)
         .with_entities(Quote.author, func.strftime('%Y-%m-%d', Quote.birthday),
                        func.strftime('%Y-%m-%d', Quote.deathday), Quote.image_url)
         .filter(extract('month', Quote.birthday) == today.month,
@@ -222,18 +244,43 @@ def home(year=None, month=None, day=None):
         .all()
     )
 
-    # Prepare data for the template
-    birthday_quotes_data = [{
-        'quote': Quote.query.filter_by(author=author).order_by(func.random()).first(),
-        'birthday': datetime.strptime(birthday, '%Y-%m-%d') if birthday else None,
-        'deathday': datetime.strptime(deathday, '%Y-%m-%d') if deathday else None,
-        'author_image_url': author_image_url,
-    } for author, birthday, deathday, author_image_url in authors_birthday_today if
-        Quote.query.filter_by(author=author).first()]
+    # Debug: Print fetched authors and their birthdays
+    for author, birthday, deathday, _ in authors_birthday_today:
+        print(f"Author: {author}, Birthday: {birthday}, Deathday: {deathday}")
 
-    # Calculate yesterday and tomorrow dates relative to today
+    # Prepare data for the template
+    birthday_quotes_data = []
+    for author, birthday, deathday, author_image_url in authors_birthday_today:
+        # Attempt to parse the birthday and deathday if not None and is a string
+        try:
+            birthday_parsed = datetime.strptime(birthday, '%Y-%m-%d') if birthday else None
+            deathday_parsed = datetime.strptime(deathday, '%Y-%m-%d') if deathday else None
+        except ValueError as e:
+            print(f"Error parsing date for author {author}: {e}")
+            birthday_parsed = None
+            deathday_parsed = None
+
+        quote = Quote.query.filter_by(author=author).order_by(func.random()).first()
+        birthday_quotes_data.append({
+            'quote': quote,
+            'birthday': birthday_parsed,
+            'deathday': deathday_parsed,
+            'author_image_url': author_image_url,
+        })
+
+    # Calculate yesterday and tomorrow dates
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
+
+    # Fetch 'Quote of the Day' from the special collection
+    quote_of_the_day_collection = Collection.query.filter_by(name="Quote of the Day").first()
+    if quote_of_the_day_collection:
+        day_seed = datetime.now().strftime("%Y%m%d")
+        random.seed(day_seed)
+        quotes = quote_of_the_day_collection.quotes
+        quote_of_the_day = random.choice(quotes) if quotes else None
+    else:
+        quote_of_the_day = None
 
     # Render the template with the prepared data
     return render_template(
@@ -243,8 +290,10 @@ def home(year=None, month=None, day=None):
         yesterday=yesterday,
         tomorrow=tomorrow,
         is_today=today == local_now.date(),
+        quote_of_the_day=quote_of_the_day,
+        form=form,
+        quote = quote,
     )
-
 
 @app.route('/authors/', methods=['GET', 'POST'])
 def authors():
@@ -304,14 +353,31 @@ def author_quotes(author):
     pagination = Quote.query.filter_by(author=author).paginate(page=page, per_page=20)
     quotes = pagination.items
 
+    # Adapt data structure for the template
+    quotes_data = [{'quote': quote} for quote in quotes]
+
+    form = CollectionForm()
+
+    # Assuming you have a way to access the current user's collections.
+    # If not, you'll need to adjust this part.
+    # For users not logged in, you should handle it appropriately, possibly by setting collections to None or [].
+    try:
+        collections = current_user.collections
+    except AttributeError:
+        collections = []  # Or handle appropriately for non-logged-in users
+
     # Fetch the author's image URL directly from the first quote (assuming they are the same for all quotes by the author)
-    if quotes:
-        author_image_url = quotes[0].image_url
-    else:
-        author_image_url = None
+    author_image_url = quotes[0].image_url if quotes else None
 
-    return render_template('author_quotes.html', quotes=quotes, author=author, author_image_url=author_image_url, pagination=pagination)
-
+    return render_template(
+        'author_quotes.html',
+        quotes_data=quotes_data,
+        author=author,
+        author_image_url=author_image_url,
+        pagination=pagination,
+        form=form,  # Pass the form object here
+        current_user_collections=collections  # Assuming 'collections' is defined in your route
+    )
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -534,15 +600,15 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
 
         if not user:
-            flash('No account found with that username.', 'danger')
+            flash('No account found with that username.', 'login_error')
             return render_template('login.html', title='Login', form=form)
 
         if user.lockout_until and datetime.utcnow() < user.lockout_until:
-            flash('Account locked due to multiple failed login attempts. Try again later.', 'danger')
+            flash('Account locked due to multiple failed login attempts. Try again later.', 'login_error')
             return redirect(url_for('login'))
 
         if not user.email_confirmed:
-            flash('Please confirm your email before logging in.', 'warning')
+            flash('Please confirm your email before logging in.', 'login_error')
             return redirect(url_for('login'))
 
         if bcrypt.check_password_hash(user.password, form.password.data):
@@ -556,9 +622,10 @@ def login():
             if user.failed_login_attempts >= 5:  # adjust the threshold as needed
                 user.lockout_until = datetime.utcnow() + timedelta(minutes=30)  # lockout for 30 minutes
             db.session.commit()
-            flash('Login unsuccessful. Please check username and password.', 'danger')
+            flash('Login unsuccessful. Please check username and password.', 'login_error')
 
     return render_template('login.html', title='Login', form=form)
+
 
 
 
@@ -857,12 +924,26 @@ def es_search():
 
     # Simple pagination object with a custom iter_pages method
     class Pagination:
-        def __init__(self, page, total_pages):
+        def __init__(self, page, total_pages, display_pages=5):
             self.page = page
             self.total_pages = total_pages
+            self.display_pages = display_pages
 
         def iter_pages(self):
-            return range(1, self.total_pages + 1)
+            left_edge = 2  # Always show first 2 pages
+            right_edge = 2  # Always show last 2 pages
+            left_current = 2  # Number of pages to show to the left of the current page
+            right_current = 2  # Number of pages to show to the right of the current page
+            last = 0
+
+            for num in range(1, self.total_pages + 1):
+                if num <= left_edge or \
+                        (self.page - left_current <= num <= self.page + right_current) or \
+                        num > self.total_pages - right_edge:
+                    if last + 1 != num:
+                        yield None  # Insert ellipsis
+                    yield num
+                    last = num
 
     pagination = Pagination(page, total_pages)
 
@@ -917,7 +998,7 @@ def collections_search():
         "query": {
             "multi_match": {
                 "query": query,
-                "fields": ["name", "description"]  # fields in your collections index
+                "fields": ["name", "description"]
             }
         },
         "from": offset,
@@ -938,14 +1019,26 @@ def collections_search():
     total_collections = response['hits']['total']['value']
     total_pages = (total_collections + PER_PAGE - 1) // PER_PAGE
 
-    # Pagination and rendering logic (similar to es_search)
+    # Simple pagination object with a custom iter_pages method
+    class Pagination:
+        def __init__(self, page, total_pages):
+            self.page = page
+            self.total_pages = total_pages
+
+        def iter_pages(self):
+            return range(1, self.total_pages + 1)
+
+    pagination = Pagination(page, total_pages)
 
     return render_template(
-        'collections_search_results.html',  # You'll need to create this template
+        'collections_search_results.html',
         collections=matching_collections,
         query=query,
-        pagination=pagination
+        page=page,
+        pagination=pagination,
+        total_pages=total_pages
     )
+
 
 
 @app.route('/quote/<int:quote_id>')
@@ -972,4 +1065,4 @@ def quote_detail(quote_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=8000, debug=True)

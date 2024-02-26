@@ -1,28 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
+    <!-- Metadata and External Resources -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZX3J9GXNFF"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
         gtag('config', 'G-ZX3J9GXNFF');
     </script>
-
-    <!-- Linking the stylesheet for the page -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-
-    <!-- Static page title for every page -->
     <title>Think Exist</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-
 <body>
-    <!-- Navigation Bar -->
-    <div class="navbar">
-        <!-- Navigation Links -->
-        <a href="{{ url_for('home') }}">Home</a>
+    <!-- Navigation Container -->
+    <div class="navbar-container">
+        <!-- Hamburger Button (Visible in Mobile) -->
+        <button class="hamburger" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- The Quote Archive Button (Visible in Mobile) -->
+        <a href="{{ url_for('home') }}" class="quote-archive-button mobile-quote-archive-button">The Quote Archive</a>
+
+        <!-- Login Button (Visible in Mobile) -->
+        <a href="{{ url_for('account') }}" class="login-button mobile-login-button">
+            {% if current_user.is_authenticated %}
+                {{ current_user.username }}
+            {% else %}
+                Login
+            {% endif %}
+        </a>
+
+        <!-- Navigation Bar (Desktop) -->
+        <div class="navbar" id="desktop-navbar">
+            <a href="{{ url_for('authors') }}">Authors</a>
+            <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
+            <a href="{{ url_for('topics') }}">Topics</a>
+            <a href="{{ url_for('collections.my_collections') }}">
+                {% if current_user.is_authenticated %}
+                    {{ current_user.username }}'s Collections
+                {% else %}
+                    My Collections
+                {% endif %}
+            </a>
+            <!-- ... other regular navigation links for desktop ... -->
+        </div>
+    </div>
+
+    <!-- Mobile Navigation Menu (Initially Hidden) -->
+    <div id="mobile-nav" class="mobile-nav">
+        <!-- Closing Button (X) -->
+
+        <!-- Links for Mobile Menu -->
         <a href="{{ url_for('authors') }}">Authors</a>
         <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
         <a href="{{ url_for('topics') }}">Topics</a>
@@ -33,16 +66,27 @@
                 My Collections
             {% endif %}
         </a>
-        <a href="{{ url_for('account') }}">
-            {% if current_user.is_authenticated %}
-                {{ current_user.username }}
-            {% else %}
-                Account
-            {% endif %}
-        </a>
+        <button class="close-btn" onclick="toggleMenu()">
+            <i class="fas fa-times"></i>
+        </button>
+        <!-- ... other regular navigation links for mobile ... -->
     </div>
 
-    <!-- Content Block - To be overridden by child templates -->
+
+
+    <!-- Main Content Block -->
     {% block content %}{% endblock %}
+
+
+    <!-- JavaScript for Toggling Menu -->
+    <script>
+        function toggleMenu() {
+            var mobileNav = document.getElementById('mobile-nav');
+            if (mobileNav) {
+                mobileNav.classList.toggle('show');
+            }
+        }
+    </script>
+
 </body>
 </html>

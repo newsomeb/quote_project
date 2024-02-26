@@ -2,18 +2,19 @@
 
 {% block content %}
 <div class="content">
-    <h2>Login</h2>
+    <h2>Sign in to The Quote Archive</h2>
 
     <!-- Display flashed messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages(category_filter=['login_error']) %}
         {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
+            {% for message in messages %}
+                <div class="alert alert-danger">
                     {{ message }}
                 </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
+
 
     <form method="POST">
         {{ form.hidden_tag() }}
