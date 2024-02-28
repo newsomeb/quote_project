@@ -244,9 +244,7 @@ def home(year=None, month=None, day=None):
         .all()
     )
 
-    # Debug: Print fetched authors and their birthdays
-    for author, birthday, deathday, _ in authors_birthday_today:
-        print(f"Author: {author}, Birthday: {birthday}, Deathday: {deathday}")
+
 
     # Prepare data for the template
     birthday_quotes_data = []
