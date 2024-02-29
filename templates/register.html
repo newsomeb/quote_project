@@ -62,6 +62,12 @@
                     console.error('Error generating token:', error);
                 });
         }
+
+        // This function handles the form submission after the reCAPTCHA token is obtained
+        function onSubmit(token) {
+            // You can perform additional validation or submit the form programmatically
+            document.getElementById("registration-form").submit();
+        }
     </script>
 {% endblock %}
 </html>
