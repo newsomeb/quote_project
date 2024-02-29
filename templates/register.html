@@ -5,20 +5,20 @@
 {% block content %}
 <div class="content">
     <h1>Register</h1>
-
     <!-- Display flashed messages for registration errors -->
     {% with reg_messages = get_flashed_messages(category_filter=['danger']) %}
-        {% if reg_messages %}
-            <div class="alert alert-danger">
-                {% for message in reg_messages %}
-                    <p>{{ message }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
+    {% if reg_messages %}
+    <div class="alert alert-danger">
+        {% for message in reg_messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endwith %}
 
     <div class="register-page">
-        <form method="post" action="{{ url_for('register') }}" id="registration-form">
+        <!-- Corrected form structure -->
+        <form method="post" action="{{ url_for('register') }}" id="registration-form" onsubmit="event.preventDefault(); executeRecaptcha();">
             {{ form.hidden_tag() }}
             <div class="form-group">
                 {{ form.username.label(class="form-label") }}
@@ -36,38 +36,33 @@
                 {{ form.confirm.label(class="form-label") }}
                 {{ form.confirm(class="form-control") }}
             </div>
-            <!-- Add onclick attribute to call executeRecaptcha() -->
-            <button class="g-recaptcha" onclick="executeRecaptcha()"
+            <button class="g-recaptcha"
                     data-sitekey="6LfP5YMpAAAAABUq8vNmr7u4oiZWuQWl3YYLbakQ"
                     data-callback='onSubmit'
-                    data-action='submit'>
-              Submit
-            </button>
+                    data-action='submit'>Submit</button>
         </form>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-    <script>
-        // This function generates a reCAPTCHA token when called
-        function executeRecaptcha() {
-            grecaptcha.enterprise.execute('6LfP5YMpAAAAABUq8vNmr7u4oiZWuQWl3YYLbakQ', { action: 'register' })
-                .then(function(token) {
-                    // Once the token is generated, you can handle it accordingly
-                    console.log('Token:', token);
-                    // Here, you can optionally submit the token to your backend for assessment
-                })
-                .catch(function(error) {
-                    console.error('Error generating token:', error);
-                });
-        }
+<script>
+    function executeRecaptcha() {
+        grecaptcha.enterprise.execute('6LfP5YMpAAAAABUq8vNmr7u4oiZWuQWl3YYLbakQ', { action: 'register' })
+            .then(function(token) {
+                console.log('Token:', token);
+                onSubmit(token); // Directly call onSubmit if you plan to submit the form here
+            })
+            .catch(function(error) {
+                console.error('Error generating token:', error);
+            });
+    }
 
-        // This function handles the form submission after the reCAPTCHA token is obtained
-        function onSubmit(token) {
-            // You can perform additional validation or submit the form programmatically
-            document.getElementById("registration-form").submit();
-        }
-    </script>
+    function onSubmit(token) {
+        // Here, submit the form programmatically
+        // Optionally, include the token in your submission, e.g., by setting it in a hidden input
+        document.getElementById("registration-form").submit();
+    }
+</script>
 {% endblock %}
 </html>
