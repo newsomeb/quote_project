@@ -669,11 +669,9 @@ def confirm_email_prompt():
 
 
 # Inside your register route
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
-    """
-    Implements the register functionality.
-    """
     form = RegistrationForm()
 
     if form.validate_on_submit():
@@ -681,84 +679,61 @@ def register():
         logging.debug(f"Received reCAPTCHA token: {recaptcha_token}")
 
         if not recaptcha_token or not verify_recaptcha(recaptcha_token, 'register'):
-            logging.debug("reCAPTCHA validation failed.")
+            logging.error("reCAPTCHA validation failed. Token was either not received or validation failed.")
             flash('reCAPTCHA validation failed. Please try again.', 'danger')
             return render_template('register.html', form=form)
 
-        # Check if username or email already exists
         user_exists = User.query.filter_by(username=form.username.data).first()
         email_exists = User.query.filter_by(email=form.email.data).first()
 
-        logging.debug(f"User exists: {user_exists}, Email exists: {email_exists}")
-
-        if user_exists:
-            logging.debug("Username already taken.")
-            flash('Username already taken. Please choose another one.', 'danger')
+        if user_exists or email_exists:
+            logging.warning(f"Attempt to register with existing username: {form.username.data} or email: {form.email.data}")
+            flash('Username or email already taken. Please choose another one.', 'danger')
             return render_template('register.html', form=form)
 
-        if email_exists:
-            logging.debug("Email already in use.")
-            flash('Email already in use. Please use a different email or login.', 'danger')
-            return render_template('register.html', form=form)
-
-        # Hash password and create new user instance
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
 
         try:
-            # Add new user to the database
             db.session.add(new_user)
             db.session.commit()
-
-            logging.debug("User registration successful.")
-
-            # Generate email confirmation token and send email
-            token = s.dumps(new_user.email, salt='email-confirmation')
-            confirmation_link = url_for('confirm_email', token=token, _external=True)
-            send_confirmation_email(new_user.email, confirmation_link)
-
+            logging.info(f"New user registered: {form.username.data}")
             flash('Registration successful! Please check your email to verify your account.', 'success')
-            return redirect(url_for('confirm_email_prompt'))
-
+            return redirect(url_for('login'))  # Adjust as needed
         except Exception as e:
-            # Rollback in case of any error
             db.session.rollback()
-            logging.error(f"Registration failed due to an unexpected error: {e}")
-            flash(f"Registration failed due to an unexpected error: {e}", 'danger')
+            logging.error(f"Error registering user: {e}", exc_info=True)
+            flash('An unexpected error occurred. Please try again.', 'danger')
 
     return render_template('register.html', form=form)
 
-
 def verify_recaptcha(token, action):
-    """
-    Verifies the reCAPTCHA token with Google's reCAPTCHA Enterprise service.
-    """
-    logging.debug(f"Verifying reCAPTCHA token with action: {action}")
+    logging.debug(f"Verifying reCAPTCHA token for action: {action}")
+    try:
+        response = requests.post(
+            f'https://recaptchaenterprise.googleapis.com/v1/projects/{current_app.config["GOOGLE_CLOUD_PROJECT_ID"]}/assessments?key={current_app.config["RECAPTCHA_SECRET_KEY"]}',
+            json={
+                'event': {
+                    'token': token,
+                    'siteKey': current_app.config['RECAPTCHA_SITE_KEY'],
+                    'expectedAction': action
+                }
+            }
+        )
+        result = response.json()
+        logging.debug(f"reCAPTCHA verification response: {result}")
 
-    payload = {
-        'event': {
-            'token': token,
-            'siteKey': current_app.config['RECAPTCHA_SITE_KEY'],
-            'expectedAction': action
-        }
-    }
-
-    logging.debug(f"Sending reCAPTCHA verification payload: {payload}")  # Log payload
-
-    response = requests.post(
-        f'https://recaptchaenterprise.googleapis.com/v1/projects/{current_app.config["GOOGLE_CLOUD_PROJECT_ID"]}/assessments?key={current_app.config["RECAPTCHA_SECRET_KEY"]}',
-        json=payload
-    )
-
-    result = response.json()
-    logging.debug(f"Received reCAPTCHA verification response: {result}")  # Log response
-
-    # Verify the token's validity and the risk analysis score
-    isValid = result.get('tokenProperties', {}).get('valid', False)
-    score = result.get('riskAnalysis', {}).get('score', 0)
-    logging.debug(f"reCAPTCHA token valid: {isValid}, score: {score}")  # Log token validity and score
-
-    return isValid and score >= 0.5
+        isValid = result.get('tokenProperties', {}).get('valid', False)
+        score = result.get('riskAnalysis', {}).get('score', 0)
+        if isValid and score >= 0.5:
+            logging.info(f"reCAPTCHA token valid with score: {score}")
+            return True
+        else:
+            logging.warning(f"reCAPTCHA token invalid or score below threshold: {score}")
+            return False
+    except Exception as e:
+        logging.error(f"Exception during reCAPTCHA verification: {e}", exc_info=True)
+        return False
 @app.errorhandler(404)
 def page_not_found(e):
     """
