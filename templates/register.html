@@ -47,10 +47,13 @@
 </div>
 {% endblock %}
 
+{% block scripts %}
 <script>
   function onSubmit(token) {
-    document.getElementById("registration-form").submit();
+    document.getElementById("registration-form").submit(); // Make sure the ID 'registration-form' is unique
   }
 </script>
-
+<!-- Load the reCAPTCHA script dynamically and ensure it's loaded after the onSubmit function definition -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endblock %}
 </html>
