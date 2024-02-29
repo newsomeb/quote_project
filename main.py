@@ -717,10 +717,13 @@ def register():
 
     return render_template('register.html', form=form)
 
+
 def verify_recaptcha(token, action):
     """
     Verifies the reCAPTCHA token with Google's reCAPTCHA Enterprise service.
     """
+    logging.basicConfig(level=logging.DEBUG)  # Configure logging
+
     payload = {
         'event': {
             'token': token,
@@ -728,14 +731,23 @@ def verify_recaptcha(token, action):
             'expectedAction': action
         }
     }
+
+    logging.debug(f"Sending reCAPTCHA verification payload: {payload}")  # Log payload
+
     response = requests.post(
         f'https://recaptchaenterprise.googleapis.com/v1/projects/{current_app.config["GOOGLE_CLOUD_PROJECT_ID"]}/assessments?key={current_app.config["RECAPTCHA_SECRET_KEY"]}',
         json=payload
     )
-    result = response.json()
-    # Verify the token's validity and the risk analysis score
-    return result.get('tokenProperties', {}).get('valid', False) and result.get('riskAnalysis', {}).get('score', 0) >= 0.5
 
+    result = response.json()
+    logging.debug(f"Received reCAPTCHA verification response: {result}")  # Log response
+
+    # Verify the token's validity and the risk analysis score
+    isValid = result.get('tokenProperties', {}).get('valid', False)
+    score = result.get('riskAnalysis', {}).get('score', 0)
+    logging.debug(f"reCAPTCHA token valid: {isValid}, score: {score}")  # Log token validity and score
+
+    return isValid and score >= 0.5
 @app.errorhandler(404)
 def page_not_found(e):
     """
