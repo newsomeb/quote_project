@@ -50,7 +50,7 @@ load_dotenv()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 mail = Mail()
-BASE_URL = 'thinkexist.net'
+BASE_URL = 'thequotearchive.com'
 
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["10 per minute"])
@@ -71,19 +71,19 @@ def create_app():
         'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/tripleyeti/quote_project/create_quote_db_clean_data/quotes_cleaned.db'
 
     # use this for local testing
-    # app.config[
-        # 'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
+    #app.config[
+        #'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
 
     # Elasticsearch Configuration FOR LOCAL TESTING
     # Elasticsearch Configuration
-    # es_host = 'http://localhost:9200'
-    # es_username = 'elasticsearch'  # Replace with your Elasticsearch username
-    # es_password = 'J0*lP_fjAlRJx9dL0EOk'  # Replace with your Elasticsearch password
+    #es_host = 'http://localhost:9200'
+    #es_username = 'elasticsearch'  # Replace with your Elasticsearch username
+    #es_password = 'J0*lP_fjAlRJx9dL0EOk'  # Replace with your Elasticsearch password
 
-    # app.es = Elasticsearch(
-        # [es_host],
-        # http_auth=(es_username, es_password)
-    # )
+    #app.es = Elasticsearch(
+        #[es_host],
+        #http_auth=(es_username, es_password)
+    #)
 
     csrf = CSRFProtect(app)
 
@@ -244,9 +244,7 @@ def home(year=None, month=None, day=None):
         .all()
     )
 
-    # Debug: Print fetched authors and their birthdays
-    for author, birthday, deathday, _ in authors_birthday_today:
-        print(f"Author: {author}, Birthday: {birthday}, Deathday: {deathday}")
+
 
     # Prepare data for the template
     birthday_quotes_data = []
@@ -638,7 +636,7 @@ def send_simple_message(to, subject, text):
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
         auth=("api", app.config['MAILGUN_API_KEY']),
         data={
-            "from": "Think Exist <mailgun@thinkexist.net>",
+            "from": "The Quote Archive Team <mailgun@thequotearchive.com>",
             "to": [to],
             "subject": subject,
             "text": text
@@ -878,7 +876,7 @@ def send_confirmation_email(email, token):
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
         auth=("api", app.config['MAILGUN_API_KEY']),
         data={
-            "from": "Think Exist <mailgun@thinkexist.net>",
+            "from": "The Quote Archive Team <mailgun@thequotearchive.com>",
             "to": [email],
             "subject": "Email Confirmation",
             "text": f"Please click the following link to confirm your email: {confirmation_link}"

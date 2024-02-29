@@ -15,7 +15,7 @@
     --topic-card-bg-color: #FFFFFF; // Background color for topic cards, changed to white
     --header-font-size: 40px;      // Font size for headers
     --quote-font-size: 40px;       // Font size for quotes
-    --author-font-size: 20px;      // Font size for author names
+    --author-font-size: 30px;      // Font size for author names
 }
 
 /* Base styles (Mobile First) */
@@ -151,7 +151,7 @@ button:hover {
 .navbar {
     background-color: var(--navbar-bg-color);
     overflow: hidden;
-
+    font-size: 20px;
 }
 
 .navbar a {
@@ -161,6 +161,7 @@ button:hover {
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
+    font-size: 20px;
 }
 
 .navbar a:hover {
@@ -180,7 +181,8 @@ button:hover {
 /* Existing styles for .author-name a */
 .author-name a {
     color: black; /* Color of the link set to black */
-    text-decoration: none; /* Removes underline from links */
+    text-decoration: none;
+    font-size: 20px;/* Removes underline from links */
     /* ... other styles ... */
 }
 
@@ -550,6 +552,7 @@ button:hover, input[type="submit"]:hover {
 
 
 
+
 /* Styles for mobile and small screens */
 @media screen and (max-width: 1050px) { /* Adjust the max-width as needed for your design */
     .quote-flex-container {
@@ -576,16 +579,16 @@ button:hover, input[type="submit"]:hover {
     }
 }
 
-
-/* Existing styles for .quote-actions */
 .quote-actions {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: flex-start; /* Aligns children (buttons) to the left */
     gap: 10px; /* Adjust the gap between buttons */
+    font-size: 20px; /* Example: Increase font size to 16 pixels */
     /* ... other styles ... */
 }
+
 
 /* Style for the dropdown inside the .quote-actions */
 .quote-actions select {
@@ -669,6 +672,7 @@ button:hover, input[type="submit"]:hover {
 .quote-archive-button {
     color: var(--text-color);
     text-decoration: none;
+    font-size: 20px;
     /* Additional styling */
 }
 
@@ -696,6 +700,7 @@ button:hover, input[type="submit"]:hover {
 
     .login-button {
         margin-left: auto; /* Push it to the right */
+        font-size: 20px;
     }
 
     .navbar.expanded {
@@ -720,6 +725,9 @@ button:hover, input[type="submit"]:hover {
     }
 }
 
+.mobile-login-button {
+    font-size: 20px; /* Specifically targeting mobile login button */
+}
 
 @media (min-width: 769px) {
     .hamburger {

@@ -38,14 +38,14 @@
                             <p class="error-message" style="display: none; color: red;"></p>
 
                             <!-- Share Button -->
-                            <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="http://thinkexist.net/quote_detail/{{ quote.id }}">
+                            <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ quote.id }}">
                                 <i class="fa-solid fa-share"></i>
                             </button>
 
                             <!-- Share Popup -->
                             <div class="share-popup" style="display: none;">
                                 <p>Share this quote:</p>
-                                <input type="text" value="http://thinkexist.net/quote_detail/{{ quote.id }}" readonly>
+                                <input type="text" value="https://thequotearchive.com/quote_detail/{{ quote.id }}" readonly>
                                 <button onclick="copyToClipboard(this.previousElementSibling); event.preventDefault();" type="button">Copy</button>
                             </div>
 
@@ -69,7 +69,7 @@
 
                         <!-- Author Name -->
                         <p class="author-name">
-                            <a href="https://thinkexist.net/quotes/{{ quote.author|replace(' ', '%20') }}">
+                            <a href="https://thequotearchive.com/quotes/{{ quote.author|replace(' ', '%20') }}">
                                 {{ quote.author }}
                             </a>
                         </p>
