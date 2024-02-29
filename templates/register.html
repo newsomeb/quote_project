@@ -36,7 +36,8 @@
                 {{ form.confirm.label(class="form-label") }}
                 {{ form.confirm(class="form-control") }}
             </div>
-            <button class="g-recaptcha"
+            <!-- Add onclick attribute to call executeRecaptcha() -->
+            <button class="g-recaptcha" onclick="executeRecaptcha()"
                     data-sitekey="6LfP5YMpAAAAABUq8vNmr7u4oiZWuQWl3YYLbakQ"
                     data-callback='onSubmit'
                     data-action='submit'>
@@ -48,11 +49,19 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  function onSubmit(token) {
-    document.getElementById("registration-form").submit(); // Make sure the ID 'registration-form' is unique
-  }
-</script>
-
+    <script>
+        // This function generates a reCAPTCHA token when called
+        function executeRecaptcha() {
+            grecaptcha.enterprise.execute('6LfP5YMpAAAAABUq8vNmr7u4oiZWuQWl3YYLbakQ', { action: 'register' })
+                .then(function(token) {
+                    // Once the token is generated, you can handle it accordingly
+                    console.log('Token:', token);
+                    // Here, you can optionally submit the token to your backend for assessment
+                })
+                .catch(function(error) {
+                    console.error('Error generating token:', error);
+                });
+        }
+    </script>
 {% endblock %}
 </html>
