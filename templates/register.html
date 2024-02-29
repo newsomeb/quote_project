@@ -3,7 +3,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="content"> <!-- This div wraps the entire form and content, applying the .content styles -->
+<div class="content">
     <h1>Register</h1>
 
     <!-- Display flashed messages for registration errors -->
@@ -18,30 +18,39 @@
     {% endwith %}
 
     <div class="register-page">
-    <form method="post" action="{{ url_for('register') }}">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.username.label(class="form-label") }}
-            {{ form.username(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.confirm.label(class="form-label") }}
-            {{ form.confirm(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.submit(class="btn btn-primary") }}
-        </div>
-    </form>
+        <form method="post" action="{{ url_for('register') }}" id="registration-form">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.confirm.label(class="form-label") }}
+                {{ form.confirm(class="form-control") }}
+            </div>
+            <button class="g-recaptcha"
+                    data-sitekey="6LfP5YMpAAAAABUq8vNmr7u4oiZWuQWl3YYLbakQ"
+                    data-callback='onSubmit'
+                    data-action='submit'>
+              Submit
+            </button>
+        </form>
     </div>
 </div>
 {% endblock %}
-</html>
 
+<script>
+  function onSubmit(token) {
+    document.getElementById("registration-form").submit();
+  }
+</script>
+
+</html>

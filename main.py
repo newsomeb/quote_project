@@ -1,5 +1,4 @@
 import os
-from datetime import date
 from flask import jsonify
 from sqlalchemy import extract, func
 import openai
@@ -8,7 +7,7 @@ from wtforms import ValidationError
 from datetime import timedelta
 from quote_collections.routes import collections_bp
 from wtforms.validators import EqualTo
-from flask import Flask, render_template
+from flask import render_template
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask import current_app
 from extensions import db
@@ -19,12 +18,11 @@ from flask_mail import Mail
 from flask_bcrypt import Bcrypt
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
-from wtforms import PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Email
+from wtforms import PasswordField, BooleanField
+from wtforms.validators import Email
 from os.path import basename
 from sqlalchemy import text
-from flask_wtf import FlaskForm
-from wtforms import StringField, validators
+from wtforms import validators
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
@@ -37,9 +35,15 @@ import logging
 import urllib3
 import random
 from flask_wtf.csrf import CSRFProtect
+from wtforms import StringField, TextAreaField
+from flask import Flask
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField
+from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from flask import request, flash, redirect, url_for, render_template
+import requests
+import json
+
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -65,6 +69,11 @@ def create_app():
 
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key')
+
+    # ReCAPTCHA configuration
+    app.config['RECAPTCHA_SECRET_KEY'] = os.environ.get('RECAPTCHA_SECRET_KEY')
+    app.config['RECAPTCHA_SITE_KEY'] = os.environ.get('RECAPTCHA_SITE_KEY')
+    app.config['GOOGLE_CLOUD_PROJECT_ID'] = os.environ.get('GOOGLE_CLOUD_PROJECT_ID')
 
     # use this for connecting to production database
     app.config[
@@ -106,6 +115,10 @@ def create_app():
 
     app.config['CHATGPT_API_KEY'] = os.environ.get('CHATGPT_API_KEY')
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
+
+
+
 
 
     logging.basicConfig(filename='app.log', level=logging.DEBUG)  # Log to a file
@@ -636,7 +649,7 @@ def send_simple_message(to, subject, text):
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
         auth=("api", app.config['MAILGUN_API_KEY']),
         data={
-            "from": "The Quote Archive Team <mailgun@thequotearchive.com>",
+            "from": "The Quote Archive Team <noreply@thequotearchive.com>",
             "to": [to],
             "subject": subject,
             "text": text
@@ -663,6 +676,11 @@ def register():
     form = RegistrationForm()
 
     if form.validate_on_submit():
+        recaptcha_token = request.form.get('g-recaptcha-response')
+        if not recaptcha_token or not verify_recaptcha(recaptcha_token, 'register'):
+            flash('reCAPTCHA validation failed. Please try again.', 'danger')
+            return render_template('register.html', form=form)
+
         # Check if username or email already exists
         user_exists = User.query.filter_by(username=form.username.data).first()
         email_exists = User.query.filter_by(email=form.email.data).first()
@@ -684,11 +702,6 @@ def register():
             db.session.add(new_user)
             db.session.commit()
 
-            # Create a default Favorites collection for the new user
-            favorites_collection = Collection(name="Favorites", user_id=new_user.id, is_favorite=True)
-            db.session.add(favorites_collection)
-            db.session.commit()
-
             # Generate email confirmation token and send email
             token = s.dumps(new_user.email, salt='email-confirmation')
             confirmation_link = url_for('confirm_email', token=token, _external=True)
@@ -704,9 +717,24 @@ def register():
 
     return render_template('register.html', form=form)
 
-
-
-
+def verify_recaptcha(token, action):
+    """
+    Verifies the reCAPTCHA token with Google's reCAPTCHA Enterprise service.
+    """
+    payload = {
+        'event': {
+            'token': token,
+            'siteKey': current_app.config['RECAPTCHA_SITE_KEY'],
+            'expectedAction': action
+        }
+    }
+    response = requests.post(
+        f'https://recaptchaenterprise.googleapis.com/v1/projects/{current_app.config["GOOGLE_CLOUD_PROJECT_ID"]}/assessments?key={current_app.config["RECAPTCHA_SECRET_KEY"]}',
+        json=payload
+    )
+    result = response.json()
+    # Verify the token's validity and the risk analysis score
+    return result.get('tokenProperties', {}).get('valid', False) and result.get('riskAnalysis', {}).get('score', 0) >= 0.5
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -876,7 +904,7 @@ def send_confirmation_email(email, token):
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
         auth=("api", app.config['MAILGUN_API_KEY']),
         data={
-            "from": "The Quote Archive Team <mailgun@thequotearchive.com>",
+            "from": "The Quote Archive Team <noreply@thequotearchive.com>",
             "to": [email],
             "subject": "Email Confirmation",
             "text": f"Please click the following link to confirm your email: {confirmation_link}"
