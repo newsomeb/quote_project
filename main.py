@@ -668,6 +668,7 @@ def confirm_email_prompt():
 
 
 
+# Inside your register route
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     """
@@ -677,7 +678,10 @@ def register():
 
     if form.validate_on_submit():
         recaptcha_token = request.form.get('g-recaptcha-response')
+        logging.debug(f"Received reCAPTCHA token: {recaptcha_token}")
+
         if not recaptcha_token or not verify_recaptcha(recaptcha_token, 'register'):
+            logging.debug("reCAPTCHA validation failed.")
             flash('reCAPTCHA validation failed. Please try again.', 'danger')
             return render_template('register.html', form=form)
 
@@ -685,11 +689,15 @@ def register():
         user_exists = User.query.filter_by(username=form.username.data).first()
         email_exists = User.query.filter_by(email=form.email.data).first()
 
+        logging.debug(f"User exists: {user_exists}, Email exists: {email_exists}")
+
         if user_exists:
+            logging.debug("Username already taken.")
             flash('Username already taken. Please choose another one.', 'danger')
             return render_template('register.html', form=form)
 
         if email_exists:
+            logging.debug("Email already in use.")
             flash('Email already in use. Please use a different email or login.', 'danger')
             return render_template('register.html', form=form)
 
@@ -702,6 +710,8 @@ def register():
             db.session.add(new_user)
             db.session.commit()
 
+            logging.debug("User registration successful.")
+
             # Generate email confirmation token and send email
             token = s.dumps(new_user.email, salt='email-confirmation')
             confirmation_link = url_for('confirm_email', token=token, _external=True)
@@ -713,6 +723,7 @@ def register():
         except Exception as e:
             # Rollback in case of any error
             db.session.rollback()
+            logging.error(f"Registration failed due to an unexpected error: {e}")
             flash(f"Registration failed due to an unexpected error: {e}", 'danger')
 
     return render_template('register.html', form=form)
@@ -722,7 +733,7 @@ def verify_recaptcha(token, action):
     """
     Verifies the reCAPTCHA token with Google's reCAPTCHA Enterprise service.
     """
-    logging.basicConfig(level=logging.DEBUG)  # Configure logging
+    logging.debug(f"Verifying reCAPTCHA token with action: {action}")
 
     payload = {
         'event': {
