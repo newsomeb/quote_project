@@ -669,28 +669,10 @@ def confirm_email_prompt():
 
 # Inside your register route
 
-def verify_turnstile_response(token):
-    secret_key = "YOUR_SECRET_KEY"
-    response = requests.post(
-        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-        data={
-            'secret': secret_key,
-            'response': token
-        }
-    )
-    result = response.json()
-    return result.get("success", False)
-
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        turnstile_response = request.form.get('cf-turnstile-response')
-        is_human = verify_turnstile_response(turnstile_response)
-        if not is_human:
-            flash('Please complete the security challenge.', 'danger')
-            return render_template('register.html', form=form)
-
         user_exists = User.query.filter_by(username=form.username.data).first()
         email_exists = User.query.filter_by(email=form.email.data).first()
 
@@ -703,7 +685,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to log in.', 'success')
-        return redirect(url_for('login')) # Ensure you have a 'login' route defined
+        return redirect(url_for('login'))  # Ensure you have a 'login' route defined
 
     return render_template('register.html', form=form)
 
