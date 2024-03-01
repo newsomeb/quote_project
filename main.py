@@ -671,23 +671,44 @@ def confirm_email_prompt():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    """
+    Implements the register functionality.
+    """
     form = RegistrationForm()
     if form.validate_on_submit():
+        # Check if username or email already exists
         user_exists = User.query.filter_by(username=form.username.data).first()
         email_exists = User.query.filter_by(email=form.email.data).first()
-
-        if user_exists or email_exists:
-            flash('Username or email already taken. Please choose another one.', 'danger')
+        if user_exists:
+            flash('Username already taken. Please choose another one.', 'danger')
+            return render_template('register.html', form=form)
+        if email_exists:
+            flash('Email already in use. Please use a different email or login.', 'danger')
             return render_template('register.html', form=form)
 
+        # Hash password and create new user instance
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
-        db.session.add(user)
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+
+        # Add new user to the database
+        db.session.add(new_user)
         db.session.commit()
-        flash('Your account has been created! You are now able to log in.', 'success')
-        return redirect(url_for('login'))  # Ensure you have a 'login' route defined
+
+        # Create a default Favorites collection for the new user
+        favorites_collection = Collection(name="Favorites", user_id=new_user.id, is_favorite=True)
+        db.session.add(favorites_collection)
+        db.session.commit()
+
+        # Generate email confirmation token and send email
+        token = s.dumps(new_user.email, salt='email-confirmation')
+        confirmation_link = url_for('confirm_email', token=token, _external=True)
+        send_confirmation_email(new_user.email, confirmation_link)
+
+        flash('Registration successful! Please check your email to verify your account.', 'success')
+        return redirect(url_for('confirm_email_prompt'))
 
     return render_template('register.html', form=form)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
