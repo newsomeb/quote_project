@@ -7,7 +7,7 @@ from wtforms import ValidationError
 from datetime import timedelta
 from quote_collections.routes import collections_bp
 from wtforms.validators import EqualTo
-from flask import render_template
+
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask import current_app
 from extensions import db
@@ -26,8 +26,7 @@ from wtforms import validators
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
-import requests
-from flask import request, flash, redirect, url_for, session
+from flask import session
 from datetime import datetime
 import pytz
 from elasticsearch import Elasticsearch
@@ -35,14 +34,13 @@ import logging
 import urllib3
 import random
 from flask_wtf.csrf import CSRFProtect
-from wtforms import StringField, TextAreaField
+from wtforms import TextAreaField
 from flask import Flask
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask import request, flash, redirect, url_for, render_template
 import requests
-import json
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -74,6 +72,7 @@ def create_app():
     app.config['RECAPTCHA_SECRET_KEY'] = os.environ.get('RECAPTCHA_SECRET_KEY')
     app.config['RECAPTCHA_SITE_KEY'] = os.environ.get('RECAPTCHA_SITE_KEY')
     app.config['GOOGLE_CLOUD_PROJECT_ID'] = os.environ.get('GOOGLE_CLOUD_PROJECT_ID')
+    app.config['YOUR_SECRET_KEY'] = os.environ.get('YOUR_SECRET_KEY')
 
     # use this for connecting to production database
     app.config[
@@ -670,70 +669,44 @@ def confirm_email_prompt():
 
 # Inside your register route
 
+def verify_turnstile_response(token):
+    secret_key = "YOUR_SECRET_KEY"
+    response = requests.post(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        data={
+            'secret': secret_key,
+            'response': token
+        }
+    )
+    result = response.json()
+    return result.get("success", False)
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-
     if form.validate_on_submit():
-        recaptcha_token = request.form.get('g-recaptcha-response')
-        logging.debug(f"Received reCAPTCHA token: {recaptcha_token}")
-
-        if not recaptcha_token or not verify_recaptcha(recaptcha_token, 'register'):
-            logging.error("reCAPTCHA validation failed. Token was either not received or validation failed.")
-            flash('reCAPTCHA validation failed. Please try again.', 'danger')
+        turnstile_response = request.form.get('cf-turnstile-response')
+        is_human = verify_turnstile_response(turnstile_response)
+        if not is_human:
+            flash('Please complete the security challenge.', 'danger')
             return render_template('register.html', form=form)
 
         user_exists = User.query.filter_by(username=form.username.data).first()
         email_exists = User.query.filter_by(email=form.email.data).first()
 
         if user_exists or email_exists:
-            logging.warning(f"Attempt to register with existing username: {form.username.data} or email: {form.email.data}")
             flash('Username or email already taken. Please choose another one.', 'danger')
             return render_template('register.html', form=form)
 
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
-
-        try:
-            db.session.add(new_user)
-            db.session.commit()
-            logging.info(f"New user registered: {form.username.data}")
-            flash('Registration successful! Please check your email to verify your account.', 'success')
-            return redirect(url_for('login'))  # Adjust as needed
-        except Exception as e:
-            db.session.rollback()
-            logging.error(f"Error registering user: {e}", exc_info=True)
-            flash('An unexpected error occurred. Please try again.', 'danger')
+        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        flash('Your account has been created! You are now able to log in.', 'success')
+        return redirect(url_for('login')) # Ensure you have a 'login' route defined
 
     return render_template('register.html', form=form)
 
-def verify_recaptcha(token, action):
-    logging.debug(f"Verifying reCAPTCHA token for action: {action}")
-    try:
-        response = requests.post(
-            f'https://recaptchaenterprise.googleapis.com/v1/projects/{current_app.config["GOOGLE_CLOUD_PROJECT_ID"]}/assessments?key={current_app.config["RECAPTCHA_SECRET_KEY"]}',
-            json={
-                'event': {
-                    'token': token,
-                    'siteKey': current_app.config['RECAPTCHA_SITE_KEY'],
-                    'expectedAction': action
-                }
-            }
-        )
-        result = response.json()
-        logging.debug(f"reCAPTCHA verification response: {result}")
-
-        isValid = result.get('tokenProperties', {}).get('valid', False)
-        score = result.get('riskAnalysis', {}).get('score', 0)
-        if isValid and score >= 0.5:
-            logging.info(f"reCAPTCHA token valid with score: {score}")
-            return True
-        else:
-            logging.warning(f"reCAPTCHA token invalid or score below threshold: {score}")
-            return False
-    except Exception as e:
-        logging.error(f"Exception during reCAPTCHA verification: {e}", exc_info=True)
-        return False
 @app.errorhandler(404)
 def page_not_found(e):
     """

@@ -17,8 +17,8 @@
     {% endwith %}
 
     <div class="register-page">
-        <!-- Corrected form structure -->
-        <form method="post" action="{{ url_for('register') }}" id="registration-form" onsubmit="event.preventDefault(); executeRecaptcha();">
+        <!-- Form structure -->
+        <form method="post" action="{{ url_for('register') }}" id="registration-form">
             {{ form.hidden_tag() }}
             <div class="form-group">
                 {{ form.username.label(class="form-label") }}
@@ -36,33 +36,13 @@
                 {{ form.confirm.label(class="form-label") }}
                 {{ form.confirm(class="form-control") }}
             </div>
-            <button class="g-recaptcha"
-                    data-sitekey="6LfP5YMpAAAAABUq8vNmr7u4oiZWuQWl3YYLbakQ"
-                    data-callback='onSubmit'
-                    data-action='submit'>Submit</button>
+            <!-- Turnstile Widget -->
+            <div class="form-group">
+                <div class="turnstile-widget"
+                     data-sitekey="0x4AAAAAAAS-GTZ5DM4U_fGO"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
 </div>
 {% endblock %}
-
-{% block scripts %}
-<script>
-    function executeRecaptcha() {
-        grecaptcha.enterprise.execute('6LfP5YMpAAAAABUq8vNmr7u4oiZWuQWl3YYLbakQ', { action: 'register' })
-            .then(function(token) {
-                console.log('Token:', token);
-                onSubmit(token); // Directly call onSubmit if you plan to submit the form here
-            })
-            .catch(function(error) {
-                console.error('Error generating token:', error);
-            });
-    }
-
-    function onSubmit(token) {
-        // Here, submit the form programmatically
-        // Optionally, include the token in your submission, e.g., by setting it in a hidden input
-        document.getElementById("registration-form").submit();
-    }
-</script>
-{% endblock %}
-</html>
