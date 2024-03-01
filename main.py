@@ -701,7 +701,7 @@ def register():
 
         # Generate email confirmation token and send email
         token = s.dumps(new_user.email, salt='email-confirmation')
-        confirmation_link = url_for('confirm_email', token=token, _external=True)
+        confirmation_link = url_for('confirm_email', token=token, _external=True, _scheme='https')
         send_confirmation_email(new_user.email, confirmation_link)
 
         flash('Registration successful! Please check your email to verify your account.', 'success')
