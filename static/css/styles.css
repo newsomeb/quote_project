@@ -1,6 +1,6 @@
 /* CSS Variables */
 :root {
-    --primary-color: #007BFF;     // No change, primary color for interactive elements
+    --primary-color: ;     // No change, primary color for interactive elements
     --secondary-color: #333;       // Secondary color, used for less prominent elements or possibly text
     --text-color: #000000;         // Text color, changed to black for better contrast on white backgrounds
     --background-color: #FFFFFF;   // Overall background color, changed to white
@@ -12,7 +12,7 @@
     --navbar-hover-bg-color: #3a3b3d;// Navbar link hover background color
     --quote-border-color: #3a3b3d; // Border color for quotes, consider changing if needed for contrast
     --button-hover-color: #5f6368; // Button hover state color
-    --topic-card-bg-color: #FFFFFF; // Background color for topic cards, changed to white
+ // Background color for topic cards, changed to white
     --header-font-size: 40px;      // Font size for headers
     --quote-font-size: 40px;       // Font size for quotes
     --author-font-size: 30px;      // Font size for author names
@@ -25,6 +25,34 @@ body {
     color: var(--text-color);
     padding: 15px;
 }
+
+
+.top-authors, .category-authors ol {
+    list-style: none;
+    padding-left: 0;
+}
+
+.top-authors, .category-authors li {
+    background-color: var(--topic-card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.top-authors, .category-authors li a {
+    font-size: var(--author-font-size);
+    color: var(--text-color);
+}
+
+.top-authors, .category-authors li:hover {
+    background-color: var(--hover-bg-color);
+}
+
+/* Add more styles as needed */
+
+
+
 
 
 /* General input styles */
@@ -409,25 +437,7 @@ a:hover {
     box-sizing: border-box;
 }
 
-.author-row:after {
-    content: "";
-    display: table;
-    clear: both;
-}
 
-.top-authors ol {
-    columns: 3;
-    list-style-position: inside;
-}
-
-.top-authors a {
-    color: #8ab4f8;
-    text-decoration: none;
-}
-
-.top-authors a:hover {
-
-}
 
 .account-btn {
     border: 0;
@@ -559,7 +569,9 @@ button:hover, input[type="submit"]:hover {
         flex-direction: column; /* Stack children vertically */
     }
 
-
+    .content-flex-container {
+        flex-direction: column; /* Stack children vertically */
+    }
     .author-specific-image-container {
         width: 100%; /* Full width */
         order: -1; /* Ensure image is above quotes */
@@ -1101,37 +1113,28 @@ button:hover, input[type="submit"]:hover {
 }
 
 
-
-
-
-/* Top Authors Styles */
-.top-authors {
-    margin: 20px 0;
-    background-color: #2d2e30;
-    border-radius: 8px;
-    padding: 20px;
+/* Ensures the top authors and category authors use the intended light theme styling */
+.top-authors, .category-authors {
+    background-color: var(--background-color); /* Use white background */
+    color: var(--text-color); /* Use black text */
 }
 
-.top-authors h2 {
-    margin-top: 0;
+.top-authors ol, .category-authors ol {
+    list-style-type: none; /* Remove default list styling */
+    padding: 0; /* Remove default padding */
 }
 
-.top-authors ol {
-    list-style-position: inside;
-    margin: 0;
-    padding-left: 20px; /* Adjust as needed */
+.top-authors li, .category-authors li {
+    margin-bottom: 10px; /* Add some space between list items */
 }
 
-.top-authors ol li a {
-    color: #FFFFFF;            /* White color */
-    text-decoration: none;     /* Remove underline */
-    font-weight: bold;         /* Bold text */
+.top-authors a, .category-authors a {
+    color: var(--primary-color); /* Use primary color for links */
+    text-decoration: none; /* Remove underline from links */
 }
 
-.top-authors ol li a:hover {
-    color: #CCCCCC;            /* A light grey color on hover */
-    background-color: #333333; /* A dark grey background to contrast with the white text */
-    text-decoration: underline; /* Add an underline on hover */
+.top-authors a:hover, .category-authors a:hover {
+    color: var(--link-hover-color); /* Change link color on hover */
 }
 
 
@@ -1196,85 +1199,6 @@ button:hover, input[type="submit"]:hover {
     margin-right: 16px; /* Adds some space between the checkbox and the button */
 }
 
-.topics-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: space-between;
-    padding: 1rem;
-}
-
-
-.topics-list {
-    flex: 1;  /* take up as much space as available */
-    margin: 0 10px;
-    width: 48%;
-    list-style: none; /* Removing bullet points */
-    padding: 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-}
-
-.topics-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.topics-list li:last-child {
-    border-bottom: none;
-}
-
-.topics-list a {
-    text-decoration: none;  /* Remove underline */
-    color: #E8EAED;         /* Default link color */
-    transition: color 0.2s; /* Smooth color transition */
-}
-
-.topics-list a:hover {
-    color: #CCCCCC;                 /* A light grey color on hover */
-    background-color: #333333;     /* A dark grey background to contrast */
-    text-decoration: underline;    /* Add an underline on hover for clarity */
-}
-
-.topics-container {
-    display: flex;
-    justify-content: space-between; /* Spaces out the columns */
-    flex-wrap: nowrap; /* Prevents wrapping */
-}
-
-.left-column, .right-column {
-    box-sizing: border-box; /* Ensures padding is included in width */
-    flex: 0 0 48%; /* Each column takes up 48% of the container's width */
-    padding: 0 10px; /* Padding between columns */
-}
-
-.topic-card {
-    border: 1px solid #3a3b3d;
-    padding: 15px;
-    margin: 10px 0;
-    background-color: #2d2e30;
-    color: #E8EAED;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.topic-card a {
-    color: #E8EAED;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.topic-card a:hover {
-    color: white;
-}
-
-
-
-
-
-
 
 /* Action Buttons Styling */
 ul {
@@ -1288,7 +1212,61 @@ ul li {
     flex: 1; /* Each list item will take up equal space */
 }
 
+/* General Styles for Topics */
+.topics-container {
+    display: flex;
+    flex-wrap: wrap;
+}
 
+.topic-card {
+    flex: 1 1 50%; /* Each card will take up half of the container's width */
+    margin-bottom: 15px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.topic-card a {
+    color: var(--primary-color); /* Assuming you have a primary color variable */
+    text-decoration: none;
+    font-size: 1.2em; /* Slightly larger font size for main topic links */
+}
+
+.topic-card a:hover {
+    text-decoration: underline; /* Adds an underline on hover for better interactivity */
+    color: var(--link-hover-color); /* Assuming you have a link hover color variable */
+}
+
+/* Subtopics List */
+.topic-card ul {
+    list-style-type: none; /* Removes default list styling */
+    padding-left: 20px; /* Adds some indentation to subtopic lists */
+}
+
+.topic-card ul li a {
+    font-size: 1em; /* Standard font size for subtopic links */
+    color: var(--secondary-color); /* Assuming you have a secondary color variable */
+}
+
+.topic-card ul li a:hover {
+    text-decoration: underline;
+    color: var(--link-hover-color);
+}
+
+/* Header Styles */
+h1 {
+    font-size: var(--header-font-size); /* Larger font size for the header */
+    margin-bottom: 30px; /* Adds space below the header */
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.site-footer {
+    margin-top: auto;
+}
 
 /* Existing styles for desktop ... */
 

@@ -12,42 +12,109 @@
 
     <h1>Top 15 Authors</h1>
 
-    <!-- Top Authors List -->
-    <div class="top-authors">
-        <ol>
-        <li><a href="{{ url_for('author_quotes', author='Oscar Wilde') }}">Oscar Wilde</a></li>
-        <li><a href="{{ url_for('author_quotes', author='William Shakespeare') }}">William Shakespeare</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Mark Twain') }}">Mark Twain</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Friedrich Nietzsche') }}">Friedrich Nietzsche</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Albert Einstein') }}">Albert Einstein</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Ralph Waldo Emerson') }}">Ralph Waldo Emerson</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Johann Wolfgang von Goethe') }}">Johann Wolfgang von Goethe</a></li>
-        <li><a href="{{ url_for('author_quotes', author='George Bernard Shaw') }}">George Bernard Shaw</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Winston Churchill') }}">Winston Churchill</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Benjamin Franklin') }}">Benjamin Franklin</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Abraham Lincoln') }}">Abraham Lincoln</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Mahatma Gandhi') }}">Mahatma Gandhi</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Voltaire') }}">Voltaire</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Buddha') }}">Buddha</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Thomas Jefferson') }}">Thomas Jefferson</a></li>
+ <!-- Top Authors List -->
+<div class="top-authors">
+    <ol>
+        <li><a href="{{ url_for('author_quotes', author='Oscar Wilde') }}">Oscar Wilde</a> - Irish poet and playwright known for his witty epigrams and dramas.</li>
+        <li><a href="{{ url_for('author_quotes', author='William Shakespeare') }}">William Shakespeare</a> - English playwright and poet, widely regarded as the greatest writer in the English language.</li>
+        <li><a href="{{ url_for('author_quotes', author='Mark Twain') }}">Mark Twain</a> - American writer and humorist best known for his novels about Tom Sawyer and Huckleberry Finn.</li>
+        <li><a href="{{ url_for('author_quotes', author='Friedrich Nietzsche') }}">Friedrich Nietzsche</a> - German philosopher who wrote critically on religion, morality, culture, and philosophy.</li>
+        <li><a href="{{ url_for('author_quotes', author='Albert Einstein') }}">Albert Einstein</a> - Theoretical physicist renowned for developing the theory of relativity, contributing significantly to the advancement of modern physics.</li>
+        <li><a href="{{ url_for('author_quotes', author='Ralph Waldo Emerson') }}">Ralph Waldo Emerson</a> - American essayist, lecturer, philosopher, and poet who led the transcendentalist movement of the mid-19th century.</li>
+        <li><a href="{{ url_for('author_quotes', author='Johann Wolfgang von Goethe') }}">Johann Wolfgang von Goethe</a> - German writer and statesman whose works include poetry, dramas, and literature.</li>
+        <li><a href="{{ url_for('author_quotes', author='George Bernard Shaw') }}">George Bernard Shaw</a> - Irish playwright, critic, and polemicist known for his influence on Western theatre, culture, and politics.</li>
+        <li><a href="{{ url_for('author_quotes', author='Winston Churchill') }}">Winston Churchill</a> - British statesman who served as Prime Minister of the United Kingdom and is noted for his leadership during World War II.</li>
+        <li><a href="{{ url_for('author_quotes', author='Benjamin Franklin') }}">Benjamin Franklin</a> - One of the Founding Fathers of the United States, known for his contributions to science, politics, and philosophy.</li>
+        <li><a href="{{ url_for('author_quotes', author='Abraham Lincoln') }}">Abraham Lincoln</a> - 16th President of the United States who led the nation through its Civil War and abolished slavery.</li>
+        <li><a href="{{ url_for('author_quotes', author='Mahatma Gandhi') }}">Mahatma Gandhi</a> - Leader of the Indian independence movement against British rule, employing nonviolent civil disobedience.</li>
+        <li><a href="{{ url_for('author_quotes', author='Voltaire') }}">Voltaire</a> - French Enlightenment writer, historian, and philosopher famous for his wit and advocacy for freedom of speech and religion.</li>
+        <li><a href="{{ url_for('author_quotes', author='Buddha') }}">Buddha</a> - Spiritual leader and founder of Buddhism in ancient India, known for his teachings on suffering, enlightenment, and rebirth.</li>
+        <li><a href="{{ url_for('author_quotes', author='Thomas Jefferson') }}">Thomas Jefferson</a> - Third President of the United States, principal author of the Declaration of Independence, and advocate for democracy and individual rights.</li>
+    </ol>
+</div>
+
+
+<h1>Explore Authors by Category</h1>
+
+<h2> 18th Century Authors</h2>
+<div class="category-authors">
+     <ol>
+        <li><a href="{{ url_for('author_quotes', author='Voltaire') }}">Voltaire</a> - French Enlightenment writer, known for wit and advocacy for civil liberties.</li>
+        <li><a href="{{ url_for('author_quotes', author='Jane Austen') }}">Jane Austen</a> - English novelist noted for her insights into the British landed gentry.</li>
+        <li><a href="{{ url_for('author_quotes', author='Jonathan Swift') }}">Jonathan Swift</a> - Irish satirist best known for "Gulliver's Travels."</li>
+        <li><a href="{{ url_for('author_quotes', author='Mary Wollstonecraft') }}">Mary Wollstonecraft</a> - Advocate for women's rights and author of "A Vindication of the Rights of Woman."</li>
+        <li><a href="{{ url_for('author_quotes', author='Samuel Johnson') }}">Samuel Johnson</a> - English writer, often regarded as one of the greatest literary figures of the 18th century.</li>
+
+
+
+
      </ol>
+</div>
+
+<!-- Astronauts -->
+<h2>Astronauts</h2>
+<div class="category-authors">
+    <ol>
+        <li><a href="{{ url_for('author_quotes', author='Chris Hadfield') }}">Chris Hadfield</a> - Canadian astronaut known for his social media presence aboard the ISS.</li>
+        <li><a href="{{ url_for('author_quotes', author='Scott Kelly') }}">Scott Kelly</a> - Renowned for his year-long mission in space, a record at the time.</li>
+        <li><a href="{{ url_for('author_quotes', author='Mae Jemison') }}">Mae Jemison</a> - The first African American woman to travel in space, aboard the Endeavour.</li>
+        <li><a href="{{ url_for('author_quotes', author='Mike Massimino') }}">Mike Massimino</a> - Former NASA astronaut known for his Hubble Space Telescope repair missions.</li>
+        <li><a href="{{ url_for('author_quotes', author='Sally Ride') }}">Sally Ride</a> - The first American woman in space and a champion for science education.</li>
+    </ol>
+</div>
+
+<!-- Women Writers -->
+<h2>Women Writers</h2>
+<div class="category-authors">
+    <ol>
+        <li><a href="{{ url_for('author_quotes', author='Virginia Woolf') }}">Virginia Woolf</a> - British modernist writer, known for her innovative narrative structures.</li>
+        <li><a href="{{ url_for('author_quotes', author='Toni Morrison') }}">Toni Morrison</a> - American novelist, noted for her vivid dialogue and richly detailed characters.</li>
+        <li><a href="{{ url_for('author_quotes', author='Margaret Atwood') }}">Margaret Atwood</a> - Canadian poet and novelist, acclaimed for her sharp wit and feminist themes.</li>
+        <li><a href="{{ url_for('author_quotes', author='Maya Angelou') }}">Maya Angelou</a> - American poet and civil rights activist, celebrated for her lyrical prose and powerful advocacy.</li>
+        <li><a href="{{ url_for('author_quotes', author='J.K. Rowling') }}">J.K. Rowling</a> - British author, best known for her Harry Potter fantasy series.</li>
+    </ol>
+</div>
+
+<!-- Journalists -->
+<h2>Journalists</h2>
+<div class="category-authors">
+    <ol>
+        <li><a href="{{ url_for('author_quotes', author='Bob Woodward') }}">Bob Woodward</a> - Investigative journalist known for his work on the Watergate scandal.</li>
+        <li><a href="{{ url_for('author_quotes', author='Christiane Amanpour') }}">Christiane Amanpour</a> - Chief international anchor for CNN and a respected war correspondent.</li>
+        <li><a href="{{ url_for('author_quotes', author='Carl Bernstein') }}">Carl Bernstein</a> - Award-winning journalist and author, also known for his work on the Watergate scandal alongside Bob Woodward.</li>
+        <li><a href="{{ url_for('author_quotes', author='Anderson Cooper') }}">Anderson Cooper</a> - Prominent television journalist, anchor of CNN's Anderson Cooper 360°.</li>
+        <li><a href="{{ url_for('author_quotes', author='Gloria Steinem') }}">Gloria Steinem</a> - Journalist, political activist, and co-founder of Ms. magazine, known for her advocacy for women's rights.</li>
+    </ol>
+</div>
+
+<!-- Famous People -->
+<h2>Famous People</h2>
+<div class="category-authors">
+    <ol>
+        <li><a href="{{ url_for('author_quotes', author='Nelson Mandela') }}">Nelson Mandela</a> - South African anti-apartheid revolutionary and former president.</li>
+        <li><a href="{{ url_for('author_quotes', author='Albert Einstein') }}">Albert Einstein</a> - Theoretical physicist renowned for his theory of relativity.</li>
+        <li><a href="{{ url_for('author_quotes', author='Martin Luther King Jr.') }}">Martin Luther King Jr.</a> - Leader of the American civil rights movement.</li>
+        <li><a href="{{ url_for('author_quotes', author='Marie Curie') }}">Marie Curie</a> - Pioneering physicist and chemist, known for her research on radioactivity.</li>
+        <li><a href="{{ url_for('author_quotes', author='Steve Jobs') }}">Steve Jobs</a> - Co-founder of Apple Inc. and a key figure in the development of personal computing.</li>
+    </ol>
 </div>
 
 
 
+<!-- Celebrities -->
+<h2>Celebrities</h2>
+<div class="category-authors">
+    <ol>
+        <li><a href="{{ url_for('author_quotes', author='Oprah Winfrey') }}">Oprah Winfrey</a> - Media mogul, actress, and philanthropist known for her talk show.</li>
+        <li><a href="{{ url_for('author_quotes', author='Leonardo DiCaprio') }}">Leonardo DiCaprio</a> - Award-winning actor and environmental activist.</li>
+        <li><a href="{{ url_for('author_quotes', author='Beyoncé') }}">Beyoncé</a> - Influential singer, songwriter, and actress with a powerful impact on music and culture.</li>
+        <li><a href="{{ url_for('author_quotes', author='Ellen DeGeneres') }}">Ellen DeGeneres</a> - Comedian and television host known for her talk show and advocacy.</li>
+        <li><a href="{{ url_for('author_quotes', author='Dwayne Johnson') }}">Dwayne Johnson</a> - Actor and former professional wrestler, known for his charisma and philanthropy.</li>
+    </ol>
+</div>
 
-    {% if query %}
-        <h3>Search Results for "{{ query }}"</h3>
-        <ul class="search-results">
-            {% for author in authors %}
-                <li><a href="{{ url_for('author_quotes', author=author) }}">{{ author }}</a></li>
-            {% endfor %}
-        </ul>
-    {% endif %}
 
-    <script>
 
-    </script>
 {% endblock %}
 
 

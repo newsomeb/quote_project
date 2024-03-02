@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <title>The Quote Archive</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/a659eb1da398d320af2fd8a20/d8b5f15e5b658c283b4038238.js");</script>
 
   <!-- Your code -->
 
@@ -81,6 +81,14 @@
     <!-- Main Content Block -->
     {% block content %}{% endblock %}
 
+<footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2023 The Quote Archive. All rights reserved.</p>
+            <a href="{{ url_for('contactus') }}">Contact Us</a>
+            <a href="{{ url_for('privacypolicy') }}">Privacy Policy</a>
+            <!-- Add additional footer content here -->
+        </div>
+    </footer>
 
     <!-- JavaScript for Toggling Menu -->
     <script>
@@ -90,8 +98,6 @@
                 mobileNav.classList.toggle('show');
             }
         }
-
-
     </script>
 
     {% block scripts %}{% endblock %}

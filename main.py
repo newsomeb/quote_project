@@ -183,42 +183,6 @@ def set_timezone():
     session['user_timezone'] = timezone
     return '', 200
 
-# Dictionary mapping each month to a list of keywords for themes
-seasonal_keywords = {
-    'January': ['new year', 'resolution', 'beginning'],
-    'February': ['love', 'valentine', 'affection'],
-    'March': ['spring', 'growth', 'renewal'],
-    'April': ['rain', 'blossom', 'fresh'],
-    'May': ['flowers', 'mother', 'growth'],
-    'June': ['sun', 'father', 'bright'],
-    'July': ['independence', 'summer', 'celebration'],
-    'August': ['heat', 'vacation', 'relaxation'],
-    'September': ['school', 'learning', 'autumn'],
-    'October': ['fall', 'halloween', 'harvest'],
-    'November': ['thanksgiving', 'gratitude', 'family'],
-    'December': ['holiday', 'winter', 'celebrate']
-}
-
-used_quote_ids = set()  # A set to keep track of already used quote IDs
-def get_monthly_keywords(date):
-    # Dictionary mapping each month to a list of keywords for themes
-    seasonal_keywords = {
-        1: ['new year', 'resolution', 'beginning'],
-        2: ['love', 'valentine', 'affection'],
-        3: ['spring', 'growth', 'renewal'],
-        4: ['rain', 'blossom', 'fresh'],
-        5: ['flowers', 'mother', 'growth'],
-        6: ['sun', 'father', 'bright'],
-        7: ['independence', 'summer', 'celebration'],
-        8: ['heat', 'vacation', 'relaxation'],
-        9: ['school', 'learning', 'autumn'],
-        10: ['fall', 'halloween', 'harvest'],
-        11: ['thanksgiving', 'gratitude', 'family'],
-        12: ['holiday', 'winter', 'celebrate']
-    }
-
-    month = date.month
-    return seasonal_keywords.get(month, [])
 
 
 class CollectionForm(FlaskForm):
@@ -308,25 +272,17 @@ def home(year=None, month=None, day=None):
 @app.route('/authors/', methods=['GET', 'POST'])
 def authors():
     """
-    Implements the authors functionality.
+    Implements the authors functionality by searching for authors.
     """
-
     query = request.args.get('query', "")
     if query:
+        # Fetch authors matching the query
         matched_authors = [result[0] for result in Quote.query.with_entities(Quote.author).filter(Quote.author.ilike(f"%{query}%")).distinct().all()]
-        selected_authors_with_quotes = {}  # Empty dictionary for this case
     else:
         matched_authors = []
-        selected_authors = [result[0] for result in Quote.query.with_entities(Quote.author).order_by(func.random()).distinct().limit(10).all()]
 
-        # Fetching a quote for each selected author
-        selected_authors_with_quotes = {
-            author: Quote.query.filter_by(author=author).order_by(func.random()).first().quote
-            for author in selected_authors
-        }
-
-    return render_template('authors.html', authors=matched_authors, selected_authors_with_quotes=selected_authors_with_quotes, query=query)
-
+    # No need to fetch quotes here as we're focusing on matching authors
+    return render_template('authors.html', authors=matched_authors, query=query)
 
 
 
@@ -342,15 +298,6 @@ class UpdateAccountForm(FlaskForm):
 
 
 
-@app.route('/authors/<letter>/')
-def authors_by_letter(letter):
-    """
-    Implements the authors_by_letter functionality.
-    """
-
-    last_name_initial = Quote.author.ilike(f'% {letter}%')
-    authors = Quote.query.with_entities(Quote.author).filter(last_name_initial).distinct().all()
-    return render_template('authors_by_letter.html', authors=authors)
 
 
 @app.route('/quotes/<author>')
@@ -529,7 +476,7 @@ def topics():
         "Dreams",
         "Change",
         "Leadership",
-        "Time"
+
     ]
 
     half_length = len(popular_topics) // 2
@@ -1063,6 +1010,13 @@ def quote_detail(quote_id):
     # Render the template with the retrieved quote and author's image URL
     return render_template('quote_page.html', quote=quote, author_image_url=author_image_url)
 
+@app.route('/contactus')
+def contactus():
+    return render_template('contactus.html')
+
+@app.route('/privacypolicy')
+def privacypolicy():
+    return render_template('privacypolicy.html')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
