@@ -1018,5 +1018,42 @@ def contactus():
 def privacypolicy():
     return render_template('privacypolicy.html')
 
+
+@app.context_processor
+def inject_footer_content():
+    # Topics for the footer
+    footer_topics = random.sample([
+        "Romance", "Heartbreak", "Loyalty", "Trust", "Drive", "Determination",
+        "Optimism", "Hopefulness", "Faith", "Learning"
+    ], 5)  # Select 5 random topics
+
+    # Authors and a sample quote for the footer
+    authors_quotes = {
+        "MLK Jr": "The time is always right to do what is right.",
+        "Tolstoy": "Everyone thinks of changing the world, but no one thinks of changing himself.",
+        "Joan Didion": "We tell ourselves stories in order to live.",
+        "Leonardo DiCaprio": "If you can do what you do best and be happy, you're further along in life than most people.",
+        "Jane Austen": "There is no charm equal to tenderness of heart."
+    }
+    footer_authors = random.sample(list(authors_quotes.items()), 3)  # Select 3 random authors
+
+    return dict(footer_topics=footer_topics, footer_authors=footer_authors)
+
+
+
+from flask import send_from_directory
+
+@app.route('/sitemap_index.xml')
+def sitemap_index():
+    # Serves the sitemap index file from the static/sitemaps directory
+    return send_from_directory('static/sitemaps', 'sitemap_index.xml')
+
+@app.route('/sitemap<number>.xml')
+def sitemap(number):
+    # Serves individual sitemap files from the static/sitemaps directory
+    # Make sure to capture the `number` parameter correctly in the route
+    return send_from_directory('static/sitemaps', f'sitemap{number}.xml')
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

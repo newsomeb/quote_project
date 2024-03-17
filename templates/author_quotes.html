@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block description %}
+Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a curated collection of thoughts, wisdom, and insights from {{ author }} to motivate and inspire you every day.
+{% endblock %}
+
 {% block content %}
 <div class="author-quotes-page-wrapper"> <!-- Flexbox container for the entire content -->
     <h1>Quotes by {{ author }}</h1>

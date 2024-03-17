@@ -15,8 +15,12 @@
     <title>The Quote Archive</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/a659eb1da398d320af2fd8a20/d8b5f15e5b658c283b4038238.js");</script>
+    <title>{% block title %}Default Title{% endblock %} | The Quote Archive</title>
+    <meta name="description" content="{% block description %}Default description of your site.{% endblock %}">
 
-  <!-- Your code -->
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+
 
 </head>
 <body>
@@ -27,8 +31,15 @@
             <i class="fas fa-bars"></i>
         </button>
 
-        <!-- The Quote Archive Button (Visible in Mobile) -->
-        <a href="{{ url_for('home') }}" class="quote-archive-button mobile-quote-archive-button">The Quote Archive</a>
+        <div class="logo-container">
+            <a href="{{ url_for('home') }}" class="logo-link">
+                <img src="{{ url_for('static', filename='owl_logo.png') }}" alt="The Quote Archive Logo" class="logo-image" style="width: 100%;">
+            </a>
+        </div>
+
+
+
+
 
         <!-- Login Button (Visible in Mobile) -->
         <a href="{{ url_for('account') }}" class="login-button mobile-login-button">
@@ -82,13 +93,18 @@
     {% block content %}{% endblock %}
 
 <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2023 The Quote Archive. All rights reserved.</p>
-            <a href="{{ url_for('contactus') }}">Contact Us</a>
-            <a href="{{ url_for('privacypolicy') }}">Privacy Policy</a>
-            <!-- Add additional footer content here -->
-        </div>
-    </footer>
+            <div class="container">
+                <p>&copy; 2023 The Quote Archive. All rights reserved.</p>
+                <a href="{{ url_for('contactus') }}">Contact Us</a>
+                <a href="{{ url_for('privacypolicy') }}">Privacy Policy</a>
+
+
+
+                </div>
+            </div>
+        </footer>
+
+
 
     <!-- JavaScript for Toggling Menu -->
     <script>

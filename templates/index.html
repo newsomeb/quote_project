@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
+{% block title %}Home{% endblock %}
+
+{% block description %}Explore our vast collection of quotes from famous authors, and find the inspiration you need for the day.{% endblock %}
+
 {% block content %}
+
+
 
 <!-- Elasticsearch Search Bar Form -->
 <form action="{{ url_for('es_search') }}" method="get" class="search-form">
@@ -142,6 +148,14 @@
     {% endif %}
 </div>
 
+                    <div class="explore-topics">
+                        <h3>Explore Topics</h3>
+                        <ul>
+                            {% for topic in footer_topics %}
+                                <li><a href="{{ url_for('es_search', query=topic) }}">{{ topic }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
 
 <!-- Displaying Birthdays Headings -->
 <h2>Birthdays on {{ current_date.strftime('%B %d') }}:</h2>
@@ -285,6 +299,8 @@
 </div>
 
 
+
+
 <!-- Navigation Links for Dates -->
 <div class="date-navigation">
     <a href="{{ url_for('home', year=yesterday.year, month=yesterday.month, day=yesterday.day) }}">Yesterday ({{ yesterday.strftime('%B %d, %Y') }})</a>
@@ -292,6 +308,19 @@
         <a href="{{ url_for('home') }}">Today</a>
     {% endif %}
     <a href="{{ url_for('home', year=tomorrow.year, month=tomorrow.month, day=tomorrow.day) }}">Tomorrow ({{ tomorrow.strftime('%B %d, %Y') }})</a>
+</div>
+
+
+<div class="explore-topics">
+    <h3>Explore Authors</h3>
+    <ul>
+        <li><a href="{{ url_for('author_quotes', author='William Shakespeare') }}">William Shakespeare</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Virginia Woolf') }}">Virginia Woolf</a></li>
+        <li><a href="{{ url_for('author_quotes', author='James Baldwin') }}">James Baldwin</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Maya Angelou') }}">Maya Angelou</a></li>
+        <li><a href="{{ url_for('author_quotes', author='Haruki Murakami') }}">Haruki Murakami</a></li>
+
+    </ul>
 </div>
 
 

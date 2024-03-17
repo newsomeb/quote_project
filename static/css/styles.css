@@ -1257,16 +1257,75 @@ h1 {
     font-size: var(--header-font-size); /* Larger font size for the header */
     margin-bottom: 30px; /* Adds space below the header */
 }
-
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
+/* Reset margins and padding */
 .site-footer {
-    margin-top: auto;
+    /* Ensure it has a defined width or flex-basis */
+    width: 200px; /* Example width; adjust as needed */
+    height: auto; /* Adjust height as needed */
+    /* Add padding/margin as needed */
 }
+
+@media (max-width: 1199px) {
+    .desktop-only {
+        display: none;
+    }
+
+    .page-container {
+        flex-direction: column;
+    }
+}
+
+.explore-topics ul {
+    list-style-type: none; /* Removes the default list item bullet */
+    padding: 0; /* Removes the default padding */
+}
+
+.explore-topics li {
+    display: inline-block; /* Aligns list items side by side */
+    margin: 5px; /* Adds some space between each box */
+}
+
+.explore-topics a {
+    display: block; /* Makes the link fill the entire list item box */
+    padding: 10px; /* Adds space inside the link for a larger clickable area */
+    background-color: #f0f0f0; /* Light grey background */
+    color: #000; /* Text color, adjust as needed */
+    text-decoration: none; /* Removes the underline from links */
+    border-radius: 10px; /* Rounds the corners of the link background */
+ /* Makes the text bold */
+}
+
+.explore-topics a:hover {
+    background-color: #e0e0e0; /* Darker grey on hover for a visual feedback */
+}
+
+
+
+/* Apply styles directly to the anchor tag */
+.quote-archive-button {
+    display: inline-block; /* Makes the anchor tag's size match its content */
+    /* If you know the exact size of the resized image, you can set width and height here */
+}
+
+.logo-container {
+    display: inline-block;
+    max-width: 100px; /* Set this based on your logo's size to ensure tight fit */
+    overflow: hidden; /* Prevents any overflow from being clickable */
+}
+
+.logo-link {
+    display: inline-block;
+    line-height: 0;
+    padding: 0;
+}
+
+.logo-image {
+    display: block; /* Ensures the image takes up the full width of its container */
+    width: 100%; /* Makes the image responsive within its container */
+    height: auto;
+}
+
+
 
 /* Existing styles for desktop ... */
 
