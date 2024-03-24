@@ -58,6 +58,7 @@ class User(db.Model):
     lockout_until = db.Column(db.DateTime, nullable=True)
     failed_login_attempts = db.Column(db.Integer, default=0)
     email_confirmed = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
 
 
     # Relationship fields

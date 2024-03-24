@@ -2,7 +2,7 @@ import os
 from flask import jsonify
 from sqlalchemy import extract, func
 import openai
-from models import Quote
+
 from wtforms import ValidationError
 from datetime import timedelta
 from quote_collections.routes import collections_bp
@@ -12,7 +12,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask import current_app
 from extensions import db
 from dotenv import load_dotenv
-from models import User, Collection
+from models import User, Collection, Quote
 from wtforms.validators import Length
 from flask_mail import Mail
 from flask_bcrypt import Bcrypt
@@ -41,7 +41,9 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask import request, flash, redirect, url_for, render_template
 import requests
-
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+from flask_migrate import Migrate
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -115,10 +117,35 @@ def create_app():
     app.config['CHATGPT_API_KEY'] = os.environ.get('CHATGPT_API_KEY')
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
+    admin = Admin(app, name='MyApp Admin', template_mode='bootstrap3')
+
+    class AdminModelView(ModelView):
+        def is_accessible(self):
+            # Define your logic for admin accessibility
+            return current_user.is_authenticated and current_user.is_admin
+
+        def inaccessible_callback(self, name, **kwargs):
+            # Define what to do if a user tries to access a protected view
+            flash('You do not have permission to access the admin dashboard.', 'danger')
+            return redirect(url_for('login'))
+
+    # Customize admin views for specific models
+    class UserAdmin(AdminModelView):
+        column_searchable_list = ('username', 'email')
 
 
 
+    class QuoteAdmin(AdminModelView):
+        column_searchable_list = ('quote', 'author')
+        page_size = 100
 
+    class CollectionAdmin(AdminModelView):
+        column_searchable_list = ('name',)
+
+    admin.add_view(AdminModelView(User, db.session, category='Data Management'))
+
+    admin.add_view(QuoteAdmin(Quote, db.session, category='Data Management'))
+    admin.add_view(CollectionAdmin(Collection, db.session, category='Data Management'))
 
     logging.basicConfig(filename='app.log', level=logging.DEBUG)  # Log to a file
 
@@ -202,6 +229,7 @@ def home(year=None, month=None, day=None):
     timezone = pytz.timezone(user_timezone)
     utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
     local_now = utc_now.astimezone(timezone)
+
 
 
     # Determine the date for birthday quotes
@@ -1014,6 +1042,10 @@ def quote_detail(quote_id):
 def contactus():
     return render_template('contactus.html')
 
+@app.route('/submitquote')
+def submitquote():
+    return render_template('submitquote.html')
+
 @app.route('/privacypolicy')
 def privacypolicy():
     return render_template('privacypolicy.html')
@@ -1055,5 +1087,7 @@ def sitemap(number):
     return send_from_directory('static/sitemaps', f'sitemap{number}.xml')
 
 
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
+

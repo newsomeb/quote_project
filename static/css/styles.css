@@ -20,34 +20,12 @@
 
 /* Base styles (Mobile First) */
 body {
-    font-family: 'Inter', sans-serif
+    font-family: 'Inter', sans-serif;
     background-color: var(--background-color);
     color: var(--text-color);
     padding: 15px;
 }
 
-
-.top-authors, .category-authors ol {
-    list-style: none;
-    padding-left: 0;
-}
-
-.top-authors, .category-authors li {
-    background-color: var(--topic-card-bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    margin-bottom: 10px;
-    padding: 10px;
-}
-
-.top-authors, .category-authors li a {
-    font-size: var(--author-font-size);
-    color: var(--text-color);
-}
-
-.top-authors, .category-authors li:hover {
-    background-color: var(--hover-bg-color);
-}
 
 /* Add more styles as needed */
 
@@ -107,26 +85,6 @@ button:hover {
     background-color: var(--button-hover-color);
 }
 
-
-.public_collection_container {
-    margin-bottom: 20px; /* Add space below each collection */
-    padding: 10px; /* Optional: Add some padding inside each collection container for better spacing of content */
-}
-
-/* Increase font size for titles within the public collections */
-.public_collection h2 {
-    font-size: 24px; /* Adjust the size as needed for collection titles */
-}
-
-/* Increase font size for collection names */
-.public_collection_container .collection-name {
-    font-size: 30px; /* Larger font size for collection names */
-}
-
-/* Increase font size for collection descriptions */
-.public_collection_container .collection-description {
-    font-size: 15px; /* Larger font size for descriptions */
-}
 
 
 
@@ -229,7 +187,7 @@ button:hover {
 
 /* Custom Login Styles */
 .content {
-    max-width: 400px;
+
     margin: auto;
     background-color: var(--background-color);
     padding: 20px;
@@ -497,6 +455,16 @@ a:hover {
 }
 
 
+
+.quote-flex-container.no-image {
+    /* Example style adjustments for no-image quote cards */
+    justify-content: flex-start; /* Adjust layout */
+}
+
+.quote-flex-container.no-image .quote-content-actions {
+    margin-left: 280px; /* Mimic the space an image would take */
+}
+
 .quote-details {
     display: flex;
     justify-content: space-between;
@@ -564,7 +532,7 @@ button:hover, input[type="submit"]:hover {
 
 
 /* Styles for mobile and small screens */
-@media screen and (max-width: 1050px) { /* Adjust the max-width as needed for your design */
+@media screen and (max-width: 1049px) { /* Adjust the max-width as needed for your design */
     .quote-flex-container {
         flex-direction: column; /* Stack children vertically */
     }
@@ -588,6 +556,16 @@ button:hover, input[type="submit"]:hover {
         min-width: auto; /* Reset the minimum width */
         max-width: 100%; /* Allow the element to expand fully within its container */
         width: 100%; /* Ensure the element takes full width of its container */
+    }
+
+        /* Reset adjustments for quote cards without an image */
+    .quote-flex-container.no-image .quote-content-actions {
+        margin-left: 0; /* Remove any left margin to use full width */
+    }
+
+    /* Make the placeholder take no effective space */
+    .author-image-placeholder {
+        display: none; /* Hide the placeholder on mobile */
     }
 }
 
@@ -1113,30 +1091,57 @@ button:hover, input[type="submit"]:hover {
 }
 
 
-/* Ensures the top authors and category authors use the intended light theme styling */
-.top-authors, .category-authors {
-    background-color: var(--background-color); /* Use white background */
-    color: var(--text-color); /* Use black text */
+.category-authors, .top-authors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center the cards */
+    gap: 20px; /* Space between cards */
 }
 
-.top-authors ol, .category-authors ol {
-    list-style-type: none; /* Remove default list styling */
-    padding: 0; /* Remove default padding */
+/* Individual Author Card Styling */
+.category-authors ol, .top-authors ol {
+    list-style: none;
+    padding: 0;
+    margin: 0; /* Remove margins to align with the minimalistic style */
+    width: 100%; /* Ensure it takes up all available space within the parent */
 }
 
-.top-authors li, .category-authors li {
-    margin-bottom: 10px; /* Add some space between list items */
+.category-authors li, .top-authors li {
+    font-size: 1.0em;
+    background-color: #f0f0f0; /* Light background for each item */
+    border-radius: 10px; /* Rounded corners */
+    margin-bottom: 10px; /* Space between items */
+    padding: 10px; /* Padding inside each item */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: Adds subtle shadow */
+    text-align: left; /* Aligns text to the left */
 }
 
-.top-authors a, .category-authors a {
-    color: var(--primary-color); /* Use primary color for links */
-    text-decoration: none; /* Remove underline from links */
+.category-authors a, .top-authors a {
+    font-size: 1.1em;
+ /* Primary color for links */
+    text-decoration: none; /* No underline by default */
+    font-weight: normal; /* Regular font weight for main category */
 }
 
-.top-authors a:hover, .category-authors a:hover {
-    color: var(--link-hover-color); /* Change link color on hover */
+.category-authors a:hover, .top-authors a:hover {
+    text-decoration: underline; /* Underline on hover for better interactivity */
 }
 
+/* For main categories (e.g., 18th Century Authors, Astronauts, etc.) */
+h2 {
+    width: 100%; /* Full width to center the text properly */
+ /* Centers the category title */
+    font-size: 1.5em; /* Larger font size for visibility */
+    margin-top: 20px; /* Space above each new category */
+    color: #333; /* Darker color for emphasis */
+}
+
+/* Adjustments for Mobile View */
+@media screen and (max-width: 768px) {
+    .category-authors, .top-authors {
+        flex-direction: column; /* Stack the authors vertically on smaller screens */
+    }
+}
 
 .author-alphabet {
     display: flex;
@@ -1180,20 +1185,78 @@ button:hover, input[type="submit"]:hover {
     background-color: #f8f8f8;
 }
 
+.container {
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap as needed */
+ /* Distribute space between and around items */
+    gap: 20px; /* Space between items */
+    width: 100%; /* Full width to accommodate child elements */
+}
+
+/* Base styles for .collection (applies to all screen sizes) */
+.collection {
+    background-color: #f0f0f0; /* Ensures background color is applied */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding for better spacing */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional shadow for depth */
+    box-sizing: border-box; /* Include padding and border in width calculation */
+    margin-bottom: 20px; /* Space below each card */
+}
+
+/* Collection Name Styling */
 .collection-name {
-    font-size: 1.5em; /* Makes the title slightly larger for emphasis */
-    margin-bottom: 8px; /* Adds some space below the title */
+    font-size: 1.5em; /* Emphasize the title */
+    margin-bottom: 8px; /* Space below the title */
+    color: #333; /* Dark color for text */
 }
 
+/* Collection Description Styling */
 .collection-description {
-    margin-bottom: 16px; /* Adds more space below the description */
+    font-size: 1em; /* Standard size for descriptions */
+    margin-bottom: 16px; /* Space below descriptions */
+    color: #666; /* Lighter color for descriptions */
 }
 
+/* Styles specifically for .collection-container */
+.collection-container {
+    background-color: #f0f0f0; /* Light grey background */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding for better spacing */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional shadow for depth */
+    margin-bottom: 20px; /* Space below each collection */
+    text-align: center; /* Center-align the content */
+    box-sizing: border-box; /* Include padding and border in width calculation */
+}
+
+/* Collection Actions Styling */
 .collection-actions {
     display: flex;
-    align-items: center; /* Vertically aligns the buttons and checkbox */
-    justify-content: space-between; /* Spaces out the actions for a cleaner look */
+    align-items: center; /* Vertical alignment of elements */
+    justify-content: space-between; /* Space out elements */
+    margin-top: 10px; /* Space above the actions */
 }
+
+/* Adjusting width for larger screens */
+@media (min-width: 1024px) {
+    .collection-container {
+        width: calc(33.333% - 20px); /* Three cards per row, minus gap */
+    }
+}
+
+/* Responsive adjustments for medium screens */
+@media (max-width: 1023px) {
+    .collection-container {
+        width: calc(50% - 20px); /* Two cards per row */
+    }
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 767px) {
+    .collection-container {
+        width: 100%; /* Single card per row */
+    }
+}
+
 
 .public-label {
     margin-right: 16px; /* Adds some space between the checkbox and the button */
@@ -1211,70 +1274,80 @@ ul {
 ul li {
     flex: 1; /* Each list item will take up equal space */
 }
-
-/* General Styles for Topics */
+/* Container for all topics */
 .topics-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1200px;
+    width: 100%; /* Ensure the container tries to fill the available width */
 }
 
+
+/* Individual topic card styling */
 .topic-card {
-    flex: 1 1 50%; /* Each card will take up half of the container's width */
-    margin-bottom: 15px;
-    padding: 10px;
-    box-sizing: border-box;
+    width: 100%; /* Full width for a minimalistic look without blocks */
+    margin-bottom: 10px; /* Space at the bottom of each topic card */
 }
-
-.topic-card a {
-    color: var(--primary-color); /* Assuming you have a primary color variable */
-    text-decoration: none;
+/* Styling for main category title */
+.topic-card > a {
+    text-align: center; /* Center only the main category title */
+    font-weight: bold; /* Make the main category title bold */
     font-size: 1.2em; /* Slightly larger font size for main topic links */
+    display: block; /* Block display to occupy the full width */
+    margin-bottom: 5px; /* Space below the main category title */
+    color: #000; /* Main category text color */
+    text-decoration: none; /* No underline by default */
 }
 
-.topic-card a:hover {
-    text-decoration: underline; /* Adds an underline on hover for better interactivity */
-    color: var(--link-hover-color); /* Assuming you have a link hover color variable */
+/* Main category hover effect */
+.topic-card > a:hover {
+    text-decoration: underline; /* Underline on hover for interactivity */
 }
 
 /* Subtopics List */
 .topic-card ul {
     list-style-type: none; /* Removes default list styling */
-    padding-left: 20px; /* Adds some indentation to subtopic lists */
+    padding-left: 1em; /* Adds indentation to subtopic lists */
+    text-align: center; /* Aligns subtopics to the left */
+    margin-top: 5px; /* Space above the subtopic list */
 }
 
+/* Subtopic link styling */
 .topic-card ul li a {
     font-size: 1em; /* Standard font size for subtopic links */
-    color: var(--secondary-color); /* Assuming you have a secondary color variable */
+    color: #666; /* Subtopic text color, usually lighter than the main category */
+    display: block; /* Block display for each link */
+    text-decoration: none; /* No underline by default */
+    word-spacing: normal; /* Resets word-spacing for subtopics if it was set globally */
 }
 
+/* Subtopic hover effect */
 .topic-card ul li a:hover {
-    text-decoration: underline;
-    color: var(--link-hover-color);
+    text-decoration: underline; /* Underline on hover for interactivity */
 }
 
 /* Header Styles */
 h1 {
-    font-size: var(--header-font-size); /* Larger font size for the header */
-    margin-bottom: 30px; /* Adds space below the header */
-}
-/* Reset margins and padding */
-.site-footer {
-    /* Ensure it has a defined width or flex-basis */
-    width: 200px; /* Example width; adjust as needed */
-    height: auto; /* Adjust height as needed */
-    /* Add padding/margin as needed */
+    font-size: 2em; /* Adjust font size for the header */
+    margin-bottom: 30px; /* Space below the header */
+    text-align: center; /* Center the header text */
 }
 
-@media (max-width: 1199px) {
-    .desktop-only {
-        display: none;
-    }
-
-    .page-container {
-        flex-direction: column;
+@media screen and (max-width: 1200px) { /* Adjust breakpoint as necessary */
+    .topics-container {
+        grid-template-columns: repeat(2, 1fr); /* Two columns for medium screens */
     }
 }
 
+@media screen and (max-width: 768px) { /* Adjust breakpoint as necessary */
+    .topics-container {
+        grid-template-columns: 1fr; /* One column for small screens */
+        padding: 0 10px; /* Adjusts padding for small screens */
+    }
+}
 .explore-topics ul {
     list-style-type: none; /* Removes the default list item bullet */
     padding: 0; /* Removes the default padding */
@@ -1326,6 +1399,132 @@ h1 {
 }
 
 
+
+.visual-line {
+    height: 100vh; /* Starts with full viewport height */
+    position: absolute;
+
+    left: 0;
+    top: 0;
+    width: 1px;
+    background: #ccc;
+    z-index: -1;
+}
+
+.content {
+    flex: 3; /* Takes up 3 parts of the available space */
+    /* Additional styles for content */
+}
+
+.sidebar-wrapper {
+    flex: 1; /* Takes up 1 part of the available space */
+ /* Or however wide you want your sidebar to be */
+    position: sticky;
+
+    top: 0;
+    /* Additional styles for sidebar */
+}
+
+
+/* Sidebar Styles */
+.sidebar-right {
+    width: 300px; /* Fixed width for the sidebar */
+    padding: 20px; /* Padding for sidebar content */
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    margin-left: 15px;
+    top: 0; /* Adjust based on your header height or desired offset */
+    background-color: var(--background-color); /* Background color consistent with the site */
+    color: var(--text-color); /* Text color consistent with the site */
+    font-family: 'Inter', sans-serif; /* Ensuring consistent font usage */
+    overflow-y: auto; /* Allows internal scrolling if the content overflows */
+    border-left: 1px solid var(--border-color); /* Adding a left border */
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    z-index: 2; /* Ensure it's above other content */
+}
+
+/* Adjusting for link appearance within the sidebar */
+.sidebar-right a {
+    color: var(--text-color); /* Ensures link color consistency */
+    text-decoration: none; /* No underline by default */
+    font-size: var(--author-font-size); /* Consistent font size for authors */
+}
+
+/* Link hover effect within the sidebar */
+.sidebar-right a:hover {
+    color: var(--link-hover-color); /* Hover color for links */
+    text-decoration: underline; /* Underline on hover */
+}
+
+.layout-container {
+    display: flex;
+    justify-content: center; /* Centers children horizontally */
+    align-items: flex-start; /* Aligns children to the top */
+    max-width: 1200px; /* Maximum width of the entire layout */
+    margin: 0 auto; /* Centers the layout container in the viewport */
+    padding: 0 20px; /* Adds padding on both sides */
+    gap: 20px; /* Space between content and sidebar */
+}
+
+.content, .sidebar-wrapper {
+    /* Assuming you want both to take full width on smaller screens */
+    flex: 1;
+    display: flex;
+    flex-direction: column; /* Allows both to grow and fill the space available */
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 1050px) {
+    .visual-line {
+        display: none; /* Hides the grey line in mobile view */
+    }
+    /* Other responsive adjustments */
+    .layout-container {
+        flex-direction: column;
+        padding: 0 10px; /* Adjust padding for smaller screens */
+    }
+    .content, .sidebar-wrapper {
+        flex: none; /* Resets flex settings */
+        width: 100%; /* Full width for smaller screens */
+    }
+}
+
+.create-account-section {
+ /* Adjust spacing to fit your design */
+/* Provide some padding for content */
+ /* Optional: background color to highlight the section */
+    border-radius: 5px; /* Optional: rounded corners for aesthetics */
+}
+
+.create-account-section h3 {
+    margin-bottom: 10px; /* Space below the heading */
+}
+
+.create-account-section ul {
+    padding-left: 20px; /* Indent the list a bit */
+    margin-bottom: 10px; /* Space below the list */
+}
+
+.create-account-section p {
+    margin-bottom: 5px; /* Adjust paragraph spacing for consistency */
+}
+
+.create-account-section a {
+    color: #000000; /* Adjust link color to fit your design */
+    text-decoration: underline; /* Ensure it's recognizable as a link */
+}
+
+.explore-more-link {
+    display: inline !important; /* Ensures the link is displayed inline */
+    padding: 0 !important; /* Removes padding for inline appearance */
+    background-color: transparent !important; /* Removes background color */
+    color: #000000 !important; /* Ensures link color is consistent */
+    text-decoration: underline !important;
+    margin-top: 10px !important; /* Adds some spacing above, adjust as needed */
+    border-radius: 0 !important; /* Removes any border radius */
+}
 
 /* Existing styles for desktop ... */
 

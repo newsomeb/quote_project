@@ -6,325 +6,399 @@
 
 {% block content %}
 
-
-
-<!-- Elasticsearch Search Bar Form -->
-<form action="{{ url_for('es_search') }}" method="get" class="search-form">
-    <input type="text" name="query" placeholder="Search for authors and quotes...">
-    <input type="submit" value="Search">
-</form>
+        <!-- Elasticsearch Search Bar Form -->
+        <form action="{{ url_for('es_search') }}" method="get" class="search-form">
+            <input type="text" name="query" placeholder="Search for authors and quotes...">
+            <input type="submit" value="Search">
+        </form>
 
 
 
-<!-- Quote of the Day -->
-<div class="quotes-container">
-    <h2>Quote of the Day:</h2>
-    {% if quote_of_the_day %}
-        <div class="quote-card" data-quote-id="{{ quote_of_the_day.id }}">
-            <div class="quote-flex-container">
-                <!-- Conditional Displaying Author Image -->
-                {% if quote_of_the_day.image_url %}
-                    <div class="author-image-container">
-                        <img src="{{ url_for('static', filename='author_images/' + quote_of_the_day.image_url) }}" alt="{{ quote_of_the_day.author }}" class="author-image"/>
-                    </div>
-                {% endif %}
+<div class="layout-container">
 
-                <!-- Container for Quote Content, Actions, and Author Name -->
-                <div class="quote-content-actions">
-                    <!-- Displaying Quote Content -->
-                    <div class="quote-content">
-                        <p>{{ quote_of_the_day.quote }}</p>
-                    </div>
+    <div class="content">
 
-                    <!-- Container for Quote Actions and Author Name -->
-                    <div class="quote-details">
-                        <!-- Quote Actions -->
-                        <div class="quote-actions">
-                            <button class="favorite-button" onclick="toggleFavorite({{ quote_of_the_day.id }}, this)">
-                                <i class="fa-regular fa-heart"></i>
-                            </button>
-                            <p class="error-message" style="display: none; color: red;"></p>
 
-                            <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ quote_of_the_day.id }}">
-                                <i class="fa-solid fa-share"></i>
-                            </button>
 
-                            <!-- Share Popup -->
-                            <div class="share-popup" style="display: none;">
-                                <p>Share this quote:</p>
-                                <input type="text" value="https://thequotearchive.com/quote_detail/{{ quote_of_the_day.id }}" readonly>
-                                <button onclick="copyToClipboard(this.previousElementSibling); event.preventDefault();" type="button">Copy</button>
+        <!-- Quote of the Day -->
+        <div class="quotes-container">
+            <h2>Quote of the Day</h2>
+            {% if quote_of_the_day %}
+                <div class="quote-card" data-quote-id="{{ quote_of_the_day.id }}">
+                    <div class="quote-flex-container">
+                        <!-- Conditional Displaying Author Image -->
+                        {% if quote_of_the_day.image_url %}
+                            <div class="author-image-container">
+                                <img src="{{ url_for('static', filename='author_images/' + quote_of_the_day.image_url) }}" alt="{{ quote_of_the_day.author }}" class="author-image"/>
+                            </div>
+                        {% else %}
+                            <div class="author-image-container">
+                                <!-- Placeholder div in case there's no image -->
+                                <div class="author-image-placeholder"></div>
+                            </div>
+                        {% endif %}
+
+
+                        <!-- Container for Quote Content, Actions, and Author Name -->
+                        <div class="quote-content-actions">
+                            <!-- Displaying Quote Content -->
+                            <div class="quote-content">
+                                <p>{{ quote_of_the_day.quote }}</p>
                             </div>
 
-                            <!-- Add to Collection Feature Here, if applicable to your design -->
-                            <!-- Add to Collection Button -->
-                                    <!-- Plus Button and Dropdown Form for Adding to Collection -->
-                            <!-- Plus Button and Dropdown Form for Adding to Collection -->
-                            <!-- Simplified Add to Collection Button and Direct Dropdown -->
-                            <!-- Add to Collection Dropdown with Direct List of Collections -->
-                                                        <!-- Simplified Add to Collection List -->
-                            <div class="add-to-collection-dropdown">
-                                <div class="flex-container">
-                                    <button type="button" class="plus-button" data-quote-id="{{ quote.id }}" onclick="toggleCollectionDropdown(this)">
-                                        <i class="fa-solid fa-plus"></i> <!-- Plus icon -->
+                            <!-- Container for Quote Actions and Author Name -->
+                            <div class="quote-details">
+                                <!-- Quote Actions -->
+                                <div class="quote-actions">
+                                    <button class="favorite-button" onclick="toggleFavorite({{ quote_of_the_day.id }}, this)">
+                                        <i class="fa-regular fa-heart"></i>
                                     </button>
-                                    <div class="dropdown-content" style="display: none;">
-                                        {% for collection in current_user.collections %}
-                                            <!-- Added data-collection-id for uniquely identifying collection buttons -->
-                                            <button data-collection-id="{{ collection.id }}" onclick="addToCollection('{{ collection.id }}', '{{ quote.id }}', this.parentElement.previousElementSibling)">
-                                                {{ collection.name }}
-                                            </button>
-                                        {% endfor %}
-                                        <button class="create-new-collection-btn" data-quote-id="{{ quote.id }}">Create New Collection</button>
+                                    <p class="error-message" style="display: none; color: red;"></p>
 
-
-
-                                    </div>
-                                    <span class="message-placeholder" style="display: none;"></span> <!-- Placeholder for success message (removed if not used) -->
-                                </div>
-                            </div>
-
-                            <!-- Hidden Form for Creating New Collection -->
-                            <div id="create-collection-form-2" style="display: none;">
-                                <h2>Create New Collection</h2>
-                                <form action="{{ url_for('collections.create_collection') }}" method="post">
-                                    <div class="form-group">
-                                        <label for="new-collection-name">Collection Name:</label>
-                                        <input type="text" id="new-collection-name-2" name="name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="new-collection-description">Description:</label>
-                                        <textarea id="new-collection-description-2" name="description"></textarea>
-                                    </div>
-                                    <input type="submit" value="Create">
-                                </form>
-                            </div>
-
-                                                        <!-- The Modal -->
-                            <!-- The Modal -->
-                            <div id="createCollectionModal-2-{{ quote.id }}" class="modal">
-                              <!-- Modal content -->
-                              <div class="modal-content">
-                                <span class="close">&times;</span>
-                                <h2>Create New Collection</h2>
-                                <form action="{{ url_for('collections.create_collection') }}" method="post">
-                                    {{ form.hidden_tag() }} <!-- Automatically includes CSRF token -->
-                                    <div class="form-group">
-                                        {{ form.name.label }}
-                                        {{ form.name(class_='form-control') }} <!-- Assuming you're using Bootstrap for styling -->
-                                        {% if form.name.errors %}
-                                            <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="form-group">
-                                        {{ form.description.label }}
-                                        {{ form.description(class_='form-control') }}
-                                        {% if form.description.errors %}
-                                            <div class="alert alert-danger">{{ form.description.errors[0] }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="form-group">
-                                        {{ form.submit(class_='btn btn-primary') }}
-                                    </div>
-                                </form>
-                              </div>
-                            </div>
-
-
-
-
-                        </div>
-
-                        <!-- Author Name -->
-                        <p class="author-name">
-                            <a href="https://thequotearchive.com/quotes/{{ quote_of_the_day.author|replace(' ', '%20') }}">
-                                {{ quote_of_the_day.author }}
-                            </a>
-                        </p>
-                    </div> <!-- End of quote-details -->
-                </div> <!-- End of quote-content-actions -->
-            </div> <!-- End of quote-flex-container -->
-        </div>
-    {% endif %}
-</div>
-
-                    <div class="explore-topics">
-                        <h3>Explore Topics</h3>
-                        <ul>
-                            {% for topic in footer_topics %}
-                                <li><a href="{{ url_for('es_search', query=topic) }}">{{ topic }}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-<!-- Displaying Birthdays Headings -->
-<h2>Birthdays on {{ current_date.strftime('%B %d') }}:</h2>
-
-<!-- Container for Displaying Quotes -->
-<!-- Container for Displaying Quotes -->
-<div class="quotes-container">
-    {% for data in quotes_data %}
-        <div class="quote-card" data-quote-id="{{ data.quote.id }}">
-            <!-- Flex Container for each Quote -->
-            <div class="quote-flex-container {{ 'no-image' if not data['quote'].image_url else '' }}">
-
-                <!-- Conditional Displaying Author Image -->
-                {% if data['quote'].image_url %}
-                    <div class="author-image-container">
-                        <img src="{{ url_for('static', filename='author_images/' + data['quote'].image_url) }}" alt="{{ data['quote'].author }}" class="author-image"/>
-                    </div>
-                {% endif %}
-
-                <!-- Container for Quote Content, Actions, and Author Name -->
-                <div class="quote-content-actions">
-
-                    <!-- Displaying Quote Content -->
-                    <div class="quote-content">
-                        <p>{{ data['quote'].quote }}</p>
-                    </div>
-
-                    <!-- Container for Quote Actions and Author Name -->
-                    <div class="quote-details">
-                        <!-- Quote Actions -->
-                        <div class="quote-actions">
-                            <!-- Favorite Button -->
-                            <button class="favorite-button" onclick="toggleFavorite({{ data['quote'].id }}, this)">
-                                <i class="fa-regular fa-heart"></i>
-                            </button>
-                            <p class="error-message" style="display: none; color: red;"></p>
-
-                            <!-- Share Button -->
-                            <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ data['quote'].id }}">
-                                <i class="fa-solid fa-share"></i>
-                            </button>
-
-                            <!-- Share Popup -->
-                            <div class="share-popup" style="display: none;">
-                                <p>Share this quote:</p>
-                                <input type="text" value="https://thequotearchive.com/quote_detail/{{ data['quote'].id }}" readonly>
-                                <button onclick="copyToClipboard(this.previousElementSibling); event.preventDefault();" type="button">Copy</button>
-                            </div>
-
-
-                            <!-- Add to Collection Button -->
-                                    <!-- Plus Button and Dropdown Form for Adding to Collection -->
-                            <!-- Plus Button and Dropdown Form for Adding to Collection -->
-                            <!-- Simplified Add to Collection Button and Direct Dropdown -->
-                            <!-- Add to Collection Dropdown with Direct List of Collections -->
-                                                        <!-- Simplified Add to Collection List -->
-                            <div class="add-to-collection-dropdown">
-                                <div class="flex-container">
-                                    <button type="button" class="plus-button" data-quote-id="{{ data.quote.id }}" onclick="toggleCollectionDropdown(this)">
-                                        <i class="fa-solid fa-plus"></i> <!-- Plus icon -->
+                                    <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ quote_of_the_day.id }}">
+                                        <i class="fa-solid fa-share"></i>
                                     </button>
-                                    <div class="dropdown-content" style="display: none;">
-                                        {% for collection in current_user.collections %}
-                                            <!-- Added data-collection-id for uniquely identifying collection buttons -->
-                                            <button data-collection-id="{{ collection.id }}" onclick="addToCollection('{{ collection.id }}', '{{ data.quote.id }}', this.parentElement.previousElementSibling)">
-                                                {{ collection.name }}
+
+                                    <!-- Share Popup -->
+                                    <div class="share-popup" style="display: none;">
+                                        <p>Share this quote:</p>
+                                        <input type="text" value="https://thequotearchive.com/quote_detail/{{ quote_of_the_day.id }}" readonly>
+                                        <button onclick="copyToClipboard(this.previousElementSibling); event.preventDefault();" type="button">Copy</button>
+                                    </div>
+
+                                    <!-- Add to Collection Feature Here, if applicable to your design -->
+                                    <!-- Add to Collection Button -->
+                                            <!-- Plus Button and Dropdown Form for Adding to Collection -->
+                                    <!-- Plus Button and Dropdown Form for Adding to Collection -->
+                                    <!-- Simplified Add to Collection Button and Direct Dropdown -->
+                                    <!-- Add to Collection Dropdown with Direct List of Collections -->
+                                                                <!-- Simplified Add to Collection List -->
+                                    <div class="add-to-collection-dropdown">
+                                        <div class="flex-container">
+                                            <button type="button" class="plus-button" data-quote-id="{{ quote.id }}" onclick="toggleCollectionDropdown(this)">
+                                                <i class="fa-solid fa-plus"></i> <!-- Plus icon -->
                                             </button>
-                                        {% endfor %}
-                                        <button class="create-new-collection-btn" data-quote-id="{{ data.quote.id }}">Create New Collection</button>
+                                            <div class="dropdown-content" style="display: none;">
+                                                {% for collection in current_user.collections %}
+                                                    <!-- Added data-collection-id for uniquely identifying collection buttons -->
+                                                    <button data-collection-id="{{ collection.id }}" onclick="addToCollection('{{ collection.id }}', '{{ quote.id }}', this.parentElement.previousElementSibling)">
+                                                        {{ collection.name }}
+                                                    </button>
+                                                {% endfor %}
+                                                <button class="create-new-collection-btn" data-quote-id="{{ quote.id }}">Create New Collection</button>
 
 
 
-
+                                            </div>
+                                            <span class="message-placeholder" style="display: none;"></span> <!-- Placeholder for success message (removed if not used) -->
+                                        </div>
                                     </div>
-                                    <span class="message-placeholder" style="display: none;"></span> <!-- Placeholder for success message (removed if not used) -->
+
+                                    <!-- Hidden Form for Creating New Collection -->
+                                    <div id="create-collection-form-2" style="display: none;">
+                                        <h2>Create New Collection</h2>
+                                        <form action="{{ url_for('collections.create_collection') }}" method="post">
+                                            <div class="form-group">
+                                                <label for="new-collection-name">Collection Name:</label>
+                                                <input type="text" id="new-collection-name-2" name="name" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new-collection-description">Description:</label>
+                                                <textarea id="new-collection-description-2" name="description"></textarea>
+                                            </div>
+                                            <input type="submit" value="Create">
+                                        </form>
+                                    </div>
+
+                                                                <!-- The Modal -->
+                                    <!-- The Modal -->
+                                    <div id="createCollectionModal-2-{{ quote.id }}" class="modal">
+                                      <!-- Modal content -->
+                                      <div class="modal-content">
+                                        <span class="close">&times;</span>
+                                        <h2>Create New Collection</h2>
+                                        <form action="{{ url_for('collections.create_collection') }}" method="post">
+                                            {{ form.hidden_tag() }} <!-- Automatically includes CSRF token -->
+                                            <div class="form-group">
+                                                {{ form.name.label }}
+                                                {{ form.name(class_='form-control') }} <!-- Assuming you're using Bootstrap for styling -->
+                                                {% if form.name.errors %}
+                                                    <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="form-group">
+                                                {{ form.description.label }}
+                                                {{ form.description(class_='form-control') }}
+                                                {% if form.description.errors %}
+                                                    <div class="alert alert-danger">{{ form.description.errors[0] }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="form-group">
+                                                {{ form.submit(class_='btn btn-primary') }}
+                                            </div>
+                                        </form>
+                                      </div>
+                                    </div>
+
+
+
+
                                 </div>
-                            </div>
 
-                            <!-- Hidden Form for Creating New Collection -->
-                            <div id="create-collection-form" style="display: none;">
-                                <h2>Create New Collection</h2>
-                                <form action="{{ url_for('collections.create_collection') }}" method="post">
-                                    <div class="form-group">
-                                        <label for="new-collection-name">Collection Name:</label>
-                                        <input type="text" id="new-collection-name" name="name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="new-collection-description">Description:</label>
-                                        <textarea id="new-collection-description" name="description"></textarea>
-                                    </div>
-                                    <input type="submit" value="Create">
-                                </form>
-                            </div>
-
-                                                        <!-- The Modal -->
-                            <!-- The Modal -->
-                            <div id="createCollectionModal-{{ data.quote.id }}" class="modal">
-                              <!-- Modal content -->
-                              <div class="modal-content">
-                                <span class="close">&times;</span>
-                                <h2>Create New Collection</h2>
-                                <form action="{{ url_for('collections.create_collection') }}" method="post">
-                                    {{ form.hidden_tag() }} <!-- Automatically includes CSRF token -->
-                                    <div class="form-group">
-                                        {{ form.name.label }}
-                                        {{ form.name(class_='form-control') }} <!-- Assuming you're using Bootstrap for styling -->
-                                        {% if form.name.errors %}
-                                            <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="form-group">
-                                        {{ form.description.label }}
-                                        {{ form.description(class_='form-control') }}
-                                        {% if form.description.errors %}
-                                            <div class="alert alert-danger">{{ form.description.errors[0] }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="form-group">
-                                        {{ form.submit(class_='btn btn-primary') }}
-                                    </div>
-                                </form>
-                              </div>
-                            </div>
-
-
-
-
-                        </div>
-
-                        <!-- Author Name -->
-                        <p class="author-name">
-                            <a href="https://thequotearchive.com/quotes/{{ data['quote'].author|replace(' ', '%20') }}">
-                                {{ data['quote'].author }}
-                            </a>
-                        </p>
-                    </div> <!-- End of quote-details -->
-                </div> <!-- End of quote-content-actions -->
-            </div> <!-- End of quote-flex-container -->
+                                <!-- Author Name -->
+                                <p class="author-name">
+                                    <a href="https://thequotearchive.com/quotes/{{ quote_of_the_day.author|replace(' ', '%20') }}">
+                                        {{ quote_of_the_day.author }}
+                                    </a>
+                                </p>
+                            </div> <!-- End of quote-details -->
+                        </div> <!-- End of quote-content-actions -->
+                    </div> <!-- End of quote-flex-container -->
+                </div>
+            {% endif %}
         </div>
-    {% endfor %}
+
+
+
+        <!-- Displaying Birthdays Headings -->
+        <h2>Birthdays on {{ current_date.strftime('%B %d') }}</h2>
+
+        <!-- Container for Displaying Quotes -->
+        <!-- Container for Displaying Quotes -->
+        <div class="quotes-container">
+            {% for data in quotes_data %}
+                <div class="quote-card" data-quote-id="{{ data.quote.id }}">
+                    <!-- Flex Container for each Quote -->
+                    <div class="quote-flex-container {{ 'no-image' if not data['quote'].image_url else '' }}">
+
+                        <!-- Conditional Displaying Author Image -->
+                        {% if data['quote'].image_url %}
+                            <div class="author-image-container">
+                                <img src="{{ url_for('static', filename='author_images/' + data['quote'].image_url) }}" alt="{{ data['quote'].author }}" class="author-image"/>
+                            </div>
+                        {% endif %}
+
+                        <!-- Container for Quote Content, Actions, and Author Name -->
+                        <div class="quote-content-actions">
+
+                            <!-- Displaying Quote Content -->
+                            <div class="quote-content">
+                                <p>{{ data['quote'].quote }}</p>
+                            </div>
+
+                            <!-- Container for Quote Actions and Author Name -->
+                            <div class="quote-details">
+                                <!-- Quote Actions -->
+                                <div class="quote-actions">
+                                    <!-- Favorite Button -->
+                                    <button class="favorite-button" onclick="toggleFavorite({{ data['quote'].id }}, this)">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                    <p class="error-message" style="display: none; color: red;"></p>
+
+                                    <!-- Share Button -->
+                                    <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ data['quote'].id }}">
+                                        <i class="fa-solid fa-share"></i>
+                                    </button>
+
+                                    <!-- Share Popup -->
+                                    <div class="share-popup" style="display: none;">
+                                        <p>Share this quote:</p>
+                                        <input type="text" value="https://thequotearchive.com/quote_detail/{{ data['quote'].id }}" readonly>
+                                        <button onclick="copyToClipboard(this.previousElementSibling); event.preventDefault();" type="button">Copy</button>
+                                    </div>
+
+
+                                    <!-- Add to Collection Button -->
+                                            <!-- Plus Button and Dropdown Form for Adding to Collection -->
+                                    <!-- Plus Button and Dropdown Form for Adding to Collection -->
+                                    <!-- Simplified Add to Collection Button and Direct Dropdown -->
+                                    <!-- Add to Collection Dropdown with Direct List of Collections -->
+                                                                <!-- Simplified Add to Collection List -->
+                                    <div class="add-to-collection-dropdown">
+                                        <div class="flex-container">
+                                            <button type="button" class="plus-button" data-quote-id="{{ data.quote.id }}" onclick="toggleCollectionDropdown(this)">
+                                                <i class="fa-solid fa-plus"></i> <!-- Plus icon -->
+                                            </button>
+                                            <div class="dropdown-content" style="display: none;">
+                                                {% for collection in current_user.collections %}
+                                                    <!-- Added data-collection-id for uniquely identifying collection buttons -->
+                                                    <button data-collection-id="{{ collection.id }}" onclick="addToCollection('{{ collection.id }}', '{{ data.quote.id }}', this.parentElement.previousElementSibling)">
+                                                        {{ collection.name }}
+                                                    </button>
+                                                {% endfor %}
+                                                <button class="create-new-collection-btn" data-quote-id="{{ data.quote.id }}">Create New Collection</button>
+
+
+
+
+                                            </div>
+                                            <span class="message-placeholder" style="display: none;"></span> <!-- Placeholder for success message (removed if not used) -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Hidden Form for Creating New Collection -->
+                                    <div id="create-collection-form" style="display: none;">
+                                        <h2>Create New Collection</h2>
+                                        <form action="{{ url_for('collections.create_collection') }}" method="post">
+                                            <div class="form-group">
+                                                <label for="new-collection-name">Collection Name:</label>
+                                                <input type="text" id="new-collection-name" name="name" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new-collection-description">Description:</label>
+                                                <textarea id="new-collection-description" name="description"></textarea>
+                                            </div>
+                                            <input type="submit" value="Create">
+                                        </form>
+                                    </div>
+
+                                                                <!-- The Modal -->
+                                    <!-- The Modal -->
+                                    <div id="createCollectionModal-{{ data.quote.id }}" class="modal">
+                                      <!-- Modal content -->
+                                      <div class="modal-content">
+                                        <span class="close">&times;</span>
+                                        <h2>Create New Collection</h2>
+                                        <form action="{{ url_for('collections.create_collection') }}" method="post">
+                                            {{ form.hidden_tag() }} <!-- Automatically includes CSRF token -->
+                                            <div class="form-group">
+                                                {{ form.name.label }}
+                                                {{ form.name(class_='form-control') }} <!-- Assuming you're using Bootstrap for styling -->
+                                                {% if form.name.errors %}
+                                                    <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="form-group">
+                                                {{ form.description.label }}
+                                                {{ form.description(class_='form-control') }}
+                                                {% if form.description.errors %}
+                                                    <div class="alert alert-danger">{{ form.description.errors[0] }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="form-group">
+                                                {{ form.submit(class_='btn btn-primary') }}
+                                            </div>
+                                        </form>
+                                      </div>
+                                    </div>
+
+
+
+
+                                </div>
+
+                                <!-- Author Name -->
+                                <p class="author-name">
+                                    <a href="https://thequotearchive.com/quotes/{{ data['quote'].author|replace(' ', '%20') }}">
+                                        {{ data['quote'].author }}
+                                    </a>
+                                </p>
+                            </div> <!-- End of quote-details -->
+                        </div> <!-- End of quote-content-actions -->
+                    </div> <!-- End of quote-flex-container -->
+                </div>
+            {% endfor %}
+        </div>
+
+
+
+
+        <!-- Navigation Links for Dates -->
+        <div class="date-navigation">
+            <a href="{{ url_for('home', year=yesterday.year, month=yesterday.month, day=yesterday.day) }}">Yesterday ({{ yesterday.strftime('%B %d, %Y') }})</a>
+            {% if not is_today %}
+                <a href="{{ url_for('home') }}">Today</a>
+            {% endif %}
+            <a href="{{ url_for('home', year=tomorrow.year, month=tomorrow.month, day=tomorrow.day) }}">Tomorrow ({{ tomorrow.strftime('%B %d, %Y') }})</a>
+        </div>
+
+
+
+
+
+    </div>
+<div class="sidebar-wrapper">
+    <div class="visual-line"></div>
+    <div class="sidebar-right">
+
+        <!-- Explore Topics Section -->
+        <div class="explore-topics">
+            <h3>Explore Topics</h3>
+            <ul>
+                {% for topic in footer_topics %}
+                    <li><a href="{{ url_for('es_search', query=topic) }}">{{ topic }}</a></li>
+                {% endfor %}
+            </ul>
+            <!-- Inline link for exploring more topics -->
+            <a href="{{ url_for('topics') }}" class="explore-more-link">Explore More Topics</a>
+        </div>
+
+        <!-- Explore Authors Section -->
+        <div class="explore-topics">
+            <h3>Explore Authors</h3>
+            <ul>
+                <li><a href="{{ url_for('author_quotes', author='William Shakespeare') }}">William Shakespeare</a></li>
+                <li><a href="{{ url_for('author_quotes', author='Virginia Woolf') }}">Virginia Woolf</a></li>
+                <li><a href="{{ url_for('author_quotes', author='James Baldwin') }}">James Baldwin</a></li>
+                <li><a href="{{ url_for('author_quotes', author='Maya Angelou') }}">Maya Angelou</a></li>
+                <li><a href="{{ url_for('author_quotes', author='Haruki Murakami') }}">Haruki Murakami</a></li>
+            </ul>
+            <!-- Inline link for exploring more authors -->
+            <a href="{{ url_for('authors') }}" class="explore-more-link">Explore More Authors</a>
+        </div>
+
+        <div class="create-account-section">
+            <h3>Create an Account</h3>
+            <p>Create an account to enjoy exclusive features:</p>
+            <ul>
+                <li>Create collections of your favorite quotes</li>
+                <li>Favorite authors to follow their latest quotes</li>
+                <li>Submit quotes to share with the community</li>
+            </ul>
+            <!-- Inline link for registration -->
+            <a href="{{ url_for('register') }}" class="explore-more-link">Register here</a>
+        </div>
+
+    </div>
 </div>
 
 
 
-
-<!-- Navigation Links for Dates -->
-<div class="date-navigation">
-    <a href="{{ url_for('home', year=yesterday.year, month=yesterday.month, day=yesterday.day) }}">Yesterday ({{ yesterday.strftime('%B %d, %Y') }})</a>
-    {% if not is_today %}
-        <a href="{{ url_for('home') }}">Today</a>
-    {% endif %}
-    <a href="{{ url_for('home', year=tomorrow.year, month=tomorrow.month, day=tomorrow.day) }}">Tomorrow ({{ tomorrow.strftime('%B %d, %Y') }})</a>
 </div>
 
-
-<div class="explore-topics">
-    <h3>Explore Authors</h3>
-    <ul>
-        <li><a href="{{ url_for('author_quotes', author='William Shakespeare') }}">William Shakespeare</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Virginia Woolf') }}">Virginia Woolf</a></li>
-        <li><a href="{{ url_for('author_quotes', author='James Baldwin') }}">James Baldwin</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Maya Angelou') }}">Maya Angelou</a></li>
-        <li><a href="{{ url_for('author_quotes', author='Haruki Murakami') }}">Haruki Murakami</a></li>
-
-    </ul>
-</div>
+        <!-- Right Sidebar -->
 
 
     <script>
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+    // Only set timezone if it hasn't been set before
+        if (!sessionStorage.getItem('timezoneSet')) {
+            fetch('/set_timezone', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}' // Ensure you're passing CSRF token if required
+                },
+                body: JSON.stringify({
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                })
+            }).then(() => {
+                sessionStorage.setItem('timezoneSet', 'true'); // Prevents re-setting timezone on every request
+            });
+        }
+    });
+
+    window.addEventListener('scroll', () => {
+        const sidebar = document.querySelector('.sidebar-right');
+        const height = sidebar.scrollHeight; // Get the scroll height of the sidebar content
+        const pseudoStyle = `height: ${height}px;`; // Construct the style string
+
+        // Set the style directly or update a CSS variable that controls the height
+        sidebar.setAttribute('style', `--pseudo-height: ${height}px;`);
+    });
 
 
     // Wait for the DOM to be fully loaded

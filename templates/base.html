@@ -33,7 +33,7 @@
 
         <div class="logo-container">
             <a href="{{ url_for('home') }}" class="logo-link">
-                <img src="{{ url_for('static', filename='owl_logo.png') }}" alt="The Quote Archive Logo" class="logo-image" style="width: 70%;">
+                <img src="{{ url_for('static', filename='owl_logo.png') }}" alt="The Quote Archive Logo" class="logo-image" style="width: 90%;">
             </a>
         </div>
 
@@ -49,6 +49,7 @@
                 Login
             {% endif %}
         </a>
+
 
         <!-- Navigation Bar (Desktop) -->
         <div class="navbar" id="desktop-navbar">
@@ -93,10 +94,11 @@
     {% block content %}{% endblock %}
 
 <footer class="site-footer">
-            <div class="container">
+            <div class="footer-container">
                 <p>&copy; 2023 The Quote Archive. All rights reserved.</p>
                 <a href="{{ url_for('contactus') }}">Contact Us</a>
                 <a href="{{ url_for('privacypolicy') }}">Privacy Policy</a>
+                <a href="{{ url_for('submitquote') }}">Submit a Quote</a>
 
 
 

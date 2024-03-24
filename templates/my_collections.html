@@ -6,7 +6,7 @@
     <h2>My Collections</h2>
 
     {% for collection in user_collections %}
-    <div class="quote-container">
+    <div class="collection-container">
         {% if collection.image_url %}
             <img src="{{ url_for('static', filename='author_images/' + data['quote'].image_url) }}" alt="{{ data['quote'].author }}" class="author-image responsive-image"/>
         {% endif %}
