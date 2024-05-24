@@ -17,360 +17,340 @@ Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a cu
                 <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}" alt="{{ author }}" class="author-image"/>
             {% endif %}
         </div>
-    <div class="author-quotes-page">
-        <!-- Quotes Container -->
-        <div class="quotes-container">
-            {% for data in quotes_data %}
-            <div class="quote-card" data-quote-id="{{ data.quote.id }}">
-                <!-- Flex Container for each Quote -->
-                <div class="quote-flex-container">
-                    <!-- Container for Quote Content, Actions, and Author Name -->
-                    <div class="quote-content-actions">
-                        <!-- Displaying Quote Content -->
-                        <div class="quote-content">
-                            <p>{{ data['quote'].quote }}</p>
-                        </div>
-                        <!-- Container for Quote Actions and Author Name -->
-                        <div class="quote-details">
-                            <!-- Quote Actions -->
-                            <div class="quote-actions">
-                                <button class="favorite-button" onclick="toggleFavorite({{ data['quote'].id }}, this)">
-                                    <i class="fa-regular fa-heart"></i>
-                                </button>
-                                <p class="error-message" style="display: none; color: red;"></p>
-                                <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ data['quote'].id }}">
-                                    <i class="fa-solid fa-share"></i>
-                                </button>
-                                <div class="share-popup" style="display: none;">
-                                    <p>Share this quote:</p>
-                                    <input type="text" value="https://thequotearchive.com/quote_detail/{{ data['quote'].id }}" readonly>
-                                    <button onclick="copyToClipboard(this.previousElementSibling); event.preventDefault();" type="button">Copy</button>
-                                </div>
-                                <div class="add-to-collection-dropdown">
-                                    <div class="flex-container">
-                                        <button type="button" class="plus-button" data-quote-id="{{ data.quote.id }}" onclick="toggleCollectionDropdown(this)">
-                                            <i class="fa-solid fa-plus"></i>
-                                        </button>
-                                        <div class="dropdown-content" style="display: none;">
-                                            {% for collection in current_user.collections %}
-                                                <button data-collection-id="{{ collection.id }}" onclick="addToCollection('{{ collection.id }}', '{{ data.quote.id }}', this.parentElement.previousElementSibling)">
-                                                    {{ collection.name }}
-                                                </button>
-                                            {% endfor %}
-                                            <button class="create-new-collection-btn" data-quote-id="{{ data.quote.id }}">Create New Collection</button>
-                                        </div>
-                                        <span class="message-placeholder" style="display: none;"></span>
-                                    </div>
-                                </div>
-                                <!-- Modal for Creating New Collection -->
-                                <div id="createCollectionModal-{{ data.quote.id }}" class="modal">
-                                    <div class="modal-content">
-                                        <span class="close">&times;</span>
-                                        <h2>Create New Collection</h2>
-                                        <form action="{{ url_for('collections.create_collection') }}" method="post">
-                                            {{ form.hidden_tag() }}
-                                            <div class="form-group">
-                                                {{ form.name.label }}
-                                                {{ form.name(class_='form-control') }}
-                                                {% if form.name.errors %}
-                                                    <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="form-group">
-                                                {{ form.description.label }}
-                                                {{ form.description(class_='form-control') }}
-                                                {% if form.description.errors %}
-                                                    <div class="alert alert-danger">{{ form.description.errors[0] }}</div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="form-group">
-                                                {{ form.submit(class_='btn btn-primary') }}
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
+        <div class="author-quotes-page">
+            <!-- Quotes Container -->
+            <div class="quotes-container">
+                {% for data in quotes_data %}
+                <div class="quote-card" data-quote-id="{{ data.quote.id }}">
+                    <!-- Flex Container for each Quote -->
+                    <div class="quote-flex-container">
+                        <!-- Container for Quote Content, Actions, and Author Name -->
+                        <div class="quote-content-actions">
+                            <!-- Displaying Quote Content -->
+                            <div class="quote-content">
+                                <p>{{ data['quote'].quote }}</p>
                             </div>
-                            <!-- Author Name -->
-                            <p class="author-name">
-                                <a href="https://thequotearchive.com/quotes/{{ data['quote'].author|replace(' ', '%20') }}">
-                                    {{ data['quote'].author }}
-                                </a>
-                            </p>
-                        </div> <!-- End of quote-details -->
-                    </div> <!-- End of quote-content-actions -->
-                </div> <!-- End of quote-flex-container -->
+                            <!-- Container for Quote Actions and Author Name -->
+                            <div class="quote-details">
+                                <!-- Quote Actions -->
+                                <div class="quote-actions">
+                                    <button class="favorite-button" onclick="toggleFavorite({{ data['quote'].id }}, this)">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                    <p class="error-message" style="display: none; color: red;"></p>
+                                    <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ data['quote'].id }}">
+                                        <i class="fa-solid fa-share"></i>
+                                    </button>
+                                    <div class="share-popup" style="display: none;">
+                                        <p>Share this quote:</p>
+                                        <input type="text" value="https://thequotearchive.com/quote_detail/{{ data['quote'].id }}" readonly>
+                                        <button onclick="copyToClipboard(event, this.previousElementSibling)" type="button">Copy</button>
+                                    </div>
+                                    <div class="add-to-collection-dropdown">
+                                        <div class="flex-container">
+                                            <button type="button" class="plus-button" data-quote-id="{{ data.quote.id }}" onclick="toggleCollectionDropdown(this)">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
+                                            <div class="dropdown-content" style="display: none;">
+                                                {% for collection in current_user.collections %}
+                                                    <button data-collection-id="{{ collection.id }}" onclick="addToCollection('{{ collection.id }}', '{{ data.quote.id }}', this.parentElement.previousElementSibling)">
+                                                        {{ collection.name }}
+                                                    </button>
+                                                {% endfor %}
+                                                <button class="create-new-collection-btn" data-quote-id="{{ data.quote.id }}">Create New Collection</button>
+                                            </div>
+                                            <span class="message-placeholder" style="display: none;"></span>
+                                        </div>
+                                    </div>
+                                    <!-- Modal for Creating New Collection -->
+                                    <div id="createCollectionModal-{{ data.quote.id }}" class="modal">
+                                        <div class="modal-content">
+                                            <span class="close">&times;</span>
+                                            <h2>Create New Collection</h2>
+                                            <form action="{{ url_for('collections.create_collection') }}" method="post">
+                                                {{ form.hidden_tag() }}
+                                                <div class="form-group">
+                                                    {{ form.name.label }}
+                                                    {{ form.name(class_='form-control') }}
+                                                    {% if form.name.errors %}
+                                                        <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="form-group">
+                                                    {{ form.description.label }}
+                                                    {{ form.description(class_='form-control') }}
+                                                    {% if form.description.errors %}
+                                                        <div class="alert alert-danger">{{ form.description.errors[0] }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="form-group">
+                                                    {{ form.submit(class_='btn btn-primary') }}
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Author Name -->
+                                <p class="author-name">
+                                    <a href="https://thequotearchive.com/quotes/{{ data['quote'].author|replace(' ', '%20') }}">
+                                        {{ data['quote'].author }}
+                                    </a>
+                                </p>
+                            </div> <!-- End of quote-details -->
+                        </div> <!-- End of quote-content-actions -->
+                    </div> <!-- End of quote-flex-container -->
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
 </div>
 
-
-
-        <!-- Pagination Navigation -->
-    <div class="pagination">
-        <ul>
-            <!-- Looping over each page in pagination -->
-            {% for page_num in pagination.iter_pages() %}
-                {% if page_num %}
-                    {% if page_num != pagination.page %}
-                        <li><a href="{{ url_for('author_quotes', author=author, page=page_num) }}">{{ page_num }}</a></li>
-                    {% else %}
-                        <!-- Active Page -->
-                        <li class="active">{{ page_num }}</li>
-                    {% endif %}
+<!-- Pagination Navigation -->
+<div class="pagination">
+    <ul>
+        <!-- Looping over each page in pagination -->
+        {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != pagination.page %}
+                    <li><a href="{{ url_for('author_quotes', author=author, page=page_num) }}">{{ page_num }}</a></li>
                 {% else %}
-                    <!-- Placeholder for skipped pages in pagination -->
-                    <li class="disabled">...</li>
+                    <!-- Active Page -->
+                    <li class="active">{{ page_num }}</li>
                 {% endif %}
-            {% endfor %}
-        </ul>
-    </div>
+            {% else %}
+                <!-- Placeholder for skipped pages in pagination -->
+                <li class="disabled">...</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
 
-    <script>
+<script>
+// Wait for the DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all elements with the class 'quote-content'
+    var quotes = document.querySelectorAll('.quote-content');
 
-        // Wait for the DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        // Select all elements with the class 'quote-content'
-        var quotes = document.querySelectorAll('.quote-content');
-
-        // Add click event listener to each quote
-        quotes.forEach(function(quote) {
-            quote.addEventListener('click', function() {
-                // Toggle the 'expanded' class on click
-                this.classList.toggle('expanded');
-            });
-        });
-    });
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
+    // Add click event listener to each quote
+    quotes.forEach(function(quote) {
+        quote.addEventListener('click', function() {
+            // Toggle the 'expanded' class on click
+            this.classList.toggle('expanded');
         });
     });
 
-    function toggleFavorite(quoteId, buttonElement) {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        fetch(`/add_to_favorites/${quoteId}`, {
-            method: 'POST',
-            credentials: 'include', // Ensure cookies for session are included
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': csrfToken // Include CSRF token in request headers
-            },
-            body: JSON.stringify({}) // You may or may not need to send a body depending on your backend requirements
-        })
-        .then(response => {
-            if (response.ok && response.headers.get("Content-Type").includes("application/json")) {
-                return response.json(); // Proceed if the response is JSON
-            } else if (response.status === 401 || !response.headers.get("Content-Type").includes("application/json")) {
-                // Handle unauthenticated user or unexpected content type
-                throw new Error('You must be logged in to favorite');
-            }
-        })
-        .then(data => {
-            // Handle success
-            console.log('Success:', data);
-            buttonElement.classList.add('favorite-active');
-            buttonElement.querySelector('i').classList.replace('fa-regular', 'fa-solid');
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Show error message to user
-            const errorMessageElement = buttonElement.nextElementSibling;
-            if (errorMessageElement) {
-                errorMessageElement.textContent = error.message; // Use the actual error message
-                errorMessageElement.style.display = 'block';
+    // Bind click events to all "Create New Collection" buttons
+    document.querySelectorAll('.create-new-collection-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            // Use the data-quote-id attribute to target the specific modal for each quote
+            var quoteId = this.getAttribute('data-quote-id');
+            var modalId = 'createCollectionModal-' + quoteId;
+            var modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = "block";
             }
         });
-    }
+    });
 
-
-
-
-
-
-
-    function copyToClipboard(inputElement) {
-        // Prevent any default action triggered by the button click, if not already handled
-        event.preventDefault();
-
-        // Use the Clipboard API to copy the text from the input field
-        navigator.clipboard.writeText(inputElement.value).then(() => {
-            alert('Link copied to clipboard'); // Success feedback
-        }).catch(err => {
-            console.error('Could not copy text:', err); // Error feedback
+    // Close modal functionality
+    document.querySelectorAll('.close').forEach(function(span) {
+        span.addEventListener('click', function() {
+            this.closest('.modal').style.display = "none";
         });
-    }
+    });
 
+    // Clicking outside to close modals
+    window.addEventListener('click', function(event) {
+        document.querySelectorAll('.modal').forEach(function(modal) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+    });
 
-    function toggleCollectionDropdown(element) {
-        var dropdownContent = element.nextElementSibling;
-        dropdownContent.style.display = dropdownContent.style.display === "none" ? "block" : "none";
-    }
-
-
-    function toggleSharePopup(buttonElement) {
-        // Assuming .quote-actions is the parent of the button
-        let quoteActions = buttonElement.closest('.quote-actions');
-
-        let popup = buttonElement.nextElementSibling;
-        popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
-
-        if (popup.style.display === 'block') {
-            let inputField = popup.querySelector('input');
-            inputField.value = buttonElement.getAttribute('data-share-url');
-            inputField.select();
-
-            // Get the computed style of the .quote-actions to include margins if any
-            let quoteActionsStyle = window.getComputedStyle(quoteActions);
-
-            // Calculate the total height including margins
-            let quoteActionsHeight = quoteActions.offsetHeight +
-                                     parseInt(quoteActionsStyle.marginTop) +
-                                     parseInt(quoteActionsStyle.marginBottom);
-
-            // Set the top property of the popup to this height
-            popup.style.top = quoteActionsHeight + 'px';
+    // Close all dropdowns and popups on outside click
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.add-to-collection-dropdown') && !event.target.closest('.share-popup') && !event.target.closest('.share-button')) {
+            closeAllDropdownsAndPopups();
         }
-    }
-
-
-    function toggleCollectionList(buttonElement) {
-        let list = buttonElement.nextElementSibling;
-        list.style.display = list.style.display === "block" ? "none" : "block";
-    }
-
-    function addToCollection(collectionId, quoteId) {
-        // Prepare data to be sent in the request
-        const data = {
-            collection_id: collectionId,
-            quote_id: quoteId,
-        };
-
-        fetch('/path/to/add_to_collection_route', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // Include CSRF token as header if needed
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-            // Handle success, such as displaying a confirmation message
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            // Handle errors, such as displaying an error message
-        });
-    }
-
-
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var toggleButtons = document.querySelectorAll('.toggle-dropdown');
-
-        console.log("Found toggle buttons:", toggleButtons.length); // Debug: Check how many buttons are found
-
-        toggleButtons.forEach(function(button, index) {
-            console.log("Attaching listener to button", index); // Debug: Indicate which button is being processed
-            button.addEventListener('click', function() {
-                console.log("Button clicked", index); // Debug: Confirm button click is registered
-                var dropdownContent = this.nextElementSibling;
-                console.log("Dropdown content before toggle:", dropdownContent.style.display); // Debug: Check current display status
-                dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
-                console.log("Dropdown content after toggle:", dropdownContent.style.display); // Debug: Check display status after toggle
-            });
-        });
     });
 
-    var csrf_token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    function addToCollection(collectionId, quoteId, plusButton) {
-        const data = {
-            collection_id: collectionId,
-            quote_id: quoteId,
-        };
-
-        fetch('/add_to_collection', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrf_token
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Keep the border around the plus button for success indication
-                plusButton.classList.add('add-success');
-
-                // Bold the collection name in the dropdown
-                const dropdownContent = plusButton.nextElementSibling;
-                const collectionButtons = dropdownContent.querySelectorAll(`button[data-collection-id='${collectionId}']`);
-                collectionButtons.forEach(btn => {
-                    btn.classList.add('bold-collection'); // Ensure you have defined this class in your CSS
-                });
-            } else {
-                console.error('Failed to add the quote to the collection.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
+    // Keep dropdowns and popups open on inside click
+    document.querySelectorAll('.add-to-collection-dropdown, .share-popup').forEach(function(element) {
+        element.addEventListener('click', function(event) {
+            event.stopPropagation();
         });
-    }
+    });
+});
 
-    function toggleCreateCollectionForm() {
-        var form = document.getElementById('create-collection-form');
-        if (form.style.display === "none" || !form.style.display) {
-            form.style.display = "block";
+function closeAllDropdownsAndPopups() {
+    closeAllSharePopups();
+    closeAllCollectionDropdowns();
+}
+
+function closeAllSharePopups() {
+    document.querySelectorAll('.share-popup').forEach(function(popup) {
+        popup.style.display = 'none';
+    });
+}
+
+function closeAllCollectionDropdowns() {
+    document.querySelectorAll('.dropdown-content').forEach(function(dropdown) {
+        dropdown.style.display = 'none';
+    });
+}
+
+function toggleFavorite(quoteId, buttonElement) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    fetch(`/add_to_favorites/${quoteId}`, {
+        method: 'POST',
+        credentials: 'include', // Ensure cookies for session are included
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken // Include CSRF token in request headers
+        },
+        body: JSON.stringify({}) // You may or may not need to send a body depending on your backend requirements
+    })
+    .then(response => {
+        if (response.ok && response.headers.get("Content-Type").includes("application/json")) {
+            return response.json(); // Proceed if the response is JSON
+        } else if (response.status === 401 || !response.headers.get("Content-Type").includes("application/json")) {
+            // Handle unauthenticated user or unexpected content type
+            throw new Error('You must be logged in to favorite');
+        }
+    })
+    .then(data => {
+        // Handle success
+        buttonElement.classList.add('favorite-active');
+        buttonElement.querySelector('i').classList.replace('fa-regular', 'fa-solid');
+    })
+    .catch(error => {
+        // Show error message to user
+        const errorMessageElement = buttonElement.nextElementSibling;
+        if (errorMessageElement) {
+            errorMessageElement.textContent = error.message; // Use the actual error message
+            errorMessageElement.style.display = 'block';
+        }
+    });
+}
+
+function copyToClipboard(event, inputElement) {
+    event.preventDefault();
+
+    navigator.clipboard.writeText(inputElement.value).then(() => {
+        alert('Link copied to clipboard');
+    }).catch(err => {
+        console.error('Could not copy text:', err);
+    });
+}
+
+function toggleCollectionDropdown(element) {
+    closeAllSharePopups();
+
+    var dropdownContent = element.nextElementSibling;
+    dropdownContent.style.display = dropdownContent.style.display === "none" ? "block" : "none";
+}
+
+function toggleSharePopup(buttonElement) {
+    closeAllCollectionDropdowns();
+
+    let quoteActions = buttonElement.closest('.quote-actions');
+    let popup = buttonElement.nextElementSibling;
+    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+
+    if (popup.style.display === 'block') {
+        let inputField = popup.querySelector('input');
+        inputField.value = buttonElement.getAttribute('data-share-url');
+        inputField.select();
+
+        let quoteActionsStyle = window.getComputedStyle(quoteActions);
+        let quoteActionsHeight = quoteActions.offsetHeight +
+                                 parseInt(quoteActionsStyle.marginTop) +
+                                 parseInt(quoteActionsStyle.marginBottom);
+
+        popup.style.top = quoteActionsHeight + 'px';
+    }
+}
+
+function toggleCollectionList(buttonElement) {
+    let list = buttonElement.nextElementSibling;
+    list.style.display = list.style.display === "block" ? "none" : "block";
+}
+
+function addToCollection(collectionId, quoteId, plusButton) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    const data = {
+        collection_id: collectionId,
+        quote_id: quoteId,
+    };
+
+    fetch('/add_to_collection', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            plusButton.classList.add('add-success');
+
+            const dropdownContent = plusButton.nextElementSibling;
+            const collectionButtons = dropdownContent.querySelectorAll(`button[data-collection-id='${collectionId}']`);
+            collectionButtons.forEach(btn => {
+                btn.classList.add('bold-collection');
+            });
+
+            dropdownContent.style.display = 'none';
         } else {
-            form.style.display = "none";
+            console.error('Failed to add the quote to the collection.');
         }
-    }
+    })
+    .catch(error => {
+        const errorMessageElement = plusButton.nextElementSibling;
+        if (errorMessageElement) {
+            errorMessageElement.textContent = error.message;
+            errorMessageElement.style.display = 'block';
+        }
+    });
+}
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Bind click events to all "Create New Collection" buttons
-        document.querySelectorAll('.create-new-collection-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                // Use the data-quote-id attribute to target the specific modal for each quote
-                var quoteId = this.getAttribute('data-quote-id');
-                var modalId = 'createCollectionModal-' + quoteId;
-                var modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.style.display = "block";
-                }
-            });
-        });
-
-        // Close modal functionality
-        document.querySelectorAll('.close').forEach(function(span) {
-            span.addEventListener('click', function() {
-                this.closest('.modal').style.display = "none";
-            });
-        });
-
-        // Clicking outside to close modals
-        window.addEventListener('click', function(event) {
-            document.querySelectorAll('.modal').forEach(function(modal) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.create-new-collection-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var quoteId = this.getAttribute('data-quote-id');
+            var modalId = 'createCollectionModal-' + quoteId;
+            var modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = "block";
+            }
         });
     });
 
+    document.querySelectorAll('.close').forEach(function(span) {
+        span.addEventListener('click', function() {
+            this.closest('.modal').style.display = "none";
+        });
+    });
 
-    </script>
+    window.addEventListener('click', function(event) {
+        document.querySelectorAll('.modal').forEach(function(modal) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}

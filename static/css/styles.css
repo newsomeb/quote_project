@@ -29,6 +29,12 @@ body {
 
 /* Add more styles as needed */
 
+/* Add this at the beginning of your CSS file */
+*,
+*::before,
+*::after {
+    box-sizing: border-box; /* Ensures padding and border are included in the total width and height */
+}
 
 
 
@@ -185,14 +191,12 @@ button:hover {
     /* ... other styles ... */
 }
 
-/* Custom Login Styles */
 .content {
-
+    flex: 3; /* Takes up 3 parts of the available space */
     margin: auto;
     background-color: var(--background-color);
     padding: 20px;
-
-
+    box-sizing: border-box; /* Ensures padding is included in width calculation */
 }
 
 /* Account Page Styles */
@@ -485,7 +489,7 @@ button:hover, input[type="submit"]:hover {
 
 /* ... any other styles specific to this button */
  .quote-card {
-    display: flex;
+
     align-items: flex-start;
     padding: 10px;
     margin-bottom: 10px;
@@ -500,20 +504,67 @@ button:hover, input[type="submit"]:hover {
     /* Your other styles */
 }
 
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    .quote-content-actions {
+        min-width: 100%; /* Ensure it takes up the full width on mobile */
+        max-width: 100%; /* Ensure it does not exceed the container width */
+        width: 100%; /* Full width for smaller screens */
+    }
 
+    /* If you have additional mobile-specific styles */
+    .quote-card {
+        flex: 1 1 100%; /* Make sure each quote card takes full width */
+        box-sizing: border-box; /* Include padding and border in width calculation */
+    }
+
+    .quote-flex-container {
+        flex-direction: column; /* Stack items vertically */
+        align-items: flex-start; /* Align items to the start */
+    }
+
+    .author-image-container {
+        margin-right: 0; /* Remove right margin on mobile */
+        margin-bottom: 10px; /* Add bottom margin to space out items */
+        width: 100%; /* Full width on mobile */
+        text-align: center; /* Center the image container */
+    }
+
+    .author-image, .author-image-placeholder {
+        width: auto; /* Adjust width to fit the container */
+        height: auto; /* Adjust height to maintain aspect ratio */
+        max-width: 100%; /* Ensure image doesn't exceed container width */
+    }
+}
 .quote-content {
-    display: -webkit-box;
-    -webkit-line-clamp: 5; /* Adjust the number of lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer; /* Optional: changes the mouse cursor on hover */
+    display: block;
+    overflow: visible; /* Ensures that the content is fully visible */
+    text-overflow: clip; /* Prevents the addition of ellipses */
+    cursor: default; /* Default cursor for all quotes */
+    white-space: normal; /* Ensures text wraps to the next line */
+    word-wrap: break-word; /* Break long words to prevent overflow */
 }
 
-.expanded {
-    -webkit-line-clamp: none;
-    display: block;
+.quote-content p {
+    margin: 0; /* Ensure no extra margins around the paragraphs */
+    font-size: 35px; /* Adjust the font size for better readability */
+    line-height: 3.0; /* Adjust line height for better readability */
+    white-space: normal; /* Ensures text wraps to the next line */
+    word-wrap: break-word; /* Break long words to prevent overflow */
 }
+
+
+
+
+.clickable-indicator {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 1.2em;
+    color: #007bff; /* Customize the color */
+    cursor: pointer; /* Pointer cursor for the indicator */
+}
+
 
 /* Base styles for larger screens */
 .author-specific-image-container {
@@ -532,7 +583,7 @@ button:hover, input[type="submit"]:hover {
 
 
 /* Styles for mobile and small screens */
-@media screen and (max-width: 1049px) { /* Adjust the max-width as needed for your design */
+@media screen and (max-width: 1200px) { /* Adjust the max-width as needed for your design */
     .quote-flex-container {
         flex-direction: column; /* Stack children vertically */
     }
@@ -576,6 +627,7 @@ button:hover, input[type="submit"]:hover {
     justify-content: flex-start; /* Aligns children (buttons) to the left */
     gap: 10px; /* Adjust the gap between buttons */
     font-size: 20px; /* Example: Increase font size to 16 pixels */
+    overflow: visible;
     /* ... other styles ... */
 }
 
@@ -824,63 +876,81 @@ button:hover, input[type="submit"]:hover {
 }
 
 
+/* Share Popup Styles */
 .share-popup {
-/* Initially hidden */
-    display: none;
-    position: absolute; /* Positioning related to its relative parent */
+    display: none; /* Initially hidden */
+    position: absolute; /* Position related to its relative parent */
     background-color: #fff; /* Background color */
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Dropdown shadow */
     z-index: 1; /* Ensure it's above other content */
-    width: 100%; /* Full width */
+    width: auto; /* Adjust width as needed */
+    max-width: 300px; /* Set a max width for the popup */
     text-align: left; /* Align text to the left */
+    padding: 10px; /* Padding inside the popup */
+    border: 1px solid var(--border-color); /* Border color */
+    border-radius: var(--border-radius); /* Rounded corners */
+    overflow: hidden; /* Hide overflow */
+    white-space: normal; /* Ensure text wraps to the next line */
+    word-wrap: break-word; /* Break long words to prevent overflow */
 }
 
 .share-popup p {
-    padding: 10px 20px; /* Consistent padding with mobile nav links */
+    padding: 10px 0; /* Consistent padding with other elements */
     margin: 0; /* Remove default margin */
-    border-bottom: 1px solid #e1e1e1; /* Add border for separation */
+    font-size: var(--author-font-size); /* Set font size to match collection font size */
 }
 
-.share-popup input {
-    padding: 10px 20px; /* Input field padding */
-    border: none; /* Remove border */
-    width: calc(100% - 40px); /* Adjust width to account for padding */
-    display: block; /* Ensure it takes full width */
-}
+
 
 .share-popup button {
     display: block; /* Ensure it's visible and takes full width */
     width: 100%; /* Full width for consistency */
-    padding: 10px 20px; /* Adjust padding */
+    padding: 10px 0; /* Adjusted padding to fit directly inside the popup */
     text-align: left; /* Align text to the left */
     background-color: transparent; /* Transparent background */
     border: none; /* Remove border */
     color: var(--text-color); /* Adjust text color */
-    font-size: 1em; /* Adjust font size */
+    font-size: var(--author-font-size); /* Match font size */
+    cursor: pointer; /* Pointer cursor for buttons */
 }
 
+.share-popup button:hover {
+    background-color: var(--hover-bg-color); /* Background color on hover */
+}
 
 
 .dropdown-content {
-    max-height: 200px; /* Adjust based on your needs */
-    overflow-y: auto; /* Allows scrolling but does not explicitly show the scrollbar */
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1000;
+    width: 200px; /* Adjust width as needed */
+    max-height: 200px; /* Adjust height for scrolling */
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 10px;
+}
 
-    /* Hide scrollbar for Internet Explorer, Edge, and Firefox */
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+/* Hide scrollbar */
+.dropdown-content::-webkit-scrollbar {
+    display: none;
+}
 
-    /* Hide scrollbar for Chrome, Safari, Opera */
-    &::-webkit-scrollbar {
-        display: none;
-    }
+/* Show the dropdown when active */
+.dropdown-content.show {
+    display: block;
 }
 
 .dropdown-content button {
+    width: 100%; /* Full width for buttons */
     padding: 10px;
-    width: 100%; /* Full width */
     border: none;
-    background-color: #f9f9f9; /* Slightly different background for button */
-    text-align: center;
+    background-color: #f9f9f9;
+    text-align: left;
+    display: block;
+    white-space: normal; /* Allow text to wrap */
 }
 
 
@@ -1091,57 +1161,69 @@ button:hover, input[type="submit"]:hover {
 }
 
 
-.category-authors, .top-authors {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center; /* Center the cards */
-    gap: 20px; /* Space between cards */
+
+/* Base styles for the container holding all authors */
+.authors-container, .top-authors {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1200px;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-/* Individual Author Card Styling */
-.category-authors ol, .top-authors ol {
-    list-style: none;
-    padding: 0;
-    margin: 0; /* Remove margins to align with the minimalistic style */
-    width: 100%; /* Ensure it takes up all available space within the parent */
+/* Individual author card styling */
+.author-card {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    text-align: center; /* Center all text inside the boxes */
 }
 
-.category-authors li, .top-authors li {
-    font-size: 1.0em;
-    background-color: #f0f0f0; /* Light background for each item */
-    border-radius: 10px; /* Rounded corners */
-    margin-bottom: 10px; /* Space between items */
-    padding: 10px; /* Padding inside each item */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: Adds subtle shadow */
-    text-align: left; /* Aligns text to the left */
+/* Styling for author images */
+.author-card img {
+    max-width: 100px;
+    height: auto;
+    border-radius: 50%;
+    margin-bottom: 10px;
 }
 
-.category-authors a, .top-authors a {
-    font-size: 1.1em;
- /* Primary color for links */
-    text-decoration: none; /* No underline by default */
-    font-weight: normal; /* Regular font weight for main category */
+/* Styling for author links */
+.author-card a {
+    text-decoration: none; /* Remove underline */
+
 }
 
-.category-authors a:hover, .top-authors a:hover {
-    text-decoration: underline; /* Underline on hover for better interactivity */
+/* Hover effect for author links */
+.author-card a:hover {
+    background-color: #d0d0d0; /* Change background color on hover */
 }
 
-/* For main categories (e.g., 18th Century Authors, Astronauts, etc.) */
-h2 {
-    width: 100%; /* Full width to center the text properly */
- /* Centers the category title */
-    font-size: 1.5em; /* Larger font size for visibility */
-    margin-top: 20px; /* Space above each new category */
-    color: #333; /* Darker color for emphasis */
-}
-
-/* Adjustments for Mobile View */
-@media screen and (max-width: 768px) {
-    .category-authors, .top-authors {
-        flex-direction: column; /* Stack the authors vertically on smaller screens */
+/* Responsive adjustments for medium screens */
+@media (max-width: 1023px) {
+    .authors-container, .top-authors {
+        grid-template-columns: repeat(2, 1fr); /* Two columns for medium screens */
     }
 }
+
+/* Responsive adjustments for small screens */
+@media (max-width: 767px) {
+    .authors-container, .top-authors {
+        grid-template-columns: 1fr; /* One column for small screens */
+        padding: 0 10px; /* Adjust padding for small screens */
+    }
+}
+.authors-page h2 {
+    text-align: center;
+}
+
 
 .author-alphabet {
     display: flex;
@@ -1193,68 +1275,116 @@ h2 {
     width: 100%; /* Full width to accommodate child elements */
 }
 
-/* Base styles for .collection (applies to all screen sizes) */
-.collection {
-    background-color: #f0f0f0; /* Ensures background color is applied */
-    border-radius: 10px; /* Rounded corners */
-    padding: 20px; /* Padding for better spacing */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional shadow for depth */
-    box-sizing: border-box; /* Include padding and border in width calculation */
-    margin-bottom: 20px; /* Space below each card */
+
+/* Container for all collections */
+.collections-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1200px;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-/* Collection Name Styling */
-.collection-name {
-    font-size: 1.5em; /* Emphasize the title */
-    margin-bottom: 8px; /* Space below the title */
-    color: #333; /* Dark color for text */
-}
-
-/* Collection Description Styling */
-.collection-description {
-    font-size: 1em; /* Standard size for descriptions */
-    margin-bottom: 16px; /* Space below descriptions */
-    color: #666; /* Lighter color for descriptions */
-}
-
-/* Styles specifically for .collection-container */
+/* Individual collection card styling */
 .collection-container {
-    background-color: #f0f0f0; /* Light grey background */
-    border-radius: 10px; /* Rounded corners */
-    padding: 20px; /* Padding for better spacing */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional shadow for depth */
-    margin-bottom: 20px; /* Space below each collection */
-    text-align: center; /* Center-align the content */
-    box-sizing: border-box; /* Include padding and border in width calculation */
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    text-align: center; /* Center all text inside the boxes */
 }
 
-/* Collection Actions Styling */
-.collection-actions {
-    display: flex;
-    align-items: center; /* Vertical alignment of elements */
-    justify-content: space-between; /* Space out elements */
-    margin-top: 10px; /* Space above the actions */
+/* Remove underline from View Collection links */
+.collection-container .btn {
+    text-decoration: none; /* Remove underline */
+/* Change link color if necessary */
+ /* Ensure block-like appearance */
+
+}
+
+/* Hover effect for View Collection links */
+.collection-container .btn:hover {
+    background-color: #d0d0d0; /* Change background color on hover */
 }
 
 /* Adjusting width for larger screens */
 @media (min-width: 1024px) {
-    .collection-container {
-        width: calc(33.333% - 20px); /* Three cards per row, minus gap */
+    .collections-container {
+        grid-template-columns: repeat(3, 1fr); /* Three columns for larger screens */
     }
 }
 
 /* Responsive adjustments for medium screens */
 @media (max-width: 1023px) {
-    .collection-container {
-        width: calc(50% - 20px); /* Two cards per row */
+    .collections-container {
+        grid-template-columns: repeat(2, 1fr); /* Two columns for medium screens */
     }
 }
 
 /* Responsive adjustments for small screens */
 @media (max-width: 767px) {
-    .collection-container {
-        width: 100%; /* Single card per row */
+    .collections-container {
+        grid-template-columns: 1fr; /* One column for small screens */
+        padding: 0 10px; /* Adjust padding for small screens */
     }
+}
+.authors-page h2 {
+    text-align: center;
+}
+
+.author-card h3 {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 1.2em;
+}
+
+
+/* Apply word wrapping and overflow protection to relevant classes */
+
+/* For collection and topic cards */
+.collection-container, .topic-card {
+    word-wrap: break-word; /* Break long words to prevent overflow */
+    overflow: hidden; /* Hide any overflow */
+    text-overflow: ellipsis; /* Show ellipsis (...) for overflowing text */
+}
+
+/* For collection name and description */
+.collection-name, .collection-description, .topic-card > a, .topic-card ul li a {
+    word-wrap: break-word; /* Break long words to prevent overflow */
+    overflow: hidden; /* Hide any overflow */
+    text-overflow: ellipsis; /* Show ellipsis (...) for overflowing text */
+    white-space: nowrap; /* Prevent text wrapping to new lines */
+}
+
+/* Apply word wrapping and overflow protection for paragraphs in quote content */
+.quote-content p {
+    word-wrap: break-word; /* Break long words to prevent overflow */
+    overflow: hidden; /* Hide any overflow */
+    text-overflow: ellipsis; /* Show ellipsis (...) for overflowing text */
+}
+
+/* Apply the same styling for other relevant elements */
+.author-name a, .quote-content-actions {
+    word-wrap: break-word; /* Break long words to prevent overflow */
+ /* Hide any overflow */
+    text-overflow: ellipsis; /* Show ellipsis (...) for overflowing text */
+    white-space: nowrap; /* Prevent text wrapping to new lines */
+}
+
+.collection-container, .topic-card {
+    padding: 20px;
+    margin-bottom: 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* Ensures padding is included in width calculation */
 }
 
 
@@ -1282,15 +1412,22 @@ ul li {
     margin-left: auto;
     margin-right: auto;
     max-width: 1200px;
-    width: 100%; /* Ensure the container tries to fill the available width */
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box; /* Add this line */
 }
 
-
-/* Individual topic card styling */
 .topic-card {
-    width: 100%; /* Full width for a minimalistic look without blocks */
-    margin-bottom: 10px; /* Space at the bottom of each topic card */
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* Add this line */
 }
+
+
 /* Styling for main category title */
 .topic-card > a {
     text-align: center; /* Center only the main category title */
@@ -1310,8 +1447,8 @@ ul li {
 /* Subtopics List */
 .topic-card ul {
     list-style-type: none; /* Removes default list styling */
-    padding-left: 1em; /* Adds indentation to subtopic lists */
-    text-align: center; /* Aligns subtopics to the left */
+    padding-left: 0; /* Removes indentation for subtopic lists */
+    text-align: center; /* Aligns subtopics to the center */
     margin-top: 5px; /* Space above the subtopic list */
 }
 
@@ -1322,6 +1459,7 @@ ul li {
     display: block; /* Block display for each link */
     text-decoration: none; /* No underline by default */
     word-spacing: normal; /* Resets word-spacing for subtopics if it was set globally */
+    margin: 5px 0; /* Add margin for better spacing */
 }
 
 /* Subtopic hover effect */
@@ -1336,18 +1474,19 @@ h1 {
     text-align: center; /* Center the header text */
 }
 
-@media screen and (max-width: 1200px) { /* Adjust breakpoint as necessary */
+@media screen and (max-width: 1200px) {
     .topics-container {
         grid-template-columns: repeat(2, 1fr); /* Two columns for medium screens */
     }
 }
 
-@media screen and (max-width: 768px) { /* Adjust breakpoint as necessary */
+@media screen and (max-width: 768px) {
     .topics-container {
         grid-template-columns: 1fr; /* One column for small screens */
-        padding: 0 10px; /* Adjusts padding for small screens */
+        padding: 0 10px; /* Adjust padding for small screens */
     }
 }
+
 .explore-topics ul {
     list-style-type: none; /* Removes the default list item bullet */
     padding: 0; /* Removes the default padding */
@@ -1365,11 +1504,74 @@ h1 {
     color: #000; /* Text color, adjust as needed */
     text-decoration: none; /* Removes the underline from links */
     border-radius: 10px; /* Rounds the corners of the link background */
- /* Makes the text bold */
+
 }
 
 .explore-topics a:hover {
     background-color: #e0e0e0; /* Darker grey on hover for a visual feedback */
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 1400px) {
+    .visual-line {
+        display: none; /* Hides the grey line in mobile view */
+    }
+    .layout-container {
+        flex-direction: column;
+        padding: 0 10px; /* Adjust padding for smaller screens */
+    }
+    .content, .sidebar-wrapper {
+        flex: none; /* Resets flex settings */
+        width: 100%; /* Full width for smaller screens */
+    }
+    .sidebar-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px 0; /* Add padding to the top and bottom */
+    }
+    .sidebar-right {
+        width: 100%;
+        max-width: 600px; /* Limit the maximum width for better readability */
+        text-align: center;
+    }
+    .explore-topics ul, .create-account-section ul {
+        padding: 0;
+        list-style: none;
+        text-align: center;
+    }
+    .explore-topics ul li, .create-account-section ul li {
+        margin: 10px 0;
+    }
+    footer {
+        text-align: center;
+        padding: 20px 0;
+    }
+    footer .footer-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    footer .footer-container a {
+        margin: 5px 0;
+    }
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10;
+    }
+    .overlay.show {
+        display: block;
+    }
+    .mobile-nav.show {
+        display: block;
+    }
 }
 
 
@@ -1411,10 +1613,6 @@ h1 {
     z-index: -1;
 }
 
-.content {
-    flex: 3; /* Takes up 3 parts of the available space */
-    /* Additional styles for content */
-}
 
 .sidebar-wrapper {
     flex: 1; /* Takes up 1 part of the available space */
@@ -1466,6 +1664,7 @@ h1 {
     margin: 0 auto; /* Centers the layout container in the viewport */
     padding: 0 20px; /* Adds padding on both sides */
     gap: 20px; /* Space between content and sidebar */
+    box-sizing: border-box;
 }
 
 .content, .sidebar-wrapper {
@@ -1476,7 +1675,8 @@ h1 {
 }
 
 /* Responsive adjustments for mobile */
-@media (max-width: 1050px) {
+/* Responsive adjustments for mobile */
+@media (max-width: 1400px) {
     .visual-line {
         display: none; /* Hides the grey line in mobile view */
     }
@@ -1489,7 +1689,60 @@ h1 {
         flex: none; /* Resets flex settings */
         width: 100%; /* Full width for smaller screens */
     }
+    .sidebar-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px 0; /* Add padding to the top and bottom */
+    }
+    .sidebar-right {
+        width: 100%;
+        max-width: 600px; /* Limit the maximum width for better readability */
+        text-align: center;
+    }
+    .explore-topics ul, .create-account-section ul {
+        padding: 0;
+        list-style: none;
+        text-align: center;
+    }
+    .explore-topics ul li, .create-account-section ul li {
+        margin: 10px 0;
+    }
+
+    /* Center footer content */
+    footer {
+        text-align: center;
+        padding: 20px 0;
+    }
+    footer .footer-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    footer .footer-container a {
+        margin: 5px 0;
+    }
+
+    /* Styles for overlay */
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10;
+    }
+    .overlay.show {
+        display: block;
+    }
+    .mobile-nav.show {
+        display: block;
+    }
 }
+
 
 .create-account-section {
  /* Adjust spacing to fit your design */

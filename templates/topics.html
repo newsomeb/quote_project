@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
@@ -72,7 +71,7 @@
                 {% elif topic == "Beauty" %}
                     <ul>
                         <li><a href="{{ url_for('es_search', query='Aesthetics') }}">Aesthetics</a></li>
-                        <li><a href="{{ url_for('es_search', query='Elegance') }}">Eance</a></li>
+                        <li><a href="{{ url_for('es_search', query='Elegance') }}">Elegance</a></li>
                         <li><a href="{{ url_for('es_search', query='Grace') }}">Grace</a></li>
                     </ul>
                 {% elif topic == "Hope" %}

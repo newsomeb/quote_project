@@ -2,15 +2,8 @@
 
 {% block content %}
 
-<!-- Search Bar Form for Collections -->
-<form action="{{ url_for('collections_search') }}" method="get" class="search-form">
-    <input type="text" name="query" placeholder="Search for collections...">
-    <input type="submit" value="Search">
-</form>
-
-<div class="container">
-    <h2>Public Collections</h2>
-
+<h1>Public Collections</h1>
+<div class="collections-container">
     {% for collection in collections %}
     <div class="collection-container">
         {% if collection.image_url %}
@@ -18,7 +11,6 @@
         {% endif %}
         <h3 class="collection-name">{{ collection.name }}</h3>
         <p class="collection-description">Description: {{ collection.description }}</p>
-
         <div class="collection-actions">
             <a href="{{ url_for('collections.view_collection', collection_id=collection.id) }}" class="btn">View Collection</a>
         </div>

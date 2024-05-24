@@ -2,9 +2,8 @@
 
 {% block content %}
 
-<div class="container">
-    <h2>My Collections</h2>
-
+<h1>My Collections</h1>
+<div class="collections-container">
     {% for collection in user_collections %}
     <div class="collection-container">
         {% if collection.image_url %}
@@ -13,11 +12,8 @@
         <h3 class="collection-name">{{ collection.name }}</h3>
         <p class="collection-description">Description: {{ collection.description }}</p>
         <p>Public: {% if collection.public %}Yes{% else %}No{% endif %}</p>
-
-        <!-- Collection actions -->
         <div class="collection-actions">
             <a href="{{ url_for('collections.view_collection', collection_id=collection.id) }}" class="btn">View Collection</a>
-            <!-- Remaining form and actions -->
         </div>
     </div>
     {% endfor %}

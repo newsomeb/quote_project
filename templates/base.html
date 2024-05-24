@@ -20,8 +20,6 @@
 
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
-
-
 </head>
 <body>
     <!-- Navigation Container -->
@@ -37,10 +35,6 @@
             </a>
         </div>
 
-
-
-
-
         <!-- Login Button (Visible in Mobile) -->
         <a href="{{ url_for('account') }}" class="login-button mobile-login-button">
             {% if current_user.is_authenticated %}
@@ -49,7 +43,6 @@
                 Login
             {% endif %}
         </a>
-
 
         <!-- Navigation Bar (Desktop) -->
         <div class="navbar" id="desktop-navbar">
@@ -63,14 +56,11 @@
                     My Collections
                 {% endif %}
             </a>
-            <!-- ... other regular navigation links for desktop ... -->
         </div>
     </div>
 
     <!-- Mobile Navigation Menu (Initially Hidden) -->
     <div id="mobile-nav" class="mobile-nav">
-        <!-- Closing Button (X) -->
-
         <!-- Links for Mobile Menu -->
         <a href="{{ url_for('authors') }}">Authors</a>
         <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
@@ -85,35 +75,31 @@
         <button class="close-btn" onclick="toggleMenu()">
             <i class="fas fa-times"></i>
         </button>
-        <!-- ... other regular navigation links for mobile ... -->
     </div>
 
-
+    <!-- Overlay for Mobile Navigation Menu -->
+    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
     <!-- Main Content Block -->
     {% block content %}{% endblock %}
 
-<footer class="site-footer">
-            <div class="footer-container">
-                <p>&copy; 2023 The Quote Archive. All rights reserved.</p>
-                <a href="{{ url_for('contactus') }}">Contact Us</a>
-                <a href="{{ url_for('privacypolicy') }}">Privacy Policy</a>
-                <a href="{{ url_for('submitquote') }}">Submit a Quote</a>
-
-
-
-                </div>
-            </div>
-        </footer>
-
-
+    <footer class="site-footer">
+        <div class="footer-container">
+            <p>&copy; 2024 The Quote Archive. All rights reserved.</p>
+            <a href="{{ url_for('contactus') }}">Contact Us</a>
+            <a href="{{ url_for('privacypolicy') }}">Privacy Policy</a>
+            <a href="{{ url_for('submitquote') }}">Submit a Quote</a>
+        </div>
+    </footer>
 
     <!-- JavaScript for Toggling Menu -->
     <script>
         function toggleMenu() {
             var mobileNav = document.getElementById('mobile-nav');
+            var overlay = document.getElementById('overlay');
             if (mobileNav) {
                 mobileNav.classList.toggle('show');
+                overlay.classList.toggle('show');
             }
         }
     </script>

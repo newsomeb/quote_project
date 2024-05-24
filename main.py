@@ -44,6 +44,8 @@ import requests
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_migrate import Migrate
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -217,6 +219,7 @@ class CollectionForm(FlaskForm):
     description = TextAreaField('Description')
     submit = SubmitField('Create')
 
+
 @app.route('/')
 @app.route('/<int:year>/<int:month>/<int:day>')
 def home(year=None, month=None, day=None):
@@ -224,18 +227,20 @@ def home(year=None, month=None, day=None):
     Implements the home functionality, displaying quotes related to authors' birthdays
     and a random 'Quote of the Day' from a special collection.
     """
-    # Timezone handling
-    user_timezone = session.get('user_timezone', 'UTC')
+    # Manually set the user timezone
+    user_timezone = 'America/New_York'  # Replace with your correct timezone
     timezone = pytz.timezone(user_timezone)
     utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
     local_now = utc_now.astimezone(timezone)
 
-
-
     # Determine the date for birthday quotes
-    today = local_now.date() if year is None or month is None or day is None else datetime(year, month, day).date()
+    if year is None or month is None or day is None:
+        today = local_now.date()
+    else:
+        today = datetime(year, month, day, tzinfo=timezone).date()
 
     form = CollectionForm()
+
     # Fetch birthday quotes for the day
     authors_birthday_today = (
         db.session.query(Quote)
@@ -248,21 +253,17 @@ def home(year=None, month=None, day=None):
         .all()
     )
 
-
-
     # Prepare data for the template
     birthday_quotes_data = []
     for author, birthday, deathday, author_image_url in authors_birthday_today:
-        # Attempt to parse the birthday and deathday if not None and is a string
         try:
             birthday_parsed = datetime.strptime(birthday, '%Y-%m-%d') if birthday else None
             deathday_parsed = datetime.strptime(deathday, '%Y-%m-%d') if deathday else None
         except ValueError as e:
-            print(f"Error parsing date for author {author}: {e}")
             birthday_parsed = None
             deathday_parsed = None
 
-        quote = Quote.query.filter_by(author=author).order_by(func.random()).first()
+        quote = Quote.query.filter_by(author=author).order_by(Quote.id).first()
         birthday_quotes_data.append({
             'quote': quote,
             'birthday': birthday_parsed,
@@ -270,21 +271,18 @@ def home(year=None, month=None, day=None):
             'author_image_url': author_image_url,
         })
 
-    # Calculate yesterday and tomorrow dates
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
 
-    # Fetch 'Quote of the Day' from the special collection
     quote_of_the_day_collection = Collection.query.filter_by(name="Quote of the Day").first()
     if quote_of_the_day_collection:
-        day_seed = datetime.now().strftime("%Y%m%d")
+        day_seed = today.strftime("%Y%m%d")
         random.seed(day_seed)
         quotes = quote_of_the_day_collection.quotes
         quote_of_the_day = random.choice(quotes) if quotes else None
     else:
         quote_of_the_day = None
 
-    # Render the template with the prepared data
     return render_template(
         'index.html',
         quotes_data=birthday_quotes_data,
@@ -294,7 +292,6 @@ def home(year=None, month=None, day=None):
         is_today=today == local_now.date(),
         quote_of_the_day=quote_of_the_day,
         form=form,
-        quote = quote,
     )
 
 @app.route('/authors/', methods=['GET', 'POST'])
@@ -364,12 +361,16 @@ def author_quotes(author):
         current_user_collections=collections  # Assuming 'collections' is defined in your route
     )
 
+class SearchForm(FlaskForm):
+    query = StringField('Search')
+    submit = SubmitField('Go')
+
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     """
     Implements the search functionality.
     """
-
+    form = SearchForm(request.args)
     query = request.args.get('query', default="", type=str)
     page = request.args.get('page', 1, type=int)
     PER_PAGE = 10
@@ -390,14 +391,12 @@ def search():
 
         results = connection.execute(stmt, {"query": query, "limit": PER_PAGE, "offset": offset}).fetchall()
 
-
         matching_quotes = [{'quote': row[0], 'author': row[1], 'image_url': row[2]} for row in results]
 
     total_pages = (total_quotes + PER_PAGE - 1) // PER_PAGE  # Ceiling division
 
     return render_template('search_results.html', quotes=matching_quotes, query=query, page=page, per_page=PER_PAGE,
-                           total_quotes=total_quotes, total_pages=total_pages)
-
+                           total_quotes=total_quotes, total_pages=total_pages, form=form)
 
 @app.route('/get_more_info', methods=['POST'])
 def get_more_info():
@@ -859,7 +858,6 @@ def send_confirmation_email(email, token):
             "text": f"Please click the following link to confirm your email: {confirmation_link}"
         }
     )
-
 @app.route('/es_search', methods=['GET'])
 def es_search():
     query = request.args.get('query', default="", type=str)
@@ -922,15 +920,19 @@ def es_search():
 
     pagination = Pagination(page, total_pages)
 
+    search_form = SearchForm()
+    collection_form = CollectionForm()
+
     return render_template(
         'search_results_es.html',
         quotes=matching_quotes,
         query=query,
         page=page,
         pagination=pagination,
-        total_pages=total_pages
+        total_pages=total_pages,
+        search_form=search_form,
+        collection_form=collection_form
     )
-
 
 @app.route('/test/es_data', methods=['GET'])
 def test_es_data():
@@ -1035,8 +1037,11 @@ def quote_detail(quote_id):
     # Optionally, fetch the author's image URL if needed
     author_image_url = quote.image_url if quote.image_url else None
 
+    # Instantiate the form
+    form = CollectionForm()
+
     # Render the template with the retrieved quote and author's image URL
-    return render_template('quote_page.html', quote=quote, author_image_url=author_image_url)
+    return render_template('quote_page.html', quote=quote, author_image_url=author_image_url, form=form)
 
 @app.route('/contactus')
 def contactus():
