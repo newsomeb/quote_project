@@ -1626,22 +1626,19 @@ h1 {
 
 /* Sidebar Styles */
 .sidebar-right {
-    width: 300px; /* Fixed width for the sidebar */
+    width: 300px; /* Adjust as needed for desktop */
     padding: 20px; /* Padding for sidebar content */
-    position: -webkit-sticky; /* For Safari */
     position: sticky;
-    margin-left: 15px;
     top: 0; /* Adjust based on your header height or desired offset */
-    background-color: var(--background-color); /* Background color consistent with the site */
-    color: var(--text-color); /* Text color consistent with the site */
-    font-family: 'Inter', sans-serif; /* Ensuring consistent font usage */
-    overflow-y: auto; /* Allows internal scrolling if the content overflows */
-    border-left: 1px solid var(--border-color); /* Adding a left border */
-    border-top: none;
-    border-right: none;
-    border-bottom: none;
-    z-index: 2; /* Ensure it's above other content */
+    background-color: var(--background-color); /* Consistent background */
+    color: var(--text-color); /* Consistent text color */
+    font-family: 'Inter', sans-serif; /* Consistent font */
+    overflow-y: auto; /* Allows internal scrolling if content overflows */
+    border-left: 1px solid var(--border-color); /* Left border */
+    z-index: 2; /* Above other content */
+    text-align: center; /* Center text inside the sidebar */
 }
+
 
 /* Adjusting for link appearance within the sidebar */
 .sidebar-right a {

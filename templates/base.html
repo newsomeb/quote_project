@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Metadata and External Resources -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZX3J9GXNFF"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -12,19 +13,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <title>The Quote Archive</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/a659eb1da398d320af2fd8a20/d8b5f15e5b658c283b4038238.js");</script>
     <title>{% block title %}Default Title{% endblock %} | The Quote Archive</title>
     <meta name="description" content="{% block description %}Default description of your site.{% endblock %}">
-
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
 </head>
 <body>
-    <!-- Navigation Container -->
     <div class="navbar-container">
-        <!-- Hamburger Button (Visible in Mobile) -->
         <button class="hamburger" onclick="toggleMenu()">
             <i class="fas fa-bars"></i>
         </button>
@@ -35,7 +32,6 @@
             </a>
         </div>
 
-        <!-- Login Button (Visible in Mobile) -->
         <a href="{{ url_for('account') }}" class="login-button mobile-login-button">
             {% if current_user.is_authenticated %}
                 {{ current_user.username }}
@@ -44,7 +40,6 @@
             {% endif %}
         </a>
 
-        <!-- Navigation Bar (Desktop) -->
         <div class="navbar" id="desktop-navbar">
             <a href="{{ url_for('authors') }}">Authors</a>
             <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
@@ -59,9 +54,7 @@
         </div>
     </div>
 
-    <!-- Mobile Navigation Menu (Initially Hidden) -->
     <div id="mobile-nav" class="mobile-nav">
-        <!-- Links for Mobile Menu -->
         <a href="{{ url_for('authors') }}">Authors</a>
         <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
         <a href="{{ url_for('topics') }}">Topics</a>
@@ -77,10 +70,8 @@
         </button>
     </div>
 
-    <!-- Overlay for Mobile Navigation Menu -->
     <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
-    <!-- Main Content Block -->
     {% block content %}{% endblock %}
 
     <footer class="site-footer">
@@ -92,7 +83,6 @@
         </div>
     </footer>
 
-    <!-- JavaScript for Toggling Menu -->
     <script>
         function toggleMenu() {
             var mobileNav = document.getElementById('mobile-nav');
