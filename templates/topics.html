@@ -5,136 +5,143 @@
 {% block description %}Explore popular topics of quotes.{% endblock %}
 
 {% block content %}
+    <!-- Search Form -->
+    <form action="{{ url_for('es_search') }}" method="get" class="search-form">
+        <input type="hidden" name="type" value="topics">  <!-- Added hidden input for search type -->
+        <input type="text" name="query" placeholder="Search for topics...">
+        <input type="submit" value="Search">
+    </form>
+
     <h1>Popular Topics</h1>
     <div class="topics-container">
         {% for topic in topics %}
             <div class="topic-card">
-                <a href="{{ url_for('es_search', query=topic) }}">{{ topic }}</a>
+                <a href="{{ url_for('es_search', query=topic, type='topics') }}">{{ topic }}</a>  <!-- Added type parameter -->
                 {% if topic == "Love" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Romance') }}">Romance</a></li>
-                        <li><a href="{{ url_for('es_search', query='Heartbreak') }}">Heartbreak</a></li>
-                        <li><a href="{{ url_for('es_search', query='Affection') }}">Affection</a></li>
+                        <li><a href="{{ url_for('es_search', query='Romance', type='topics') }}">Romance</a></li>
+                        <li><a href="{{ url_for('es_search', query='Heartbreak', type='topics') }}">Heartbreak</a></li>
+                        <li><a href="{{ url_for('es_search', query='Affection', type='topics') }}">Affection</a></li>
                     </ul>
                 {% elif topic == "Inspiration" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Creativity') }}">Creativity</a></li>
-                        <li><a href="{{ url_for('es_search', query='Innovation') }}">Innovation</a></li>
-                        <li><a href="{{ url_for('es_search', query='Motivation') }}">Motivation</a></li>
+                        <li><a href="{{ url_for('es_search', query='Creativity', type='topics') }}">Creativity</a></li>
+                        <li><a href="{{ url_for('es_search', query='Innovation', type='topics') }}">Innovation</a></li>
+                        <li><a href="{{ url_for('es_search', query='Motivation', type='topics') }}">Motivation</a></li>
                     </ul>
                 {% elif topic == "Success" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Achievement') }}">Achievement</a></li>
-                        <li><a href="{{ url_for('es_search', query='Goals') }}">Goals</a></li>
-                        <li><a href="{{ url_for('es_search', query='Ambition') }}">Ambition</a></li>
+                        <li><a href="{{ url_for('es_search', query='Achievement', type='topics') }}">Achievement</a></li>
+                        <li><a href="{{ url_for('es_search', query='Goals', type='topics') }}">Goals</a></li>
+                        <li><a href="{{ url_for('es_search', query='Ambition', type='topics') }}">Ambition</a></li>
                     </ul>
                 {% elif topic == "Happiness" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Joy') }}">Joy</a></li>
-                        <li><a href="{{ url_for('es_search', query='Contentment') }}">Contentment</a></li>
-                        <li><a href="{{ url_for('es_search', query='Pleasure') }}">Pleasure</a></li>
+                        <li><a href="{{ url_for('es_search', query='Joy', type='topics') }}">Joy</a></li>
+                        <li><a href="{{ url_for('es_search', query='Contentment', type='topics') }}">Contentment</a></li>
+                        <li><a href="{{ url_for('es_search', query='Pleasure', type='topics') }}">Pleasure</a></li>
                     </ul>
                 {% elif topic == "Friendship" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Companionship') }}">Companionship</a></li>
-                        <li><a href="{{ url_for('es_search', query='Loyalty') }}">Loyalty</a></li>
-                        <li><a href="{{ url_for('es_search', query='Trust') }}">Trust</a></li>
+                        <li><a href="{{ url_for('es_search', query='Companionship', type='topics') }}">Companionship</a></li>
+                        <li><a href="{{ url_for('es_search', query='Loyalty', type='topics') }}">Loyalty</a></li>
+                        <li><a href="{{ url_for('es_search', query='Trust', type='topics') }}">Trust</a></li>
                     </ul>
                 {% elif topic == "Motivational" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Drive') }}">Drive</a></li>
-                        <li><a href="{{ url_for('es_search', query='Determination') }}">Determination</a></li>
-                        <li><a href="{{ url_for('es_search', query='Perseverance') }}">Perseverance</a></li>
+                        <li><a href="{{ url_for('es_search', query='Drive', type='topics') }}">Drive</a></li>
+                        <li><a href="{{ url_for('es_search', query='Determination', type='topics') }}">Determination</a></li>
+                        <li><a href="{{ url_for('es_search', query='Perseverance', type='topics') }}">Perseverance</a></li>
                     </ul>
                 {% elif topic == "Positive" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Optimism') }}">Optimism</a></li>
-                        <li><a href="{{ url_for('es_search', query='Hopefulness') }}">Hopefulness</a></li>
-                        <li><a href="{{ url_for('es_search', query='Encouragement') }}">Encouragement</a></li>
+                        <li><a href="{{ url_for('es_search', query='Optimism', type='topics') }}">Optimism</a></li>
+                        <li><a href="{{ url_for('es_search', query='Hopefulness', type='topics') }}">Hopefulness</a></li>
+                        <li><a href="{{ url_for('es_search', query='Encouragement', type='topics') }}">Encouragement</a></li>
                     </ul>
                 {% elif topic == "Life" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Existence') }}">Existence</a></li>
-                        <li><a href="{{ url_for('es_search', query='Experience') }}">Experience</a></li>
-                        <li><a href="{{ url_for('es_search', query='Journey') }}">Journey</a></li>
+                        <li><a href="{{ url_for('es_search', query='Existence', type='topics') }}">Existence</a></li>
+                        <li><a href="{{ url_for('es_search', query='Experience', type='topics') }}">Experience</a></li>
+                        <li><a href="{{ url_for('es_search', query='Journey', type='topics') }}">Journey</a></li>
                     </ul>
                 {% elif topic == "Funny" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Humor') }}">Humor</a></li>
-                        <li><a href="{{ url_for('es_search', query='Wit') }}">Wit</a></li>
-                        <li><a href="{{ url_for('es_search', query='Sarcasm') }}">Sarcasm</a></li>
+                        <li><a href="{{ url_for('es_search', query='Humor', type='topics') }}">Humor</a></li>
+                        <li><a href="{{ url_for('es_search', query='Wit', type='topics') }}">Wit</a></li>
+                        <li><a href="{{ url_for('es_search', query='Sarcasm', type='topics') }}">Sarcasm</a></li>
                     </ul>
                 {% elif topic == "Beauty" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Aesthetics') }}">Aesthetics</a></li>
-                        <li><a href="{{ url_for('es_search', query='Elegance') }}">Elegance</a></li>
-                        <li><a href="{{ url_for('es_search', query='Grace') }}">Grace</a></li>
+                        <li><a href="{{ url_for('es_search', query='Aesthetics', type='topics') }}">Aesthetics</a></li>
+                        <li><a href="{{ url_for('es_search', query='Elegance', type='topics') }}">Elegance</a></li>
+                        <li><a href="{{ url_for('es_search', query='Grace', type='topics') }}">Grace</a></li>
                     </ul>
                 {% elif topic == "Hope" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Aspiration') }}">Aspiration</a></li>
-                        <li><a href="{{ url_for('es_search', query='Faith') }}">Faith</a></li>
-                        <li><a href="{{ url_for('es_search', query='Optimism') }}">Optimism</a></li>
+                        <li><a href="{{ url_for('es_search', query='Aspiration', type='topics') }}">Aspiration</a></li>
+                        <li><a href="{{ url_for('es_search', query='Faith', type='topics') }}">Faith</a></li>
+                        <li><a href="{{ url_for('es_search', query='Optimism', type='topics') }}">Optimism</a></li>
                     </ul>
                 {% elif topic == "God" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Faith') }}">Faith</a></li>
-                        <li><a href="{{ url_for('es_search', query='Spirituality') }}">Spirituality</a></li>
-                        <li><a href="{{ url_for('es_search', query='Divinity') }}">Divinity</a></li>
+                        <li><a href="{{ url_for('es_search', query='Faith', type='topics') }}">Faith</a></li>
+                        <li><a href="{{ url_for('es_search', query='Spirituality', type='topics') }}">Spirituality</a></li>
+                        <li><a href="{{ url_for('es_search', query='Divinity', type='topics') }}">Divinity</a></li>
                     </ul>
                 {% elif topic == "Nature" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Wildlife') }}">Wildlife</a></li>
-                        <li><a href="{{ url_for('es_search', query='Landscape') }}">Landscape</a></li>
-                        <li><a href="{{ url_for('es_search', query='Conservation') }}">Conservation</a></li>
+                        <li><a href="{{ url_for('es_search', query='Wildlife', type='topics') }}">Wildlife</a></li>
+                        <li><a href="{{ url_for('es_search', query='Landscape', type='topics') }}">Landscape</a></li>
+                        <li><a href="{{ url_for('es_search', query='Conservation', type='topics') }}">Conservation</a></li>
                     </ul>
                 {% elif topic == "Growth" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Personal Development') }}">Personal Development</a></li>
-                        <li><a href="{{ url_for('es_search', query='Progress') }}">Progress</a></li>
-                        <li><a href="{{ url_for('es_search', query='Learning') }}">Learning</a></li>
+                        <li><a href="{{ url_for('es_search', query='Personal Development', type='topics') }}">Personal Development</a></li>
+                        <li><a href="{{ url_for('es_search', query='Progress', type='topics') }}">Progress</a></li>
+                        <li><a href="{{ url_for('es_search', query='Learning', type='topics') }}">Learning</a></li>
                     </ul>
                 {% elif topic == "Challenges" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Adversity') }}">Adversity</a></li>
-                        <li><a href="{{ url_for('es_search', query='Resilience') }}">Resilience</a></li>
-                        <li><a href="{{ url_for('es_search', query='Overcoming') }}">Overcoming</a></li>
+                        <li><a href="{{ url_for('es_search', query='Adversity', type='topics') }}">Adversity</a></li>
+                        <li><a href="{{ url_for('es_search', query='Resilience', type='topics') }}">Resilience</a></li>
+                        <li><a href="{{ url_for('es_search', query='Overcoming', type='topics') }}">Overcoming</a></li>
                     </ul>
                 {% elif topic == "Family" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Relationships') }}">Relationships</a></li>
-                        <li><a href="{{ url_for('es_search', query='Parenthood') }}">Parenthood</a></li>
-                        <li><a href="{{ url_for('es_search', query='Heritage') }}">Heritage</a></li>
+                        <li><a href="{{ url_for('es_search', query='Relationships', type='topics') }}">Relationships</a></li>
+                        <li><a href="{{ url_for('es_search', query='Parenthood', type='topics') }}">Parenthood</a></li>
+                        <li><a href="{{ url_for('es_search', query='Heritage', type='topics') }}">Heritage</a></li>
                     </ul>
                 {% elif topic == "Wisdom" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Knowledge') }}">Knowledge</a></li>
-                        <li><a href="{{ url_for('es_search', query='Insight') }}">Insight</a></li>
-                        <li><a href="{{ url_for('es_search', query='Sage Advice') }}">Sage Advice</a></li>
+                        <li><a href="{{ url_for('es_search', query='Knowledge', type='topics') }}">Knowledge</a></li>
+                        <li><a href="{{ url_for('es_search', query='Insight', type='topics') }}">Insight</a></li>
+                        <li><a href="{{ url_for('es_search', query='Sage Advice', type='topics') }}">Sage Advice</a></li>
                     </ul>
                 {% elif topic == "Courage" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Bravery') }}">Bravery</a></li>
-                        <li><a href="{{ url_for('es_search', query='Fearlessness') }}">Fearlessness</a></li>
-                        <li><a href="{{ url_for('es_search', query='Fortitude') }}">Fortitude</a></li>
+                        <li><a href="{{ url_for('es_search', query='Bravery', type='topics') }}">Bravery</a></li>
+                        <li><a href="{{ url_for('es_search', query='Fearlessness', type='topics') }}">Fearlessness</a></li>
+                        <li><a href="{{ url_for('es_search', query='Fortitude', type='topics') }}">Fortitude</a></li>
                     </ul>
                 {% elif topic == "Dreams" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Aspirations') }}">Aspirations</a></li>
-                        <li><a href="{{ url_for('es_search', query='Goals') }}">Goals</a></li>
-                        <li><a href="{{ url_for('es_search', query='Visions') }}">Visions</a></li>
+                        <li><a href="{{ url_for('es_search', query='Aspirations', type='topics') }}">Aspirations</a></li>
+                        <li><a href="{{ url_for('es_search', query='Goals', type='topics') }}">Goals</a></li>
+                        <li><a href="{{ url_for('es_search', query='Visions', type='topics') }}">Visions</a></li>
                     </ul>
                 {% elif topic == "Change" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Transformation') }}">Transformation</a></li>
-                        <li><a href="{{ url_for('es_search', query='Evolution') }}">Evolution</a></li>
-                        <li><a href="{{ url_for('es_search', query='Renewal') }}">Renewal</a></li>
+                        <li><a href="{{ url_for('es_search', query='Transformation', type='topics') }}">Transformation</a></li>
+                        <li><a href="{{ url_for('es_search', query='Evolution', type='topics') }}">Evolution</a></li>
+                        <li><a href="{{ url_for('es_search', query='Renewal', type='topics') }}">Renewal</a></li>
                     </ul>
                 {% elif topic == "Leadership" %}
                     <ul>
-                        <li><a href="{{ url_for('es_search', query='Influence') }}">Influence</a></li>
-                        <li><a href="{{ url_for('es_search', query='Guidance') }}">Guidance</a></li>
-                        <li><a href="{{ url_for('es_search', query='Empowerment') }}">Empowerment</a></li>
+                        <li><a href="{{ url_for('es_search', query='Influence', type='topics') }}">Influence</a></li>
+                        <li><a href="{{ url_for('es_search', query='Guidance', type='topics') }}">Guidance</a></li>
+                        <li><a href="{{ url_for('es_search', query='Empowerment', type='topics') }}">Empowerment</a></li>
                     </ul>
                 {% endif %}
             </div>

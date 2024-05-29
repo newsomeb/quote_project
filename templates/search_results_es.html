@@ -9,50 +9,133 @@
 </form>
 
 <div class="quotes-container">
+    {% if matching_authors %}
+        <h2>Authors Matching Your Search</h2>
+        <div class="author-links">
+            {% for author in matching_authors %}
+                <a href="{{ url_for('author_quotes', author=author) }}" class="author-link">{{ author }}</a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if author_quotes %}
+        <h2>Quotes by {{ query }}</h2>
+        <div class="quotes-section">
+            {% for quote in author_quotes %}
+                <div class="quote-card" data-quote-id="{{ quote.id }}">
+                    <div class="quote-flex-container">
+                        {% if quote.image_url %}
+                            <div class="author-image-container">
+                                <img src="{{ url_for('static', filename='author_images/' + quote.image_url) }}" alt="{{ quote.author }}" class="author-image"/>
+                            </div>
+                        {% endif %}
+                        <div class="quote-content-actions">
+                            <div class="quote-content">
+                                <p>{{ quote.quote }}</p>
+                            </div>
+                            <div class="quote-details">
+                                <div class="quote-actions">
+                                    <button class="favorite-button" onclick="toggleFavorite('{{ quote.id }}', this)">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                    <p class="error-message" style="display: none; color: red;"></p>
+
+                                    <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ quote.id }}">
+                                        <i class="fa-solid fa-share"></i>
+                                    </button>
+
+                                    <div class="share-popup" style="display: none;">
+                                        <p>Share this quote:</p>
+                                        <input type="text" value="https://thequotearchive.com/quote_detail/{{ quote.id }}" readonly>
+                                        <button onclick="copyToClipboard(event, this.previousElementSibling)" type="button">Copy</button>
+                                    </div>
+
+                                    <div class="add-to-collection-dropdown">
+                                        <button type="button" class="plus-button" data-quote-id="{{ quote.id }}" onclick="toggleCollectionDropdown(this)">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                        <div class="dropdown-content" style="display: none;">
+                                            {% for collection in current_user.collections %}
+                                            <button onclick="addToCollection('{{ collection.id }}', '{{ quote.id }}', this.parentElement.previousElementSibling)">
+                                                {{ collection.name }}
+                                            </button>
+                                            {% endfor %}
+                                            <button class="create-new-collection-btn" data-quote-id="{{ quote.id }}">Create New Collection</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="author-name">
+                                    <a href="{{ url_for('author_quotes', author=quote.author) }}">
+                                        {{ quote.author }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="createCollectionModal-{{ quote.id }}" class="modal">
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <h2>Create New Collection</h2>
+                            <form action="{{ url_for('collections.create_collection') }}" method="post">
+                                {{ collection_form.hidden_tag() }}
+                                <div class="form-group">
+                                    {{ collection_form.name.label }}
+                                    {{ collection_form.name(class_='form-control') }}
+                                    {% if collection_form.name.errors %}
+                                    <div class="alert alert-danger">{{ collection_form.name.errors[0] }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    {{ collection_form.description.label }}
+                                    {{ collection_form.description(class_='form-control') }}
+                                    {% if collection_form.description.errors %}
+                                    <div class="alert alert-danger">{{ collection_form.description.errors[0] }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    {{ collection_form.submit(class_='btn btn-primary') }}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h2>Related Quotes</h2>
     {% for quote in quotes %}
         <div class="quote-card" data-quote-id="{{ quote.id }}">
-            <!-- Flex Container for each Quote -->
             <div class="quote-flex-container">
-                <!-- Conditional Displaying Author Image -->
                 {% if quote.image_url %}
                     <div class="author-image-container">
                         <img src="{{ url_for('static', filename='author_images/' + quote.image_url) }}" alt="{{ quote.author }}" class="author-image"/>
                     </div>
                 {% endif %}
-
-                <!-- Container for Quote Content, Actions, and Author Name -->
                 <div class="quote-content-actions">
-                    <!-- Displaying Quote Content -->
                     <div class="quote-content">
                         <p>{{ quote.quote }}</p>
                     </div>
-
-                    <!-- Container for Quote Actions and Author Name -->
                     <div class="quote-details">
-                        <!-- Quote Actions -->
                         <div class="quote-actions">
-                            <!-- Favorite Button -->
                             <button class="favorite-button" onclick="toggleFavorite('{{ quote.id }}', this)">
                                 <i class="fa-regular fa-heart"></i>
                             </button>
                             <p class="error-message" style="display: none; color: red;"></p>
 
-                            <!-- Share Button -->
                             <button class="share-button" onclick="toggleSharePopup(this)" data-share-url="https://thequotearchive.com/quote_detail/{{ quote.id }}">
                                 <i class="fa-solid fa-share"></i>
                             </button>
 
-                            <!-- Share Popup -->
                             <div class="share-popup" style="display: none;">
                                 <p>Share this quote:</p>
                                 <input type="text" value="https://thequotearchive.com/quote_detail/{{ quote.id }}" readonly>
                                 <button onclick="copyToClipboard(event, this.previousElementSibling)" type="button">Copy</button>
                             </div>
 
-                            <!-- Add to Collection Dropdown -->
                             <div class="add-to-collection-dropdown">
                                 <button type="button" class="plus-button" data-quote-id="{{ quote.id }}" onclick="toggleCollectionDropdown(this)">
-                                    <i class="fa-solid fa-plus"></i> <!-- Plus icon -->
+                                    <i class="fa-solid fa-plus"></i>
                                 </button>
                                 <div class="dropdown-content" style="display: none;">
                                     {% for collection in current_user.collections %}
@@ -64,18 +147,14 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Author Name -->
                         <p class="author-name">
                             <a href="{{ url_for('author_quotes', author=quote.author) }}">
                                 {{ quote.author }}
                             </a>
                         </p>
-                    </div> <!-- End of quote-details -->
-                </div> <!-- End of quote-content-actions -->
-            </div> <!-- End of quote-flex-container -->
-
-            <!-- Modal Template for Creating a New Collection -->
+                    </div>
+                </div>
+            </div>
             <div id="createCollectionModal-{{ quote.id }}" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
@@ -112,13 +191,11 @@
         {% for page_num in pagination.iter_pages() %}
             {% if page_num %}
                 {% if page_num != pagination.page %}
-                    <li><a href="{{ url_for('es_search', query=query, page=page_num) }}">{{ page_num }}</a></li>
+                    <li><a href="{{ url_for('es_search', query=query, page=page_num, type=search_type) }}">{{ page_num }}</a></li>
                 {% else %}
-                    <!-- Active Page -->
                     <li class="active">{{ page_num }}</li>
                 {% endif %}
             {% else %}
-                <!-- Placeholder for skipped pages in pagination -->
                 <li class="disabled">...</li>
             {% endif %}
         {% endfor %}
@@ -130,34 +207,27 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOMContentLoaded event triggered');
-    // Select all elements with the class 'quote-content'
     var quotes = document.querySelectorAll('.quote-content');
-
-    // Add click event listener to each quote
     quotes.forEach(function(quote) {
         quote.addEventListener('click', function() {
             console.log('Quote clicked');
-            // Toggle the 'expanded' class on click
             this.classList.toggle('expanded');
         });
     });
 
-    // Bind click events to all "Create New Collection" buttons
     document.querySelectorAll('.create-new-collection-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             console.log('Create New Collection button clicked');
-            // Use the data-quote-id attribute to target the specific modal for each quote
             var quoteId = this.getAttribute('data-quote-id');
             var modalId = 'createCollectionModal-' + quoteId;
             var modal = document.getElementById(modalId);
-            console.log('Modal ID:', modalId, 'Modal Element:', modal); // Debugging output
+            console.log('Modal ID:', modalId, 'Modal Element:', modal);
             if (modal) {
                 modal.style.display = "block";
             }
         });
     });
 
-    // Close modal functionality
     document.querySelectorAll('.close').forEach(function(span) {
         span.addEventListener('click', function() {
             console.log('Close button clicked');
@@ -165,7 +235,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Clicking outside to close modals
     window.addEventListener('click', function(event) {
         document.querySelectorAll('.modal').forEach(function(modal) {
             if (event.target == modal) {
@@ -174,14 +243,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Close all dropdowns and popups on outside click
     document.addEventListener('click', function(event) {
         if (!event.target.closest('.add-to-collection-dropdown') && !event.target.closest('.share-popup') && !event.target.closest('.share-button')) {
             closeAllDropdownsAndPopups();
         }
     });
 
-    // Keep dropdowns and popups open on inside click
     document.querySelectorAll('.add-to-collection-dropdown, .share-popup').forEach(function(element) {
         element.addEventListener('click', function(event) {
             event.stopPropagation();

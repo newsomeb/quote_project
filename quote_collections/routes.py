@@ -50,8 +50,8 @@ def create_collection():
 @login_required
 def my_collections():
     user_collections = Collection.query.filter_by(user_id=current_user.id).all()
-    return render_template('my_collections.html', user_collections=user_collections)
-
+    form = CollectionForm()  # Ensure form instance is passed to the template
+    return render_template('my_collections.html', user_collections=user_collections, form=form)
 
 @collections_bp.route('/collection/<int:collection_id>', methods=['GET'])
 def view_collection(collection_id):
@@ -114,7 +114,7 @@ def delete_collection(collection_id):
 
     if collection.user_id != current_user.id:
         flash('Access denied!', 'danger')
-        return redirect(url_for('main.home'))
+        return redirect(url_for('collections.my_collections'))
 
     try:
         db.session.delete(collection)
@@ -122,35 +122,60 @@ def delete_collection(collection_id):
         flash('Collection deleted successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f"Error deleting collection: {str(e)}", "danger")
+        flash(f"Error deleting collection: {str(e)}", 'danger')
 
     return redirect(url_for('collections.my_collections'))
 
 
-@collections_bp.route('/remove_quote/<int:collection_id>/<int:quote_id>', methods=['POST'])
-@login_required
-def remove_quote_from_collection(collection_id, quote_id):
-    if not validate_id(quote_id) or not validate_collection_access(collection_id):
-        return redirect(url_for('main.home'))
-
-    collection = Collection.query.get_or_404(collection_id)
-    quote = Quote.query.get_or_404(quote_id)
-
-    # Remove quote if it exists in the collection
-    if quote in collection.quotes:
-        collection.quotes.remove(quote)
-        db.session.commit()
-        flash('Quote removed from the collection successfully!', 'success')
-    else:
-        flash('Quote not found in the collection!', 'danger')
-
-    return redirect(url_for('collections.view_collection', collection_id=collection_id))
 
 
-@collections_bp.route('/public_collections')
+@collections_bp.route('/public_collections', methods=['GET'])
 def public_collections():
-    public_collections = Collection.query.filter_by(public=True).all()
-    return render_template('public_collections.html', collections=public_collections)
+    query = request.args.get('query', '', type=str)
+    page = request.args.get('page', 1, type=int)
+    PER_PAGE = 10
+
+    # Query for public collections with optional search
+    if query:
+        search_filter = Collection.query.filter(
+            Collection.public == True,
+            Collection.name.ilike(f'%{query}%') | Collection.description.ilike(f'%{query}%')
+        )
+    else:
+        search_filter = Collection.query.filter_by(public=True)
+
+    public_collections = search_filter.paginate(page=page, per_page=PER_PAGE, error_out=False)
+    total_pages = public_collections.pages
+
+    class Pagination:
+        def __init__(self, page, total_pages):
+            self.page = page
+            self.total_pages = total_pages
+
+        def iter_pages(self):
+            left_edge = 2
+            right_edge = 2
+            left_current = 2
+            right_current = 2
+            last = 0
+
+            for num in range(1, self.total_pages + 1):
+                if num <= left_edge or \
+                        (self.page - left_current <= num <= self.page + right_current) or \
+                        num > self.total_pages - right_edge:
+                    if last + 1 != num:
+                        yield None  # Insert ellipsis
+                    yield num
+                    last = num
+
+    pagination = Pagination(page, total_pages)
+
+    return render_template(
+        'public_collections.html',
+        collections=public_collections.items,
+        pagination=pagination,
+        query=query
+    )
 
 
 @collections_bp.route('/update_privacy/<int:collection_id>', methods=['POST'])
@@ -236,3 +261,29 @@ def add_to_favorites(quote_id):
 
     return jsonify({'message': 'Quote added to Favorites successfully!'}), 200
 
+
+@collections_bp.route('/remove_quote/<int:collection_id>/<int:quote_id>', methods=['POST'])
+@login_required
+def remove_quote_from_collection(collection_id, quote_id):
+    collection = Collection.query.get_or_404(collection_id)
+    quote = Quote.query.get_or_404(quote_id)
+
+    # Check if the user owns the collection
+    if collection.user_id != current_user.id:
+        flash('Access denied!', 'danger')
+        return redirect(url_for('main.home'))
+
+    # Remove the quote from the collection
+    if quote in collection.quotes:
+        collection.quotes.remove(quote)
+        try:
+            db.session.commit()
+            flash('Quote removed from the collection successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Exception in remove_quote_from_collection: {str(e)}")
+            flash(f"Error removing quote from collection: {str(e)}", "danger")
+    else:
+        flash('Quote not found in the collection!', 'danger')
+
+    return redirect(url_for('collections.view_collection', collection_id=collection_id))

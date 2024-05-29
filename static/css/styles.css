@@ -676,10 +676,18 @@ button:hover, input[type="submit"]:hover {
 }
 
 
-/* Hamburger Button - Visible in Mobile */
 .hamburger {
-    display: none;
-;/* Ensure it's visible in mobile view */
+    display: block; /* Ensure it's visible */
+    margin-left: 10px; /* Adjust space between hamburger and next item */
+    font-size: 24px; /* Increase the size of the hamburger icon */
+    padding: 10px; /* Increase the padding around the icon */
+    background: none; /* Ensure no background color */
+    border: none; /* Ensure no border */
+    cursor: pointer; /* Cursor changes to pointer to indicate it's clickable */
+    position: fixed; /* Fix it at the top of the page */
+    top: 10px; /* Adjust the top position */
+    left: 10px; /* Adjust the left position */
+    z-index: 1000; /* Ensure it stays above other content */
 }
 
 /* Navbar Links - Hidden in Mobile, Displayed in Desktop */
@@ -800,14 +808,16 @@ button:hover, input[type="submit"]:hover {
 /* Style for the mobile navigation menu */
 .mobile-nav {
     display: none; /* Hidden by default */
-    position: relative; /* Position relative to the parent container */
- /* Directly below the hamburger button */
-    left: 0;
-    right: 0; /* Align to the full width of the navbar container */
-    background-color: #fff; /* Change as per your design */
+    position: fixed; /* Fix it at the top of the page */
+    top: 0; /* Align it to the top */
+    left: 0; /* Align it to the left */
+    width: 100%; /* Full width */
+    background-color: #fff; /* Background color */
     box-shadow: 0 8px 16px rgba(0,0,0,0.1); /* Optional: adds a shadow for better visibility */
     z-index: 999; /* High z-index to be above all other content */
-    /* Removed properties related to full-screen display */
+    max-height: 100vh; /* Limit height to viewport height */
+    overflow-y: auto; /* Enable scrolling if content exceeds viewport height */
+    padding: 20px; /* Padding inside the menu */
 }
 
 .mobile-nav.show {
@@ -834,15 +844,17 @@ button:hover, input[type="submit"]:hover {
     display: block; /* Show the overlay */
 }
 
-/* Style for each link in the expanded mobile menu */
 .mobile-nav a {
+    display: block; /* Each link takes the full width of the container */
     text-align: left; /* Align text to the left */
     padding: 10px 20px; /* Adjust padding */
     color: var(--text-color); /* Adjust text color */
     text-decoration: none; /* Remove underline */
-    border-bottom: 1px solid #e1e1e1; /* Adjust border color */
-    font-size: 1em; /* Adjust font size */
+    border-bottom: 1px solid #e1e1e1; /* Add border for separation */
+    font-size: 1.2em; /* Increase font size */
+    padding-left: 60px; /* Move the links to the right */
 }
+
 
 /* Hover effect for links */
 .mobile-nav a:hover {
@@ -1584,8 +1596,9 @@ h1 {
 
 .logo-container {
     display: inline-block;
-    max-width: 100px; /* Set this based on your logo's size to ensure tight fit */
+    max-width: 100px; /* Set this based on your logo's size to ensure a tight fit */
     overflow: hidden; /* Prevents any overflow from being clickable */
+    margin-left: 20px; /* Move the logo to the right */
 }
 
 .logo-link {
@@ -1785,3 +1798,19 @@ h1 {
 
 /* Mobile and Tablet styles */
 /* ... [Existing CSS] ... */
+/* Container for the collection title and description */
+/* Ensure the container is using flex-direction column */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center the contents horizontally */
+}
+
+/* Collection Header */
+.collection-header {
+    text-align: center;
+    margin-bottom: 20px; /* Adjust margin as needed */
+    width: 100%; /* Ensure it spans the full width of the container */
+}
+
+/* Ensure the quotes container is properly spaced below the header */

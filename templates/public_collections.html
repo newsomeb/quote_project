@@ -1,20 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Search Form -->
+<form action="{{ url_for('collections.public_collections') }}" method="get" class="search-form">
+    <input type="text" name="query" placeholder="Search for collections..." value="{{ query }}">
+    <input type="submit" value="Search">
+</form>
 
 <h1>Public Collections</h1>
 <div class="collections-container">
     {% for collection in collections %}
     <div class="collection-container">
         {% if collection.image_url %}
-            <img src="{{ url_for('static', filename='author_images/' + data['quote'].image_url) }}" alt="{{ data['quote'].author }}" class="author-image responsive-image"/>
+            <img src="{{ url_for('static', filename='author_images/' + collection.image_url) }}" alt="{{ collection.name }}" class="author-image responsive-image"/>
         {% endif %}
         <h3 class="collection-name">{{ collection.name }}</h3>
-        <p class="collection-description">Description: {{ collection.description }}</p>
+        <p class="collection-description">{{ collection.description }}</p>
         <div class="collection-actions">
             <a href="{{ url_for('collections.view_collection', collection_id=collection.id) }}" class="btn">View Collection</a>
         </div>
     </div>
     {% endfor %}
 </div>
+
+<!-- Pagination Navigation -->
+<div class="pagination">
+    <ul class="pagination-list">
+        {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != pagination.page %}
+                    <li><a href="{{ url_for('collections.public_collections', query=query, page=page_num) }}">{{ page_num }}</a></li>
+                {% else %}
+                    <li class="active">{{ page_num }}</li>
+                {% endif %}
+            {% else %}
+                <li class="disabled">...</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock %}

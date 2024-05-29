@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Default Title{% endblock %} | The Quote Archive</title>
+    <meta name="description" content="{% block description %}Default description of your site.{% endblock %}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- External Resources -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZX3J9GXNFF"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -10,18 +22,11 @@
         gtag('js', new Date());
         gtag('config', 'G-ZX3J9GXNFF');
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/a659eb1da398d320af2fd8a20/d8b5f15e5b658c283b4038238.js");</script>
-    <title>{% block title %}Default Title{% endblock %} | The Quote Archive</title>
-    <meta name="description" content="{% block description %}Default description of your site.{% endblock %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
 </head>
 <body>
+    <!-- Navigation Container -->
     <div class="navbar-container">
+        <!-- Hamburger Button (Visible in Mobile) -->
         <button class="hamburger" onclick="toggleMenu()">
             <i class="fas fa-bars"></i>
         </button>
@@ -32,6 +37,7 @@
             </a>
         </div>
 
+        <!-- Login Button (Visible in Mobile) -->
         <a href="{{ url_for('account') }}" class="login-button mobile-login-button">
             {% if current_user.is_authenticated %}
                 {{ current_user.username }}
@@ -40,6 +46,7 @@
             {% endif %}
         </a>
 
+        <!-- Navigation Bar (Desktop) -->
         <div class="navbar" id="desktop-navbar">
             <a href="{{ url_for('authors') }}">Authors</a>
             <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
@@ -54,7 +61,9 @@
         </div>
     </div>
 
+    <!-- Mobile Navigation Menu (Initially Hidden) -->
     <div id="mobile-nav" class="mobile-nav">
+        <!-- Links for Mobile Menu -->
         <a href="{{ url_for('authors') }}">Authors</a>
         <a href="{{ url_for('collections.public_collections') }}">Public Collections</a>
         <a href="{{ url_for('topics') }}">Topics</a>
@@ -65,15 +74,15 @@
                 My Collections
             {% endif %}
         </a>
-        <button class="close-btn" onclick="toggleMenu()">
-            <i class="fas fa-times"></i>
-        </button>
     </div>
 
+    <!-- Overlay for Mobile Navigation Menu -->
     <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
+    <!-- Main Content Block -->
     {% block content %}{% endblock %}
 
+    <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-container">
             <p>&copy; 2024 The Quote Archive. All rights reserved.</p>
@@ -83,6 +92,7 @@
         </div>
     </footer>
 
+    <!-- JavaScript for Toggling Menu -->
     <script>
         function toggleMenu() {
             var mobileNav = document.getElementById('mobile-nav');
@@ -92,6 +102,17 @@
                 overlay.classList.toggle('show');
             }
         }
+
+        // Add an event listener to close the menu when clicking outside of it
+        document.addEventListener('click', function(event) {
+            var mobileNav = document.getElementById('mobile-nav');
+            var hamburger = document.querySelector('.hamburger');
+            var overlay = document.getElementById('overlay');
+            if (!mobileNav.contains(event.target) && !hamburger.contains(event.target)) {
+                mobileNav.classList.remove('show');
+                overlay.classList.remove('show');
+            }
+        });
     </script>
 
     {% block scripts %}{% endblock %}

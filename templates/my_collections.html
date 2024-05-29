@@ -1,32 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <h1>My Collections</h1>
 <div class="collections-container">
     {% for collection in user_collections %}
     <div class="collection-container">
         {% if collection.image_url %}
-            <img src="{{ url_for('static', filename='author_images/' + data['quote'].image_url) }}" alt="{{ data['quote'].author }}" class="author-image responsive-image"/>
+            <img src="{{ url_for('static', filename='author_images/' + collection.image_url) }}" alt="{{ collection.name }}" class="author-image responsive-image"/>
         {% endif %}
         <h3 class="collection-name">{{ collection.name }}</h3>
         <p class="collection-description">Description: {{ collection.description }}</p>
         <p>Public: {% if collection.public %}Yes{% else %}No{% endif %}</p>
         <div class="collection-actions">
             <a href="{{ url_for('collections.view_collection', collection_id=collection.id) }}" class="btn">View Collection</a>
+            <form action="{{ url_for('collections.delete_collection', collection_id=collection.id) }}" method="post" style="display:inline;" onsubmit="return confirmDelete()">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="btn btn-danger">Delete Collection</button>
+            </form>
         </div>
     </div>
     {% endfor %}
 </div>
 
 <script>
-    const publicCheckboxes = document.querySelectorAll('.publicCheckbox');
-    publicCheckboxes.forEach(checkbox => {
-        const isPublic = checkbox.getAttribute('data-public') === 'true';
-        if (isPublic) {
-            checkbox.checked = true;
-        }
-    });
+function confirmDelete() {
+    return confirm('Are you sure you want to delete this collection?');
+}
 </script>
-
 {% endblock %}

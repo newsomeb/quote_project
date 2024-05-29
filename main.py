@@ -46,6 +46,8 @@ from flask_admin.contrib.sqla import ModelView
 from flask_migrate import Migrate
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
+from transformers import BertModel, BertTokenizer
+import torch
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -60,6 +62,8 @@ BASE_URL = 'thequotearchive.com'
 
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["10 per minute"])
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertModel.from_pretrained('bert-base-uncased')
 
 
 
@@ -858,41 +862,103 @@ def send_confirmation_email(email, token):
             "text": f"Please click the following link to confirm your email: {confirmation_link}"
         }
     )
+
 @app.route('/es_search', methods=['GET'])
 def es_search():
     query = request.args.get('query', default="", type=str)
     page = request.args.get('page', 1, type=int)
     PER_PAGE = 10
     offset = (page - 1) * PER_PAGE
+    min_relevance_score = 5.0  # Adjust this value to filter out more irrelevant results
 
-    # Construct an advanced Elasticsearch query
-    query_body = {
+    search_form = SearchForm()
+
+    # Elasticsearch query to find authors matching the query
+    author_query_body = {
         "query": {
-            "bool": {
-                "should": [
-                    {"match": {"author": {"query": query, "boost": 5}}},
-                    {"match": {"quote": {"query": query, "boost": 1}}},
-                    {"match": {"summary": {"query": query, "boost": 1}}}
-                ],
-                "minimum_should_match": 1
+            "match": {
+                "author": {
+                    "query": query,
+                    "fuzziness": "AUTO"
+                }
             }
         }
     }
 
-    # Elasticsearch search query
-    response = app.es.search(index='quotes', body=query_body, size=PER_PAGE, from_=offset)
+    # Search for authors
+    author_response = app.es.search(index='quotes', body=author_query_body, size=5)
+    matching_authors = {hit['_source']['author'] for hit in author_response['hits']['hits']}
 
-    # Process the search results
-    matching_quotes = [
+    # Elasticsearch query for quotes by the author
+    author_quotes_query_body = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "match": {
+                            "author": {
+                                "query": query,
+                                "fuzziness": "AUTO"
+                            }
+                        }
+                    }
+                ],
+                "should": [
+                    {"match_phrase": {"author": query}},
+                    {"term": {"author": query}}
+                ],
+                "minimum_should_match": 1
+            }
+        },
+        "min_score": min_relevance_score
+    }
+
+    # Search for quotes by the author
+    author_quotes_response = app.es.search(index='quotes', body=author_quotes_query_body, size=PER_PAGE, from_=offset)
+    author_quotes = [
         {
             'quote': hit['_source']['quote'],
             'author': hit['_source']['author'],
             'image_url': hit['_source'].get('image_url'),
             'id': hit['_id']
-        } for hit in response['hits']['hits']
+        } for hit in author_quotes_response['hits']['hits']
     ]
 
-    total_quotes = response['hits']['total']['value']
+    # Elasticsearch query for related quotes
+    related_query_body = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "multi_match": {
+                            "query": query,
+                            "fields": ["quote^5", "author^2"],
+                            "fuzziness": "AUTO"
+                        }
+                    }
+                ],
+                "should": [
+                    {"match_phrase": {"quote": query}},
+                    {"term": {"author": query}}
+                ],
+                "minimum_should_match": 1
+            }
+        },
+        "min_score": min_relevance_score
+    }
+
+    # Search for related quotes
+    related_response = app.es.search(index='quotes', body=related_query_body, size=PER_PAGE, from_=offset)
+    related_quotes = [
+        {
+            'quote': hit['_source']['quote'],
+            'author': hit['_source']['author'],
+            'image_url': hit['_source'].get('image_url'),
+            'id': hit['_id']
+        } for hit in related_response['hits']['hits']
+    ]
+
+    total_quotes = related_response['hits']['total']['value']
     total_pages = (total_quotes + PER_PAGE - 1) // PER_PAGE
 
     # Simple pagination object with a custom iter_pages method
@@ -911,7 +977,7 @@ def es_search():
 
             for num in range(1, self.total_pages + 1):
                 if num <= left_edge or \
-                        (self.page - left_current <= num <= self.page + right_current) or \
+                        (self.page - left_current <= num and num <= self.page + right_current) or \
                         num > self.total_pages - right_edge:
                     if last + 1 != num:
                         yield None  # Insert ellipsis
@@ -920,17 +986,18 @@ def es_search():
 
     pagination = Pagination(page, total_pages)
 
-    search_form = SearchForm()
     collection_form = CollectionForm()
 
     return render_template(
         'search_results_es.html',
-        quotes=matching_quotes,
+        matching_authors=matching_authors,
+        author_quotes=author_quotes,
+        quotes=related_quotes,
         query=query,
         page=page,
         pagination=pagination,
         total_pages=total_pages,
-        search_form=search_form,
+        search_form=search_form,  # Add this line
         collection_form=collection_form
     )
 
@@ -962,6 +1029,19 @@ def autocomplete():
     response = app.es.search(index='quotes', body=suggest_body)
     suggestions = [option['_source'] for option in response['suggest']['quote-suggest'][0]['options']]
     return jsonify(suggestions)
+
+def get_bert_embeddings(text):
+    """
+    Generate BERT embeddings for a given text.
+    :param text: Input text for which to generate embeddings
+    :return: BERT embeddings as a numpy array
+    """
+    inputs = tokenizer(text, return_tensors='pt', truncation=True, padding=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+    return embeddings
+
 
 @app.route('/collections_search', methods=['GET'])
 def collections_search():
@@ -1015,7 +1095,6 @@ def collections_search():
         pagination=pagination,
         total_pages=total_pages
     )
-
 
 
 @app.route('/quote/<int:quote_id>')
@@ -1094,5 +1173,5 @@ def sitemap(number):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=False)
 
