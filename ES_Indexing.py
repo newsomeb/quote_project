@@ -185,7 +185,7 @@ def main():
         create_es_index(es_client, 'collections', collection_index_mappings)
 
         # Database connection and session management
-        DATABASE_URI = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
+        DATABASE_URI = 'sqlite:////home/tripleyeti/quote_project/create_quote_db_clean_data/quotes_cleaned.db'
         engine = create_engine(DATABASE_URI)
         Session = sessionmaker(bind=engine)
         session = Session()
