@@ -138,6 +138,11 @@ def index_quotes(es_client, session, batch_size=100):
                         logging.error(f"Failed to index document ID {fail['index']['_id']}: {fail['index']['error']}")
             except Exception as e:
                 logging.error(f"Error indexing batch from {offset} to {offset + batch_size}: {e}")
+
+            # Log progress every 1000 quotes
+            if offset % 1000 == 0:
+                logging.info(f"Progress: Indexed {offset} quotes out of {total_quotes}")
+
     except Exception as e:
         logging.error(f"Error during bulk indexing: {e}")
 
@@ -173,7 +178,6 @@ def index_collections(es_client, session, batch_size=100):
 def main():
     try:
         # Elasticsearch client configuration
-        # PRODUCTION
         es_client = Elasticsearch(
             ["http://167.71.169.219:9200"],
             http_auth=("elastic", "Pooppoop"),
