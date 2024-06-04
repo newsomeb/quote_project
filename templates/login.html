@@ -15,8 +15,7 @@
         {% endif %}
     {% endwith %}
 
-
-    <form method="POST">
+    <form method="POST" class="login-form">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.username.label(class="form-label") }}
@@ -31,4 +30,3 @@
     <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a>.</p>
 </div>
 {% endblock %}
-

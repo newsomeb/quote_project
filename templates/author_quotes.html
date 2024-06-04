@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 
+
+{% block title %}{{ author }} Quotes{% endblock %}
+
+
 {% block description %}
 Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a curated collection of thoughts, wisdom, and insights from {{ author }} to motivate and inspire you every day.
 {% endblock %}
+
+
 
 {% block content %}
 <div class="author-quotes-page-wrapper"> <!-- Flexbox container for the entire content -->
@@ -14,7 +20,7 @@ Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a cu
         <!-- Author Image Container -->
         <div class="author-image-container">
             {% if author_image_url %}
-                <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}" alt="{{ author }}" class="author-image"/>
+                <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}" alt="{{ author }}" class="author-image" onerror="handleBrokenImage(this)"/>
             {% endif %}
         </div>
         <div class="author-quotes-page">
@@ -127,9 +133,13 @@ Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a cu
 </div>
 
 <script>
+function handleBrokenImage(img) {
+    img.style.display = 'none';
+}
+
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Select all elements with the class 'quote-content'
+    // Existing code...
     var quotes = document.querySelectorAll('.quote-content');
 
     // Add click event listener to each quote

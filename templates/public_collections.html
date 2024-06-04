@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}Public Collections{% endblock %}
+
 {% block content %}
 <!-- Search Form -->
 <form action="{{ url_for('collections.public_collections') }}" method="get" class="search-form">

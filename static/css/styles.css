@@ -476,9 +476,12 @@ a:hover {
 
 }
 
-button:hover, input[type="submit"]:hover {
-    background-color: #5f6368;
+button:hover, input[type="submit"]:hover, .hamburger:hover {
+    background-color: #d3d3d3; /* Light grey background color */
+    color: grey; /* Change the color of the icon if needed */
+    border-radius: 8px; /* Add border-radius for rounded corners */
 }
+
 
 /* Style for More Info button */
 .more-info-button {
@@ -684,7 +687,7 @@ button:hover, input[type="submit"]:hover {
     background: none; /* Ensure no background color */
     border: none; /* Ensure no border */
     cursor: pointer; /* Cursor changes to pointer to indicate it's clickable */
-    position: fixed; /* Fix it at the top of the page */
+ /* Fix it at the top of the page */
     top: 10px; /* Adjust the top position */
     left: 10px; /* Adjust the left position */
     z-index: 1000; /* Ensure it stays above other content */
@@ -718,6 +721,8 @@ button:hover, input[type="submit"]:hover {
     margin-left: auto; /* Push to the right on desktop */
     /* Additional styling */
 }
+
+
 /* The Quote Archive Button - General Styling */
 .quote-archive-button {
     color: var(--text-color);
@@ -726,26 +731,29 @@ button:hover, input[type="submit"]:hover {
     /* Additional styling */
 }
 
-/* Mobile View */
+/* Navbar styling for mobile view */
 @media (max-width: 768px) {
-    /* Adjust navbar-container for mobile layout */
     .navbar-container {
-        display: flex; /* Use flexbox for layout */
-        justify-content: flex-start; /* Align items to the start */
-        align-items: center; /* Align items vertically */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: -webkit-sticky; /* For Safari */
+        position: sticky;
+        top: 0;
+        width: 100%;
+        background-color: white; /* Set a background color */
+        z-index: 1000; /* Ensure it stays on top */
+        padding: 5px 10px; /* Adjust padding to reduce height */
     }
 
     .hamburger {
         display: block; /* Show hamburger menu */
-        margin-right: 10px; /* Adjust space between hamburger and next item */
+        margin-left: 10px; /* Adjust space between hamburger and next item */
+        font-size: 24px; /* Adjust the size of the hamburger icon if needed */
     }
 
     .navbar {
         display: none; /* Hide navbar links in mobile view */
-    }
-
-    .quote-archive-button {
-        /* Additional styling if needed */
     }
 
     .login-button {
@@ -756,6 +764,15 @@ button:hover, input[type="submit"]:hover {
     .navbar.expanded {
         display: block; /* Show navbar links when hamburger is clicked */
         width: 100%; /* Full width */
+    }
+
+    .mobile-nav {
+        display: none; /* Initially hidden */
+        margin-top: 70px; /* Adjust margin to drop the dropdown further */
+    }
+
+    .mobile-nav.show {
+        display: block; /* Show dropdown when the menu is toggled */
     }
 
     .mobile-nav a {
@@ -771,13 +788,61 @@ button:hover, input[type="submit"]:hover {
     .mobile-nav-button {
         display: block; /* Ensure it's visible and takes full width */
         margin: 5px 0; /* Add vertical spacing between buttons */
-        /* Additional button styling here */
+    }
+
+    /* Resize logo for mobile */
+    .logo-container .logo-image {
+        width: 60% !important; /* Adjust the width as needed and add !important */
+    }
+
+    .logo-container {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }
 
-.mobile-login-button {
-    font-size: 20px; /* Specifically targeting mobile login button */
+/* Additional styling for the hamburger button */
+.rounded-hamburger {
+ /* Add a subtle shadow */
+    border-radius: 10px; /* Round the borders */
+    background-color: white; /* Ensure background color */
+    padding: 10px; /* Adjust padding for better click area */
+/* Add a light border */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for background and color */
+    color: black; /* Initial text color */
 }
+
+/* Hover effect for the hamburger button */
+.rounded-hamburger:hover {
+    background-color: #5f6368; /* Background color set to grey on hover */
+    color: white; /* Button text becomes white on hover */
+    border: none; /* Removes border on hover */
+    box-shadow: none; /* Remove shadow on hover */
+}
+
+
+/* Additional styling for the hamburger button */
+.rounded-hamburger {
+ /* Add a subtle shadow */
+    border-radius: 10px; /* Round the borders */
+    background-color: white; /* Ensure background color */
+    padding: 10px; /* Adjust padding for better click area */
+  /* Add a light border */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for background and color */
+    color: black; /* Initial text color */
+}
+
+/* Hover effect for the hamburger button */
+.rounded-hamburger:hover {
+    background-color: #5f6368; /* Background color set to grey on hover */
+    color: white; /* Button text becomes white on hover */
+    border: none; /* Removes border on hover */
+    box-shadow: none; /* Remove shadow on hover */
+}
+
+
 
 @media (min-width: 769px) {
     .hamburger {
@@ -1010,7 +1075,7 @@ button:hover, input[type="submit"]:hover {
     font-weight: bold; /* Makes the text bold */
 }
 
-/* The Modal (background) */
+/* Modal background */
 .modal {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
@@ -1020,18 +1085,80 @@ button:hover, input[type="submit"]:hover {
   width: 100%; /* Full width */
   height: 100%; /* Full height */
   overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  background-color: rgba(0,0,0,0.4); /* Black with opacity */
 }
 
-/* Modal Content */
+/* Modal content */
 .modal-content {
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
+  background-color: #E8F0FE; /* Light blue background color */
+  margin: 10% auto; /* Centered and 10% from the top */
   padding: 20px;
-  border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
+  border: 1px solid #007bff; /* Border similar to register page input */
+  width: 90%; /* Adjust width based on your design */
+  max-width: 600px; /* Maximum width of the modal */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+  box-sizing: border-box; /* Include padding and border in width */
 }
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Input fields inside the modal */
+.modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content input[type="password"] {
+  background-color: #E8F0FE; /* Light blue background color */
+  color: black; /* Adjust text color as needed */
+/* A standard blue for border */
+  border-radius: 4px;
+  padding: 10px;
+  width: 100%; /* Full width */
+  margin-bottom: 10px; /* Space between input fields */
+  box-sizing: border-box; /* Include padding and border in width */
+}
+
+/* Submit button inside the modal */
+.modal-content input[type="submit"],
+.modal-content button {
+  background-color: #007bff; /* Blue background color */
+  color: white; /* White text color */
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.modal-content input[type="submit"]:hover,
+.modal-content button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Form control inside the modal */
+.form-control {
+  width: 100%; /* Full width */
+  padding: 10px; /* Padding inside the input */
+  box-sizing: border-box; /* Include padding in width calculation */
+  border-radius: 4px; /* Rounded corners */
+/* Border color */
+  background-color: #E8F0FE; /* Light blue background */
+  color: black; /* Text color */
+}
+
+
 
 /* The Close Button */
 .close {
@@ -1387,7 +1514,7 @@ button:hover, input[type="submit"]:hover {
     word-wrap: break-word; /* Break long words to prevent overflow */
  /* Hide any overflow */
     text-overflow: ellipsis; /* Show ellipsis (...) for overflowing text */
-    white-space: nowrap; /* Prevent text wrapping to new lines */
+ /* Prevent text wrapping to new lines */
 }
 
 .collection-container, .topic-card {
@@ -1575,7 +1702,7 @@ h1 {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+
         z-index: 10;
     }
     .overlay.show {
@@ -1742,7 +1869,7 @@ h1 {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+
         z-index: 10;
     }
     .overlay.show {
@@ -1813,4 +1940,44 @@ h1 {
     width: 100%; /* Ensure it spans the full width of the container */
 }
 
-/* Ensure the quotes container is properly spaced below the header */
+
+/* Specific styles for registration page inputs */
+.register-page input[type="text"],
+.register-page input[type="email"],
+.register-page input[type="password"] {
+    background-color: #E8F0FE !important;
+    color: black !important;
+/* Border radius */
+    padding: 10px; /* Padding */
+    width: 100%; /* Full width */
+    box-sizing: border-box; /* Include padding and border in width */
+}
+
+/* Specific styles for login form inputs */
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    background-color: #E8F0FE !important; /* Light blue background color */
+    color: black !important; /* Adjust text color as needed */
+/* Border radius */
+    padding: 10px; /* Padding */
+    width: 100%; /* Full width */
+    box-sizing: border-box; /* Include padding and border in width */
+}
+
+/* General input styles for other elements */
+input[type="text"], input[type="submit"], button {
+    border-radius: var(--border-radius);
+    color: var(--text-color);
+    background-color: var(--secondary-color); /* General secondary color */
+    border: 1px solid var(--border-color);
+}
+
+/* Form control styles */
+.form-control {
+    background-color: #E8F0FE !important; /* Light blue background */
+    color: black !important; /* Text color */
+/* Border radius */
+    padding: 10px; /* Padding */
+    width: 100%; /* Full width */
+    box-sizing: border-box; /* Include padding and border in width */
+}

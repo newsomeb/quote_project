@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}The Quote Archive Home{% endblock %}
 
 {% block description %}Explore our vast collection of quotes from famous authors, and find the inspiration you need for the day.{% endblock %}
 
@@ -62,32 +62,36 @@
                                             <span class="message-placeholder" style="display: none;"></span>
                                         </div>
                                     </div>
+                                    <!-- The Modal -->
+                                    <!-- The Modal -->
                                     <div id="createCollectionModal-{{ quote_of_the_day.id }}" class="modal">
                                       <div class="modal-content">
                                         <span class="close">&times;</span>
                                         <h2>Create New Collection</h2>
                                         <form action="{{ url_for('collections.create_collection') }}" method="post">
-                                            {{ form.hidden_tag() }}
-                                            <div class="form-group">
-                                                {{ form.name.label }}
-                                                {{ form.name(class_='form-control') }}
-                                                {% if form.name.errors %}
-                                                    <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="form-group">
-                                                {{ form.description.label }}
-                                                {{ form.description(class_='form-control') }}
-                                                {% if form.description.errors %}
-                                                    <div class="alert alert-danger">{{ form.description.errors[0] }}</div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="form-group">
-                                                {{ form.submit(class_='btn btn-primary') }}
-                                            </div>
+                                          {{ form.hidden_tag() }}
+                                          <div class="form-group">
+                                            {{ form.name.label }}
+                                            {{ form.name(class_='form-control') }}
+                                            {% if form.name.errors %}
+                                              <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
+                                            {% endif %}
+                                          </div>
+                                          <div class="form-group">
+                                            {{ form.description.label }}
+                                            {{ form.description(class_='form-control') }}
+                                            {% if form.description.errors %}
+                                              <div class="alert alert-danger">{{ form.description.errors[0] }}</div>
+                                            {% endif %}
+                                          </div>
+                                          <div class="form-group">
+                                            {{ form.submit(class_='btn btn-primary') }}
+                                          </div>
                                         </form>
                                       </div>
                                     </div>
+
+
                                 </div>
                                 <p class="author-name">
                                     <a href="https://thequotearchive.com/quotes/{{ quote_of_the_day.author|replace(' ', '%20') }}">

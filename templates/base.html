@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Default Title{% endblock %} | The Quote Archive</title>
+    <title>{% block title %}The Quote Archive{% endblock %}</title>
     <meta name="description" content="{% block description %}Default description of your site.{% endblock %}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -27,13 +27,13 @@
     <!-- Navigation Container -->
     <div class="navbar-container">
         <!-- Hamburger Button (Visible in Mobile) -->
-        <button class="hamburger" onclick="toggleMenu()">
+        <button class="hamburger rounded-hamburger" onclick="toggleMenu()">
             <i class="fas fa-bars"></i>
         </button>
 
         <div class="logo-container">
             <a href="{{ url_for('home') }}" class="logo-link">
-                <img src="{{ url_for('static', filename='owl_logo.png') }}" alt="The Quote Archive Logo" class="logo-image" style="width: 90%;">
+                <img src="{{ url_for('static', filename='owl_logo.png') }}" alt="The Quote Archive Logo" class="logo-image">
             </a>
         </div>
 
@@ -76,9 +76,6 @@
         </a>
     </div>
 
-    <!-- Overlay for Mobile Navigation Menu -->
-    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
-
     <!-- Main Content Block -->
     {% block content %}{% endblock %}
 
@@ -96,10 +93,8 @@
     <script>
         function toggleMenu() {
             var mobileNav = document.getElementById('mobile-nav');
-            var overlay = document.getElementById('overlay');
             if (mobileNav) {
                 mobileNav.classList.toggle('show');
-                overlay.classList.toggle('show');
             }
         }
 
@@ -107,10 +102,8 @@
         document.addEventListener('click', function(event) {
             var mobileNav = document.getElementById('mobile-nav');
             var hamburger = document.querySelector('.hamburger');
-            var overlay = document.getElementById('overlay');
             if (!mobileNav.contains(event.target) && !hamburger.contains(event.target)) {
                 mobileNav.classList.remove('show');
-                overlay.classList.remove('show');
             }
         });
     </script>
