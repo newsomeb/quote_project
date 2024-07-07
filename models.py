@@ -2,7 +2,6 @@ from extensions import db
 from sqlalchemy import ForeignKey, Integer, Column, String, Date, Text
 from sqlalchemy.orm import relationship
 
-
 # Many-to-many table for Quote and Collection
 quote_collection = db.Table('quote_collection',
     Column('quote_id', Integer, ForeignKey('quotes_cleaned.id'), primary_key=True),
@@ -13,7 +12,6 @@ class Quote(db.Model):
     """
     Represents the Quote entity with associated fields and behaviors.
     """
-
     __tablename__ = 'quotes_cleaned'
     id = Column(Integer, primary_key=True)
     quote = Column(String(1024), nullable=False)
@@ -22,6 +20,8 @@ class Quote(db.Model):
     deathday = Column(Date, nullable=True)
     summary = Column(String(2048), nullable=True)
     openai_generated_content = Column(Text)
+    context = Column(Text)  # New column for additional context
+    book_title = Column(String(255), nullable=True)  # New column for book title
     collections = relationship('Collection', secondary=quote_collection, backref='quotes')
     image_url = db.Column(db.String)
 
@@ -29,9 +29,7 @@ class Collection(db.Model):
     """
     Represents the Collection entity with associated fields and behaviors.
     """
-
     __tablename__ = 'collection'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -40,15 +38,11 @@ class Collection(db.Model):
     user = db.relationship('User', back_populates='collections')
     is_favorite = db.Column(db.Boolean, default=False, nullable=False)
 
-
-
 class User(db.Model):
     """
     Represents the User entity with associated fields and behaviors.
     """
-
     __tablename__ = 'user'
-
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -60,32 +54,21 @@ class User(db.Model):
     email_confirmed = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
 
-
     # Relationship fields
     def get_owned_collections(self):
-
-
         return self.user_collections.all()
 
     @property
     def is_active(self):
- 
-
         return self._is_active
 
     @property
     def is_authenticated(self):
-
-
         return True
 
     @property
     def is_anonymous(self):
-
-
         return False
 
     def get_id(self):
-
-
         return str(self.id)

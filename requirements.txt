@@ -11,3 +11,12 @@ itsdangerous
 flask_wtf
 flask_limiter
 flask_caching
+pytz
+elasticsearch
+logging
+urllib3
+requests
+flask_admin
+flask_migrate
+transformers
+torch

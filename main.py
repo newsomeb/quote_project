@@ -1,15 +1,11 @@
 import os
-from flask import jsonify
 from sqlalchemy import extract, func
 import openai
-
 from wtforms import ValidationError
 from datetime import timedelta
 from quote_collections.routes import collections_bp
 from wtforms.validators import EqualTo
-
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from flask import current_app
 from extensions import db
 from dotenv import load_dotenv
 from models import User, Collection, Quote
@@ -26,28 +22,29 @@ from wtforms import validators
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
-from flask import session
 from datetime import datetime
 import pytz
 from elasticsearch import Elasticsearch
 import logging
 import urllib3
 import random
-from flask_wtf.csrf import CSRFProtect
 from wtforms import TextAreaField
-from flask import Flask
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from flask import request, flash, redirect, url_for, render_template
+from flask import flash, redirect, url_for, render_template
 import requests
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-from flask_migrate import Migrate
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from transformers import BertModel, BertTokenizer
 import torch
+from flask import Flask
+import time
+from flask import current_app
+from flask_wtf.csrf import generate_csrf
+from flask_wtf.csrf import CSRFProtect
+
+
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -66,15 +63,18 @@ tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertModel.from_pretrained('bert-base-uncased')
 
 
-
-
 def create_app():
-    """
-    Implements the create_app functionality.
-    """
-
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key')
+
+    # Set a default secret key if one is not provided in the environment
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'your-default-secret-key-here'
+
+    csrf = CSRFProtect(app)
+
+    @app.after_request
+    def add_csrf_token_to_response(response):
+        response.set_cookie('csrf_token', generate_csrf())
+        return response
 
     # ReCAPTCHA configuration
     app.config['RECAPTCHA_SECRET_KEY'] = os.environ.get('RECAPTCHA_SECRET_KEY')
@@ -90,6 +90,9 @@ def create_app():
     #app.config[
         #'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/alexn/Desktop/quotes_cleaned.db'
 
+    # use this for local testing on MAC!
+    #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/puter/Desktop/quotes_cleaned.db'
+
     # Elasticsearch Configuration FOR LOCAL TESTING
     # Elasticsearch Configuration
     #es_host = 'http://localhost:9200'
@@ -101,7 +104,7 @@ def create_app():
         #http_auth=(es_username, es_password)
     #)
 
-    csrf = CSRFProtect(app)
+
 
     # Elasticsearch Configuration FOR PRODUCTION
     es_host = os.environ.get('ES_HOST', 'http://167.71.169.219:9200')
@@ -188,10 +191,12 @@ def create_app():
 
         return jsonify(success=False, error="ratelimit exceeded %s" % e.description), 429
 
-    return app, s
+    return app, s, csrf
 
 
-app, s = create_app()
+app, s, csrf = create_app()
+
+
 
 
 @app.errorhandler(429)
@@ -223,7 +228,6 @@ class CollectionForm(FlaskForm):
     description = TextAreaField('Description')
     submit = SubmitField('Create')
 
-
 @app.route('/')
 @app.route('/<int:year>/<int:month>/<int:day>')
 def home(year=None, month=None, day=None):
@@ -245,13 +249,14 @@ def home(year=None, month=None, day=None):
 
     form = CollectionForm()
 
-    # Fetch birthday quotes for the day
+    # Fetch birthday quotes for the day, prioritizing those with context
     authors_birthday_today = (
         db.session.query(Quote)
         .with_entities(Quote.author, func.strftime('%Y-%m-%d', Quote.birthday),
                        func.strftime('%Y-%m-%d', Quote.deathday), Quote.image_url)
         .filter(extract('month', Quote.birthday) == today.month,
                 extract('day', Quote.birthday) == today.day)
+        .order_by(case((Quote.context != None, literal(0)), else_=literal(1)), Quote.id)
         .distinct()
         .limit(3)
         .all()
@@ -298,6 +303,7 @@ def home(year=None, month=None, day=None):
         form=form,
     )
 
+
 @app.route('/authors/', methods=['GET', 'POST'])
 def authors():
     """
@@ -328,31 +334,53 @@ class UpdateAccountForm(FlaskForm):
 
 
 
+from sqlalchemy import case, literal
+from sqlalchemy import case, literal
+from sqlalchemy import case, literal
+import re
+from sqlalchemy import case, literal
+import re
+
 
 @app.route('/quotes/<author>')
 def author_quotes(author):
-    """
-    Implements the author_quotes functionality.
-    """
-
     page = request.args.get('page', 1, type=int)
-    pagination = Quote.query.filter_by(author=author).paginate(page=page, per_page=20)
+    per_page = 20  # Keep your current per_page value
+
+    # Create a case statement for ordering using the new syntax
+    order_case = case(
+        (Quote.context != None, literal(0)),
+        else_=literal(1)
+    )
+
+    # Query with ordering and pagination
+    pagination = Quote.query.filter_by(author=author) \
+        .order_by(order_case, Quote.id) \
+        .paginate(page=page, per_page=per_page, error_out=False)
+
     quotes = pagination.items
 
-    # Adapt data structure for the template
-    quotes_data = [{'quote': quote} for quote in quotes]
+    quotes_data = []
+    for quote in quotes:
+        quote_data = {
+            'quote': quote,
+            'id': quote.id,
+            'author': quote.author,
+            'book_title': quote.book_title,
+            'has_valid_context': False
+        }
+        if quote.context:
+            quote_data['has_valid_context'] = True  # If there's a context, consider it valid
+        quotes_data.append(quote_data)
+        print(f"Quote ID: {quote.id}, Has context: {quote_data['has_valid_context']}, Context: {quote.context[:50] if quote.context else 'None'}...")
 
     form = CollectionForm()
 
-    # Assuming you have a way to access the current user's collections.
-    # If not, you'll need to adjust this part.
-    # For users not logged in, you should handle it appropriately, possibly by setting collections to None or [].
     try:
         collections = current_user.collections
     except AttributeError:
-        collections = []  # Or handle appropriately for non-logged-in users
+        collections = []
 
-    # Fetch the author's image URL directly from the first quote (assuming they are the same for all quotes by the author)
     author_image_url = quotes[0].image_url if quotes else None
 
     return render_template(
@@ -361,9 +389,11 @@ def author_quotes(author):
         author=author,
         author_image_url=author_image_url,
         pagination=pagination,
-        form=form,  # Pass the form object here
-        current_user_collections=collections  # Assuming 'collections' is defined in your route
+        form=form,
+        current_user_collections=collections
     )
+
+
 
 class SearchForm(FlaskForm):
     query = StringField('Search')
@@ -1171,7 +1201,119 @@ def sitemap(number):
     return send_from_directory('static/sitemaps', f'sitemap{number}.xml')
 
 
+from fuzzywuzzy import fuzz
+import re
+
+
+
+
+
+from flask import jsonify, request
+from fuzzywuzzy import fuzz
+import re
+@app.route('/check_context/<int:quote_id>', methods=['GET'])
+def check_context(quote_id):
+    try:
+        quote = Quote.query.get(quote_id)
+        if quote and quote.context:
+            match = match_quote_in_context(quote.quote, quote.context)
+            return jsonify({"has_valid_context": match is not None}), 200
+        return jsonify({"has_valid_context": False}), 200
+    except Exception as e:
+        app.logger.error(f"Error in check_context: {str(e)}")
+        return jsonify({"error": "An unexpected error occurred"}), 500
+def normalize_text(text):
+    return re.sub(r'\s+', ' ', re.sub(r'[^\w\s]', '', text)).strip().lower()
+
+
+from flask import session
+import secrets
+
+
+@app.before_request
+def create_session_token():
+    if 'token' not in session or request.endpoint == 'match_quote':
+        session['token'] = secrets.token_hex(16)
+        session['token_created_at'] = time.time()
+
+    app.logger.info(f"Current session token: {session.get('token')}")
+
+
+@app.route('/match_quote', methods=['POST'])
+@csrf.exempt
+def match_quote():
+
+
+    try:
+        data = request.get_json()
+
+
+        if not data:
+            current_app.logger.error("No JSON data received")
+            return jsonify(error="No JSON data received"), 400
+
+        quote = data.get('quote')
+        context = data.get('context')
+
+        if not quote or not context:
+            current_app.logger.error("Missing quote or context")
+            return jsonify(error="Missing quote or context"), 400
+
+        match = match_quote_in_context(quote, context)
+        if match:
+            current_app.logger.info(f"Match found: {match}")
+            return jsonify(match)
+        else:
+            current_app.logger.warning("Quote not found in context")
+            return jsonify(error="Quote not found in context"), 404
+
+    except Exception as e:
+        current_app.logger.exception(f"An unexpected error occurred: {str(e)}")
+        return jsonify(error=f"An unexpected error occurred: {str(e)}"), 500
+
+# Exempt the route after defining it
+csrf.exempt(match_quote)
+
+
+def match_quote_in_context(quote, context):
+
+
+    # Remove extra whitespace and quotes from the quote
+    clean_quote = re.sub(r'\s+', ' ', quote.strip().strip('"'))
+
+    best_ratio = 0
+    best_match = None
+
+    # Split the context into sentences
+    sentences = re.split(r'(?<=[.!?])\s+', context)
+
+    for sentence in sentences:
+        ratio = fuzz.partial_ratio(clean_quote.lower(), sentence.lower())
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_match = sentence
+
+    if best_ratio > 90:  # Adjust this threshold as needed
+
+        start_index = context.index(best_match)
+        end_index = start_index + len(best_match)
+        return {
+            'before': context[:start_index],
+            'quote': best_match,
+            'after': context[end_index:],
+            'match_quality': best_ratio
+        }
+    else:
+
+        # Return the full context as 'after' and include the best_match
+        return {
+            'before': '',
+            'quote': best_match if best_match else '',
+            'after': context,
+            'match_quality': best_ratio
+        }
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=False)
+    app.run(host="0.0.0.0", port=8000, debug=True)
 

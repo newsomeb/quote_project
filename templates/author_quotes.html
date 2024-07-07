@@ -1,44 +1,36 @@
 {% extends "base.html" %}
 
-
 {% block title %}{{ author }} Quotes{% endblock %}
-
 
 {% block description %}
 Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a curated collection of thoughts, wisdom, and insights from {{ author }} to motivate and inspire you every day.
 {% endblock %}
 
-
-
 {% block content %}
-<div class="author-quotes-page-wrapper"> <!-- Flexbox container for the entire content -->
+<div class="author-quotes-page-wrapper">
     <h1>Quotes by {{ author }}</h1>
 
-    <!-- Flex Container -->
     <div class="content-flex-container">
-
-        <!-- Author Image Container -->
         <div class="author-image-container">
             {% if author_image_url %}
-                <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}" alt="{{ author }}" class="author-image" onerror="handleBrokenImage(this)"/>
+                <img src="{{ url_for('static', filename='author_images/' + author_image_url) }}"
+                     alt="{{ author }}"
+                     class="author-image"
+                     onerror="this.style.display='none'"/>
+            {% else %}
+                <div class="author-image placeholder-image"></div>
             {% endif %}
         </div>
         <div class="author-quotes-page">
-            <!-- Quotes Container -->
             <div class="quotes-container">
                 {% for data in quotes_data %}
                 <div class="quote-card" data-quote-id="{{ data.quote.id }}">
-                    <!-- Flex Container for each Quote -->
                     <div class="quote-flex-container">
-                        <!-- Container for Quote Content, Actions, and Author Name -->
                         <div class="quote-content-actions">
-                            <!-- Displaying Quote Content -->
                             <div class="quote-content">
                                 <p>{{ data['quote'].quote }}</p>
                             </div>
-                            <!-- Container for Quote Actions and Author Name -->
                             <div class="quote-details">
-                                <!-- Quote Actions -->
                                 <div class="quote-actions">
                                     <button class="favorite-button" onclick="toggleFavorite({{ data['quote'].id }}, this)">
                                         <i class="fa-regular fa-heart"></i>
@@ -68,7 +60,6 @@ Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a cu
                                             <span class="message-placeholder" style="display: none;"></span>
                                         </div>
                                     </div>
-                                    <!-- Modal for Creating New Collection -->
                                     <div id="createCollectionModal-{{ data.quote.id }}" class="modal">
                                         <div class="modal-content">
                                             <span class="close">&times;</span>
@@ -96,15 +87,26 @@ Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a cu
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Author Name -->
-                                <p class="author-name">
-                                    <a href="https://thequotearchive.com/quotes/{{ data['quote'].author|replace(' ', '%20') }}">
-                                        {{ data['quote'].author }}
-                                    </a>
-                                </p>
-                            </div> <!-- End of quote-details -->
-                        </div> <!-- End of quote-content-actions -->
-                    </div> <!-- End of quote-flex-container -->
+                                <div class="context-and-author">
+                                    {% if data['quote'].context %}
+                                    <button class="show-context-button" onclick="showContextModal('{{ data['quote'].id }}', event)">
+                                        <i class="fas fa-eye"></i> Show Context
+                                    </button>
+                                    {% endif %}
+                                    <p class="author-name">
+                                        <a href="https://thequotearchive.com/quotes/{{ data['quote'].author|replace(' ', '%20') }}">
+                                            {{ data['quote'].author }}
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if data['quote'].context %}
+                    <div class="full-context" style="display: none;" data-quote="{{ data['quote'].quote }}" data-book-title="{{ data['quote'].book_title }}">
+                        {{ data['quote'].context }}
+                    </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -112,87 +114,76 @@ Discover inspirational quotes by {{ author }} on The Quote Archive. Explore a cu
     </div>
 </div>
 
-<!-- Pagination Navigation -->
 <div class="pagination">
     <ul>
-        <!-- Looping over each page in pagination -->
         {% for page_num in pagination.iter_pages() %}
             {% if page_num %}
                 {% if page_num != pagination.page %}
                     <li><a href="{{ url_for('author_quotes', author=author, page=page_num) }}">{{ page_num }}</a></li>
                 {% else %}
-                    <!-- Active Page -->
                     <li class="active">{{ page_num }}</li>
                 {% endif %}
             {% else %}
-                <!-- Placeholder for skipped pages in pagination -->
                 <li class="disabled">...</li>
             {% endif %}
         {% endfor %}
     </ul>
 </div>
 
+<div id="contextModal" class="modal context-modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="modal-body"></div>
+    </div>
+</div>
+
 <script>
+
+// Get the CSRF token from the meta tag
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+const payload = {
+    quote: '“The critic has to educate the public; the artist has to educate the critic.”',
+    context: '\n                        .  It takes\na Goethe to see a work of art fully, completely and perfectly, and I\nthoroughly agree with Mr. Whibley when he says that it is a pity that\nGoethe never had an opportunity of reading Dorian Gray.  I feel quite\ncertain that he would have been delighted by it, and I only hope that\nsome ghostly publisher is even now distributing shadowy copies in the\nElysian fields, and that the cover of Gautier\'s copy is powdered with\ngilt asphodels.\n\nYou may ask me, Sir, why I should care to have the ethical beauty of my\nstory recognised.  I answer, Simply because it exists, because the thing\nis there.\n\nThe chief merit of Madame Bovary is not the moral lesson that can be\nfound in it, any more than the chief merit of Salammbo is its archaeology;\nbut Flaubert was perfectly right in exposing the ignorance of those who\ncalled the one immoral and the other inaccurate; and not merely was he\nright in the ordinary sense of the word, but he was artistically right,\nwhich is everything.  The critic has to educate the public; the artist\nhas to educate the critic.\n\nAllow me to make one more correction, Sir, and I will have done with Mr.\nWhibley.  He ends his letter with the statement that I have been\nindefatigable in my public appreciation of my own work.  I have no doubt\nthat in saying this he means to pay me a compliment, but he really\noverrates my capacity, as well as my inclination for work.  I must\nfrankly confess that, by nature and by choice, I am extremely indolent.\n\nCultivated idleness seems to me to be the proper occupation for man.  I\ndislike newspaper controversies of any kind, and of the two hundred and\nsixteen criticisms of Dorian Gray that have passed from my library table\ninto the wastepaper basket I have taken public notice of only three.  One\nwas that which appeared in the Scots Observer.  I noticed it because it\nmade a suggestion, about the intention of the author in writing the book,\nwhich needed correction.  The second was an article in the St. James\'s\nGazette.  It was offensively and vulgarly written, and seemed to me to\nrequire immediate and caustic censure.\n                    ',
+    token: 'ac2a3a326c76ffe2ad47d06a67b308f8'
+};
+
+// Convert the payload to a JSON string
+const jsonString = JSON.stringify(payload);
+
+// Make the fetch request with the CSRF token in the headers
+fetch('http://127.0.0.1:8000/match_quote', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken // Include the CSRF token here
+    },
+    body: jsonString
+})
+.then(response => response.json())
+.then(data => {
+
+
+})
+.catch((error) => {
+    console.error('Error:', error);
+});
+
 function handleBrokenImage(img) {
-    img.style.display = 'none';
+    img.src = '/static/images/default_author.png'; // Replace with your default image path
+    img.alt = 'Default Author Image';
 }
 
-// Wait for the DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Existing code...
-    var quotes = document.querySelectorAll('.quote-content');
 
-    // Add click event listener to each quote
-    quotes.forEach(function(quote) {
-        quote.addEventListener('click', function() {
-            // Toggle the 'expanded' class on click
-            this.classList.toggle('expanded');
-        });
-    });
 
-    // Bind click events to all "Create New Collection" buttons
-    document.querySelectorAll('.create-new-collection-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            // Use the data-quote-id attribute to target the specific modal for each quote
-            var quoteId = this.getAttribute('data-quote-id');
-            var modalId = 'createCollectionModal-' + quoteId;
-            var modal = document.getElementById(modalId);
-            if (modal) {
-                modal.style.display = "block";
-            }
-        });
-    });
-
-    // Close modal functionality
-    document.querySelectorAll('.close').forEach(function(span) {
-        span.addEventListener('click', function() {
-            this.closest('.modal').style.display = "none";
-        });
-    });
-
-    // Clicking outside to close modals
-    window.addEventListener('click', function(event) {
-        document.querySelectorAll('.modal').forEach(function(modal) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        });
-    });
-
-    // Close all dropdowns and popups on outside click
-    document.addEventListener('click', function(event) {
-        if (!event.target.closest('.add-to-collection-dropdown') && !event.target.closest('.share-popup') && !event.target.closest('.share-button')) {
-            closeAllDropdownsAndPopups();
-        }
-    });
-
-    // Keep dropdowns and popups open on inside click
-    document.querySelectorAll('.add-to-collection-dropdown, .share-popup').forEach(function(element) {
-        element.addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
-    });
-});
+function closeContextModal() {
+    const modal = document.getElementById('contextModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+    }
+}
 
 function closeAllDropdownsAndPopups() {
     closeAllSharePopups();
@@ -216,31 +207,28 @@ function toggleFavorite(quoteId, buttonElement) {
 
     fetch(`/add_to_favorites/${quoteId}`, {
         method: 'POST',
-        credentials: 'include', // Ensure cookies for session are included
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken // Include CSRF token in request headers
+            'X-CSRF-Token': csrfToken
         },
-        body: JSON.stringify({}) // You may or may not need to send a body depending on your backend requirements
+        body: JSON.stringify({})
     })
     .then(response => {
         if (response.ok && response.headers.get("Content-Type").includes("application/json")) {
-            return response.json(); // Proceed if the response is JSON
+            return response.json();
         } else if (response.status === 401 || !response.headers.get("Content-Type").includes("application/json")) {
-            // Handle unauthenticated user or unexpected content type
             throw new Error('You must be logged in to favorite');
         }
     })
     .then(data => {
-        // Handle success
         buttonElement.classList.add('favorite-active');
         buttonElement.querySelector('i').classList.replace('fa-regular', 'fa-solid');
     })
     .catch(error => {
-        // Show error message to user
         const errorMessageElement = buttonElement.nextElementSibling;
         if (errorMessageElement) {
-            errorMessageElement.textContent = error.message; // Use the actual error message
+            errorMessageElement.textContent = error.message;
             errorMessageElement.style.display = 'block';
         }
     });
@@ -248,7 +236,6 @@ function toggleFavorite(quoteId, buttonElement) {
 
 function copyToClipboard(event, inputElement) {
     event.preventDefault();
-
     navigator.clipboard.writeText(inputElement.value).then(() => {
         alert('Link copied to clipboard');
     }).catch(err => {
@@ -258,14 +245,12 @@ function copyToClipboard(event, inputElement) {
 
 function toggleCollectionDropdown(element) {
     closeAllSharePopups();
-
     var dropdownContent = element.nextElementSibling;
     dropdownContent.style.display = dropdownContent.style.display === "none" ? "block" : "none";
 }
 
 function toggleSharePopup(buttonElement) {
     closeAllCollectionDropdowns();
-
     let quoteActions = buttonElement.closest('.quote-actions');
     let popup = buttonElement.nextElementSibling;
     popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
@@ -289,6 +274,15 @@ function toggleCollectionList(buttonElement) {
     list.style.display = list.style.display === "block" ? "none" : "block";
 }
 
+function toggleCreateCollectionForm() {
+    var form = document.getElementById('create-collection-form');
+    if (form.style.display === "none" || !form.style.display) {
+        form.style.display = "block";
+    } else {
+        form.style.display = "none";
+    }
+}
+
 function addToCollection(collectionId, quoteId, plusButton) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -306,10 +300,11 @@ function addToCollection(collectionId, quoteId, plusButton) {
         body: JSON.stringify(data),
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        if (response.ok && response.headers.get("Content-Type").includes("application/json")) {
+            return response.json();
+        } else if (response.status === 401 || !response.headers.get("Content-Type").includes("application/json")) {
+            throw new Error('You must be logged in to add to a collection');
         }
-        return response.json();
     })
     .then(data => {
         if (data.success) {
@@ -335,7 +330,192 @@ function addToCollection(collectionId, quoteId, plusButton) {
     });
 }
 
+function showContextModal(quoteId, event) {
+    const startTime = new Date().getTime();
+    const startX = event.clientX;
+    const startY = event.clientY;
+
+    setTimeout(() => {
+        const endTime = new Date().getTime();
+        const endX = event.clientX;
+        const endY = event.clientY;
+
+        const timeDiff = endTime - startTime;
+        const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+
+        if (timeDiff < 500 || distance > 100) {
+            console.log('Possible bot activity detected');
+            return;
+        }
+
+        const contextElement = document.querySelector(`.quote-card[data-quote-id="${quoteId}"]`);
+        if (!contextElement) {
+            return;
+        }
+
+        const fullContextElement = contextElement.querySelector('.full-context');
+        if (!fullContextElement) {
+            return;
+        }
+
+        const quoteText = fullContextElement.getAttribute('data-quote').trim();
+        const bookTitle = fullContextElement.getAttribute('data-book-title');
+        const fullContext = fullContextElement.textContent;
+
+        if (!fullContext) {
+            alert('No context available for this quote.');
+            return;
+        }
+
+        findQuoteInContext(quoteText, fullContext)
+            .then(parts => {
+                const modal = document.getElementById('contextModal');
+                if (!modal) {
+                    return;
+                }
+
+                const escapeHtml = (unsafe) => {
+                    return unsafe
+                         .replace(/&/g, "&amp;")
+                         .replace(/</g, "&lt;")
+                         .replace(/>/g, "&gt;")
+                         .replace(/"/g, "&quot;")
+                         .replace(/'/g, "&#039;");
+                }
+
+                const formatText = (text) => {
+                    return escapeHtml(text).replace(/\n/g, '<br>');
+                }
+
+                let modalContent = '';
+                if (bookTitle && bookTitle !== "None" && bookTitle.trim() !== "") {
+                    modalContent += `<p><em>Excerpt from "${escapeHtml(bookTitle)}"</em></p>`;
+                }
+
+                const charLimit = 300;
+
+                const truncateContext = (before, quote, after, charLimit) => {
+                    const totalLimit = charLimit * 2;
+                    let beforeTruncated = before;
+                    let afterTruncated = after;
+
+                    if (before.length + after.length > totalLimit) {
+                        const excessChars = (before.length + after.length) - totalLimit;
+                        const charsToRemoveEach = Math.ceil(excessChars / 2);
+
+                        if (before.length > charsToRemoveEach) {
+                            let startIndex = before.length - charLimit;
+                            startIndex = before.indexOf(' ', startIndex);
+                            if (startIndex === -1) startIndex = before.length - charLimit;
+                            beforeTruncated = '...' + before.slice(startIndex).trim();
+                        }
+                        if (after.length > charsToRemoveEach) {
+                            let endIndex = charLimit;
+                            endIndex = after.lastIndexOf(' ', endIndex);
+                            if (endIndex === -1) endIndex = charLimit;
+                            afterTruncated = after.slice(0, endIndex).trim() + '...';
+                        }
+                    }
+
+                    return {
+                        before: beforeTruncated,
+                        quote: quote,
+                        after: afterTruncated
+                    };
+                };
+
+                const truncated = truncateContext(parts.before, parts.quote, parts.after, charLimit);
+
+                modalContent += `
+                    <div id="previewContext">
+                        <p>${formatText(truncated.before)}<strong>${formatText(truncated.quote)}</strong>${formatText(truncated.after)}</p>
+                    </div>
+                    <div id="fullContext" style="display: none;">
+                        <p>${formatText(parts.before)}<strong>${formatText(parts.quote)}</strong>${formatText(parts.after)}</p>
+                    </div>
+                `;
+
+                if (parts.before.length + parts.after.length > charLimit * 2) {
+                    modalContent += `<button id="toggleContext">Show Full Context</button>`;
+                }
+
+                modal.querySelector('.modal-body').innerHTML = modalContent;
+                modal.style.display = 'block';
+                modal.classList.add('show');
+                document.body.classList.add('modal-open');
+
+                const toggleButton = document.getElementById('toggleContext');
+                if (toggleButton) {
+                    toggleButton.addEventListener('click', () => {
+                        const previewContext = document.getElementById('previewContext');
+                        const fullContext = document.getElementById('fullContext');
+                        const modalBody = document.querySelector('.modal-body');
+
+                        if (previewContext.style.display !== 'none') {
+                            previewContext.style.display = 'none';
+                            fullContext.style.display = 'block';
+                            toggleButton.textContent = 'Show Preview';
+                        } else {
+                            previewContext.style.display = 'block';
+                            fullContext.style.display = 'none';
+                            toggleButton.textContent = 'Show Full Context';
+                        }
+                        modalBody.scrollTop = 0;
+                    });
+                }
+            })
+            .catch(error => {
+                alert(`Error: ${error.message}`);
+            });
+    }, 1000);  // 1 second delay
+}
+function findQuoteInContext(quote, context) {
+    const payload = {
+        quote: quote,
+        context: context
+    };
+    console.log("Sending payload:", payload);
+
+    return fetch('/match_quote', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify(payload),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error("Server response:", text);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
+    .catch(error => {
+        console.error("Error in findQuoteInContext:", error);
+        throw error;
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Close all dropdowns and popups on outside click
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.add-to-collection-dropdown') && !event.target.closest('.share-popup') && !event.target.closest('.share-button')) {
+            closeAllDropdownsAndPopups();
+        }
+    });
+
+    // Keep dropdowns and popups open on inside click
+    document.querySelectorAll('.add-to-collection-dropdown, .share-popup').forEach(function(element) {
+        element.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    });
+
+    // Bind click events to all "Create New Collection" buttons
     document.querySelectorAll('.create-new-collection-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var quoteId = this.getAttribute('data-quote-id');
@@ -347,18 +527,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Close modal functionality
     document.querySelectorAll('.close').forEach(function(span) {
         span.addEventListener('click', function() {
             this.closest('.modal').style.display = "none";
         });
     });
 
+    // Clicking outside to close modals
     window.addEventListener('click', function(event) {
         document.querySelectorAll('.modal').forEach(function(modal) {
             if (event.target == modal) {
                 modal.style.display = "none";
             }
         });
+    });
+
+    const modal = document.getElementById('contextModal');
+    const closeButton = modal.querySelector('.close-modal');
+
+    closeButton.addEventListener('click', closeContextModal);
+
+    window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+            closeContextModal();
+        }
     });
 });
 </script>

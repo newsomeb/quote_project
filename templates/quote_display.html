@@ -24,6 +24,14 @@
                     <div class="author-details">
                         <a href="{{ url_for('author_quotes', author=author) }}">{{ author }}</a>
                         <p class="author-quote">"{{ quote }}"</p>
+                        {% if quote.context %}
+                        <button class="show-context-button" onclick="showContextModal('{{ quote.id }}')">
+                            <i class="fas fa-eye"></i> Show Context
+                        </button>
+                        <div class="full-context" style="display: none;" data-quote="{{ quote.quote }}" data-book-title="{{ quote.book_title }}">
+                            {{ quote.context }}
+                        </div>
+                        {% endif %}
                     </div>
                 </li>
             {% endfor %}
@@ -64,5 +72,215 @@
             moreInfoSection.style.display = 'none';
         }
     }
+
+    function findQuoteInContext(quote, context) {
+
+
+        const payload = { quote: quote, context: context };
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        return fetch('/match_quote', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.error || `HTTP error! status: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .catch(error => {
+            console.error("Error in findQuoteInContext:", error);
+            throw error;
+        });
+    }
+
+    function showContextModal(quoteId) {
+
+        const contextElement = document.querySelector(`.author-details[data-quote-id="${quoteId}"]`);
+        if (!contextElement) {
+            console.error(`Quote card not found for quoteId: ${quoteId}`);
+            return;
+        }
+
+
+        const fullContextElement = contextElement.querySelector('.full-context');
+        if (!fullContextElement) {
+            console.error(`Full context element not found for quoteId: ${quoteId}`);
+            return;
+        }
+
+
+        const quoteText = fullContextElement.getAttribute('data-quote').trim();
+        const bookTitle = fullContextElement.getAttribute('data-book-title');
+        const fullContext = fullContextElement.textContent;
+
+        if (!fullContext) {
+            console.error(`No context content for quoteId: ${quoteId}`);
+            alert('No context available for this quote.');
+            return;
+        }
+
+
+
+        findQuoteInContext(quoteText, fullContext)
+            .then(parts => {
+
+                const modal = document.getElementById('contextModal');
+                if (!modal) {
+                    console.error('Context modal not found');
+                    return;
+                }
+
+
+                const escapeHtml = (unsafe) => {
+                    return unsafe
+                         .replace(/&/g, "&amp;")
+                         .replace(/</g, "&lt;")
+                         .replace(/>/g, "&gt;")
+                         .replace(/"/g, "&quot;")
+                         .replace(/'/g, "&#039;");
+                }
+
+                const formatText = (text) => {
+                    return escapeHtml(text).replace(/\n/g, '<br>');
+                }
+
+                let modalContent = '';
+                if (bookTitle && bookTitle !== "None" && bookTitle.trim() !== "") {
+                    modalContent += `<p><em>Excerpt from "${escapeHtml(bookTitle)}"</em></p>`;
+                }
+
+                const charLimit = 300;
+
+                const truncateContext = (before, quote, after, charLimit) => {
+                    const totalLimit = charLimit * 2;
+                    let beforeTruncated = before;
+                    let afterTruncated = after;
+
+                    if (before.length + after.length > totalLimit) {
+                        const excessChars = (before.length + after.length) - totalLimit;
+                        const charsToRemoveEach = Math.ceil(excessChars / 2);
+
+                        if (before.length > charsToRemoveEach) {
+                            let startIndex = before.length - charLimit;
+                            startIndex = before.indexOf(' ', startIndex);
+                            if (startIndex === -1) startIndex = before.length - charLimit;
+                            beforeTruncated = '...' + before.slice(startIndex).trim();
+                        }
+                        if (after.length > charsToRemoveEach) {
+                            let endIndex = charLimit;
+                            endIndex = after.lastIndexOf(' ', endIndex);
+                            if (endIndex === -1) endIndex = charLimit;
+                            afterTruncated = after.slice(0, endIndex).trim() + '...';
+                        }
+                    }
+
+                    return {
+                        before: beforeTruncated,
+                        quote: quote,
+                        after: afterTruncated
+                    };
+                };
+
+                const truncated = truncateContext(parts.before, parts.quote, parts.after, charLimit);
+
+                modalContent += `
+                    <div id="previewContext">
+                        <p>${formatText(truncated.before)}<strong>${formatText(truncated.quote)}</strong>${formatText(truncated.after)}</p>
+                    </div>
+                    <div id="fullContext" style="display: none;">
+                        <p>${formatText(parts.before)}<strong>${formatText(parts.quote)}</strong>${formatText(parts.after)}</p>
+                    </div>
+                `;
+
+                if (parts.before.length + parts.after.length > charLimit * 2) {
+                    modalContent += `<button id="toggleContext">Show Full Context</button>`;
+                }
+
+
+
+                modal.querySelector('.modal-body').innerHTML = modalContent;
+                modal.style.display = 'block';
+                modal.classList.add('show');
+                document.body.classList.add('modal-open');
+
+
+
+                const toggleButton = document.getElementById('toggleContext');
+                if (toggleButton) {
+                    toggleButton.addEventListener('click', () => {
+                        const previewContext = document.getElementById('previewContext');
+                        const fullContext = document.getElementById('fullContext');
+                        const modalBody = document.querySelector('.modal-body');
+
+                        if (previewContext.style.display !== 'none') {
+                            previewContext.style.display = 'none';
+                            fullContext.style.display = 'block';
+                            toggleButton.textContent = 'Show Preview';
+                        } else {
+                            previewContext.style.display = 'block';
+                            fullContext.style.display = 'none';
+                            toggleButton.textContent = 'Show Full Context';
+                        }
+                        modalBody.scrollTop = 0;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert(`Error: ${error.message}`);
+            });
+    }
+
+    function closeContextModal() {
+        const modal = document.getElementById('contextModal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close all dropdowns and popups on outside click
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.add-to-collection-dropdown') && !event.target.closest('.share-popup') && !event.target.closest('.share-button')) {
+                closeAllDropdownsAndPopups();
+            }
+        });
+
+        // Keep dropdowns and popups open on inside click
+        document.querySelectorAll('.add-to-collection-dropdown, .share-popup').forEach(function(element) {
+            element.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+
+        const modal = document.getElementById('contextModal');
+        const closeButton = modal.querySelector('.close-modal');
+
+        closeButton.addEventListener('click', closeContextModal);
+
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                closeContextModal();
+            }
+        });
+    });
 </script>
+
+<div id="contextModal" class="modal context-modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="modal-body"></div>
+    </div>
+</div>
+
 {% endblock %}

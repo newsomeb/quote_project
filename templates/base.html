@@ -22,6 +22,9 @@
         gtag('js', new Date());
         gtag('config', 'G-ZX3J9GXNFF');
     </script>
+
+    <!-- Include fuzzball Library -->
+    <script src="https://cdn.jsdelivr.net/npm/fuzzball@1.0.0/dist/fuzzball.min.js"></script>
 </head>
 <body>
     <!-- Navigation Container -->
@@ -106,6 +109,12 @@
                 mobileNav.classList.remove('show');
             }
         });
+
+
+
+    const sessionToken = "{{ session.get('token', '') }}";
+
+
     </script>
 
     {% block scripts %}{% endblock %}

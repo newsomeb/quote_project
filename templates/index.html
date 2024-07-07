@@ -63,7 +63,6 @@
                                         </div>
                                     </div>
                                     <!-- The Modal -->
-                                    <!-- The Modal -->
                                     <div id="createCollectionModal-{{ quote_of_the_day.id }}" class="modal">
                                       <div class="modal-content">
                                         <span class="close">&times;</span>
@@ -90,17 +89,27 @@
                                         </form>
                                       </div>
                                     </div>
-
-
                                 </div>
-                                <p class="author-name">
-                                    <a href="https://thequotearchive.com/quotes/{{ quote_of_the_day.author|replace(' ', '%20') }}">
-                                        {{ quote_of_the_day.author }}
-                                    </a>
-                                </p>
+                                <div class="context-and-author">
+                                    {% if quote_of_the_day.context %}
+                                    <button class="show-context-button" onclick="showContextModal('{{ quote_of_the_day.id }}', event)">
+                                        <i class="fas fa-eye"></i> Show Context
+                                    </button>
+                                    {% endif %}
+                                    <p class="author-name">
+                                        <a href="https://thequotearchive.com/quotes/{{ quote_of_the_day.author|replace(' ', '%20') }}">
+                                            {{ quote_of_the_day.author }}
+                                        </a>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    {% if quote_of_the_day.context %}
+                    <div class="full-context" style="display: none;" data-quote="{{ quote_of_the_day.quote }}" data-book-title="{{ quote_of_the_day.book_title }}">
+                        {{ quote_of_the_day.context }}
+                    </div>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>
@@ -179,14 +188,26 @@
                                       </div>
                                     </div>
                                 </div>
-                                <p class="author-name">
-                                    <a href="https://thequotearchive.com/quotes/{{ data['quote'].author|replace(' ', '%20') }}">
-                                        {{ data['quote'].author }}
-                                    </a>
-                                </p>
+                                <div class="context-and-author">
+                                    {% if data['quote'].context %}
+                                    <button class="show-context-button" onclick="showContextModal('{{ data['quote'].id }}', event)">
+                                        <i class="fas fa-eye"></i> Show Context
+                                    </button>
+                                    {% endif %}
+                                    <p class="author-name">
+                                        <a href="https://thequotearchive.com/quotes/{{ data['quote'].author|replace(' ', '%20') }}">
+                                            {{ data['quote'].author }}
+                                        </a>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    {% if data['quote'].context %}
+                    <div class="full-context" style="display: none;" data-quote="{{ data['quote'].quote }}" data-book-title="{{ data['quote'].book_title }}">
+                        {{ data['quote'].context }}
+                    </div>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>
@@ -238,188 +259,316 @@
 </div>
 
 <script>
-    // Wait for the DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        var quotes = document.querySelectorAll('.quote-content');
-        quotes.forEach(function(quote) {
-            quote.addEventListener('click', function() {
-                this.classList.toggle('expanded');
-            });
-        });
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        // Bind click events to all "Create New Collection" buttons
-        document.querySelectorAll('.create-new-collection-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                var quoteId = this.getAttribute('data-quote-id');
-                var modalId = 'createCollectionModal-' + quoteId;
-                var modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.style.display = "block";
-                }
-            });
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    setupQuoteExpansion();
+    setupCreateCollectionButtons();
+    setupModalClosing();
+    setupOutsideClickHandling();
+    setupContextModalClosing();
+});
 
-        // Close modal functionality
-        document.querySelectorAll('.close').forEach(function(span) {
-            span.addEventListener('click', function() {
-                this.closest('.modal').style.display = "none";
-            });
+function setupQuoteExpansion() {
+    document.querySelectorAll('.quote-content').forEach(quote => {
+        quote.addEventListener('click', function() {
+            this.classList.toggle('expanded');
         });
+    });
+}
 
-        // Clicking outside to close modals
-        window.addEventListener('click', function(event) {
-            document.querySelectorAll('.modal').forEach(function(modal) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            });
+function setupCreateCollectionButtons() {
+    document.querySelectorAll('.create-new-collection-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modalId = 'createCollectionModal-' + this.getAttribute('data-quote-id');
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = "block";
         });
+    });
+}
 
-        // Close all dropdowns and popups on outside click
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.add-to-collection-dropdown') && !event.target.closest('.share-popup') && !event.target.closest('.share-button')) {
-                closeAllDropdownsAndPopups();
-            }
-        });
-
-        // Keep dropdowns and popups open on inside click
-        document.querySelectorAll('.add-to-collection-dropdown, .share-popup').forEach(function(element) {
-            element.addEventListener('click', function(event) {
-                event.stopPropagation();
-            });
+function setupModalClosing() {
+    document.querySelectorAll('.close').forEach(span => {
+        span.addEventListener('click', function() {
+            this.closest('.modal').style.display = "none";
         });
     });
 
-    function closeAllDropdownsAndPopups() {
-        closeAllSharePopups();
-        closeAllCollectionDropdowns();
-    }
-
-    function closeAllSharePopups() {
-        document.querySelectorAll('.share-popup').forEach(function(popup) {
-            popup.style.display = 'none';
-        });
-    }
-
-    function closeAllCollectionDropdowns() {
-        document.querySelectorAll('.dropdown-content').forEach(function(dropdown) {
-            dropdown.style.display = 'none';
-        });
-    }
-
-    function toggleFavorite(quoteId, buttonElement) {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        fetch(`/add_to_favorites/${quoteId}`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': csrfToken
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => {
-            if (response.ok && response.headers.get("Content-Type").includes("application/json")) {
-                return response.json();
-            } else if (response.status === 401 || !response.headers.get("Content-Type").includes("application/json")) {
-                throw new Error('You must be logged in to favorite');
-            }
-        })
-        .then(data => {
-            buttonElement.classList.add('favorite-active');
-            buttonElement.querySelector('i').classList.replace('fa-regular', 'fa-solid');
-        })
-        .catch(error => {
-            const errorMessageElement = buttonElement.nextElementSibling;
-            if (errorMessageElement) {
-                errorMessageElement.textContent = error.message;
-                errorMessageElement.style.display = 'block';
-            }
-        });
-    }
-
-    function copyToClipboard(event, inputElement) {
-        event.preventDefault();
-        navigator.clipboard.writeText(inputElement.value).then(() => {
-            alert('Link copied to clipboard');
-        }).catch(err => {
-            console.error('Could not copy text:', err);
-        });
-    }
-
-    function toggleCollectionDropdown(element) {
-        closeAllSharePopups();
-        var dropdownContent = element.nextElementSibling;
-        dropdownContent.style.display = dropdownContent.style.display === "none" ? "block" : "none";
-    }
-
-    function toggleSharePopup(buttonElement) {
-        closeAllCollectionDropdowns();
-        let quoteActions = buttonElement.closest('.quote-actions');
-        let popup = buttonElement.nextElementSibling;
-        popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
-
-        if (popup.style.display === 'block') {
-            let inputField = popup.querySelector('input');
-            inputField.value = buttonElement.getAttribute('data-share-url');
-            inputField.select();
-
-            let quoteActionsStyle = window.getComputedStyle(quoteActions);
-            let quoteActionsHeight = quoteActions.offsetHeight + parseInt(quoteActionsStyle.marginTop) + parseInt(quoteActionsStyle.marginBottom);
-            popup.style.top = quoteActionsHeight + 'px';
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
         }
-    }
+    });
+}
 
-    var csrf_token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+function setupOutsideClickHandling() {
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.add-to-collection-dropdown') &&
+            !event.target.closest('.share-popup') &&
+            !event.target.closest('.share-button')) {
+            closeAllDropdownsAndPopups();
+        }
+    });
 
-    function addToCollection(collectionId, quoteId, plusButton) {
-        const data = {
-            collection_id: collectionId,
-            quote_id: quoteId,
-        };
+    document.querySelectorAll('.add-to-collection-dropdown, .share-popup').forEach(element => {
+        element.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    });
+}
 
-        fetch('/add_to_collection', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': csrf_token
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+function setupContextModalClosing() {
+    const modal = document.getElementById('contextModal');
+    const closeButton = modal.querySelector('.close-modal');
+    closeButton.addEventListener('click', closeContextModal);
+    window.addEventListener('click', function(event) {
+        if (event.target == modal) closeContextModal();
+    });
+}
+
+function closeAllDropdownsAndPopups() {
+    document.querySelectorAll('.share-popup, .dropdown-content').forEach(el => el.style.display = 'none');
+}
+
+function toggleFavorite(quoteId, buttonElement) {
+    fetch(`/add_to_favorites/${quoteId}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => {
+        if (response.ok && response.headers.get("Content-Type").includes("application/json")) {
             return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                plusButton.classList.add('add-success');
-                const dropdownContent = plusButton.nextElementSibling;
-                const collectionButtons = dropdownContent.querySelectorAll(`button[data-collection-id='${collectionId}']`);
-                collectionButtons.forEach(btn => {
-                    btn.classList.add('bold-collection');
-                });
-            } else {
-                console.error('Failed to add the quote to the collection.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    }
-
-    function toggleCreateCollectionForm() {
-        var form = document.getElementById('create-collection-form');
-        if (form.style.display === "none" || !form.style.display) {
-            form.style.display = "block";
-        } else {
-            form.style.display = "none";
+        } else if (response.status === 401 || !response.headers.get("Content-Type").includes("application/json")) {
+            throw new Error('You must be logged in to favorite');
         }
+    })
+    .then(() => {
+        buttonElement.classList.add('favorite-active');
+        buttonElement.querySelector('i').classList.replace('fa-regular', 'fa-solid');
+    })
+    .catch(error => {
+        const errorMessageElement = buttonElement.nextElementSibling;
+        if (errorMessageElement) {
+            errorMessageElement.textContent = error.message;
+            errorMessageElement.style.display = 'block';
+        }
+    });
+}
+
+function copyToClipboard(event, inputElement) {
+    event.preventDefault();
+    navigator.clipboard.writeText(inputElement.value)
+        .then(() => alert('Link copied to clipboard'))
+        .catch(err => console.error('Could not copy text:', err));
+}
+
+function toggleCollectionDropdown(element) {
+    closeAllDropdownsAndPopups();
+    element.nextElementSibling.style.display = element.nextElementSibling.style.display === "none" ? "block" : "none";
+}
+
+function toggleSharePopup(buttonElement) {
+    closeAllDropdownsAndPopups();
+    let popup = buttonElement.nextElementSibling;
+    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+    if (popup.style.display === 'block') {
+        let inputField = popup.querySelector('input');
+        inputField.value = buttonElement.getAttribute('data-share-url');
+        inputField.select();
+        let quoteActions = buttonElement.closest('.quote-actions');
+        let quoteActionsStyle = window.getComputedStyle(quoteActions);
+        popup.style.top = (quoteActions.offsetHeight + parseInt(quoteActionsStyle.marginTop) + parseInt(quoteActionsStyle.marginBottom)) + 'px';
     }
+}
+
+function addToCollection(collectionId, quoteId, plusButton) {
+    fetch('/add_to_collection', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({ collection_id: collectionId, quote_id: quoteId }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            plusButton.classList.add('add-success');
+            const dropdownContent = plusButton.nextElementSibling;
+            dropdownContent.querySelectorAll(`button[data-collection-id='${collectionId}']`)
+                .forEach(btn => btn.classList.add('bold-collection'));
+            dropdownContent.style.display = 'none';
+        } else {
+            throw new Error('Failed to add the quote to the collection.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error.message);
+    });
+}
+
+function findQuoteInContext(quote, context) {
+    return fetch('/match_quote', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ quote, context }),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    });
+}
+
+function showContextModal(quoteId, event) {
+    const startTime = new Date().getTime();
+    const startX = event.clientX;
+    const startY = event.clientY;
+
+    setTimeout(() => {
+        const endTime = new Date().getTime();
+        const endX = event.clientX;
+        const endY = event.clientY;
+
+        const timeDiff = endTime - startTime;
+        const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+
+        if (timeDiff < 500 || distance > 100) {
+            console.log('Possible bot activity detected');
+            return;
+        }
+
+        const contextElement = document.querySelector(`.quote-card[data-quote-id="${quoteId}"]`);
+        if (!contextElement) return;
+
+        const fullContextElement = contextElement.querySelector('.full-context');
+        if (!fullContextElement) return;
+
+        const quoteText = fullContextElement.getAttribute('data-quote').trim();
+        const bookTitle = fullContextElement.getAttribute('data-book-title');
+        const fullContext = fullContextElement.textContent;
+
+        if (!fullContext) {
+            alert('No context available for this quote.');
+            return;
+        }
+
+        findQuoteInContext(quoteText, fullContext)
+            .then(parts => {
+                const modal = document.getElementById('contextModal');
+                if (!modal) return;
+
+                const escapeHtml = unsafe => unsafe.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+                const formatText = text => escapeHtml(text).replace(/\n/g, '<br>');
+
+                let modalContent = '';
+                if (bookTitle && bookTitle !== "None" && bookTitle.trim() !== "") {
+                    modalContent += `<p><em>Excerpt from "${escapeHtml(bookTitle)}"</em></p>`;
+                }
+
+                const charLimit = 300;
+                const truncateContext = (before, quote, after, charLimit) => {
+                    const totalLimit = charLimit * 2;
+                    let beforeTruncated = before;
+                    let afterTruncated = after;
+
+                    if (before.length + after.length > totalLimit) {
+                        const excessChars = (before.length + after.length) - totalLimit;
+                        const charsToRemoveEach = Math.ceil(excessChars / 2);
+
+                        if (before.length > charsToRemoveEach) {
+                            let startIndex = before.length - charLimit;
+                            startIndex = before.indexOf(' ', startIndex);
+                            if (startIndex === -1) startIndex = before.length - charLimit;
+                            beforeTruncated = '...' + before.slice(startIndex).trim();
+                        }
+                        if (after.length > charsToRemoveEach) {
+                            let endIndex = charLimit;
+                            endIndex = after.lastIndexOf(' ', endIndex);
+                            if (endIndex === -1) endIndex = charLimit;
+                            afterTruncated = after.slice(0, endIndex).trim() + '...';
+                        }
+                    }
+
+                    return { before: beforeTruncated, quote, after: afterTruncated };
+                };
+
+                const truncated = truncateContext(parts.before, parts.quote, parts.after, charLimit);
+
+                modalContent += `
+                    <div id="previewContext">
+                        <p>${formatText(truncated.before)}<strong>${formatText(truncated.quote)}</strong>${formatText(truncated.after)}</p>
+                    </div>
+                    <div id="fullContext" style="display: none;">
+                        <p>${formatText(parts.before)}<strong>${formatText(parts.quote)}</strong>${formatText(parts.after)}</p>
+                    </div>
+                `;
+
+                if (parts.before.length + parts.after.length > charLimit * 2) {
+                    modalContent += `<button id="toggleContext">Show Full Context</button>`;
+                }
+
+                modal.querySelector('.modal-body').innerHTML = modalContent;
+                modal.style.display = 'block';
+                modal.classList.add('show');
+                document.body.classList.add('modal-open');
+
+                const toggleButton = document.getElementById('toggleContext');
+                if (toggleButton) {
+                    toggleButton.addEventListener('click', () => {
+                        const previewContext = document.getElementById('previewContext');
+                        const fullContext = document.getElementById('fullContext');
+                        const modalBody = document.querySelector('.modal-body');
+
+                        if (previewContext.style.display !== 'none') {
+                            previewContext.style.display = 'none';
+                            fullContext.style.display = 'block';
+                            toggleButton.textContent = 'Show Preview';
+                        } else {
+                            previewContext.style.display = 'block';
+                            fullContext.style.display = 'none';
+                            toggleButton.textContent = 'Show Full Context';
+                        }
+                        modalBody.scrollTop = 0;
+                    });
+                }
+            })
+            .catch(error => alert(`Error: ${error.message}`));
+    }, 1000);
+}
+
+function closeContextModal() {
+    const modal = document.getElementById('contextModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+    }
+}
 </script>
 
-
+<div id="contextModal" class="modal context-modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="modal-body"></div>
+    </div>
+</div>
 
 {% endblock %}

@@ -556,7 +556,12 @@ button:hover, input[type="submit"]:hover, .hamburger:hover {
     word-wrap: break-word; /* Break long words to prevent overflow */
 }
 
-
+@media screen and (max-width: 767px) {
+    .quote-content p {
+        font-size: 15px;
+        line-height: 1.6; /* Adjusted for better readability with the smaller font size */
+    }
+}
 
 
 .clickable-indicator {
@@ -1221,7 +1226,7 @@ button:hover, input[type="submit"]:hover, .hamburger:hover {
 
 
 .quote-content p {
-    font-size: 35px;
+
     line-height: 1.5;
      /* Example: Adjust line height for better readability */
 }
@@ -1981,3 +1986,135 @@ input[type="text"], input[type="submit"], button {
     width: 100%; /* Full width */
     box-sizing: border-box; /* Include padding and border in width */
 }
+.author-quotes-page-wrapper .quote-card .quote-content {
+    position: relative;
+    overflow: hidden;
+
+    transition: max-height 0.5s ease, padding 0.5s ease;
+}
+
+.author-quotes-page-wrapper .quote-card .quote-content.expanded {
+    max-height: none;
+    padding: 10px 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.context-text {
+    font-size: 14px;
+}
+
+.quote-content p strong {
+    font-size: 16px;
+}
+
+.read-more, .read-less {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+
+.quote-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.context-and-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.show-context-button {
+    background: none;
+    border: none;
+    color: #007bff; /* Keep the blue color */
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Add smooth transition */
+}
+
+.show-context-button:hover {
+    background-color: #f8f9fa; /* Light gray background on hover, adjust as needed */
+    text-decoration: none; /* Remove underline on hover */
+}
+
+.show-context-button i {
+    font-size: 16px;
+}
+
+@media screen and (max-width: 768px) {  /* Adjust this breakpoint as needed */
+    .context-modal {
+        position: fixed;
+
+        top: 56px; /* Adjust this value to match your navbar height */
+        bottom: 0;
+        max-height: calc(100vh - 56px);
+
+        left: 0;
+        right: 0;
+
+        width: 100%;
+        margin: 0;
+
+        transform: translateY(100%);
+        transition: transform 0.3s ease-out;
+    }
+
+    .context-modal.show {
+        transform: translateY(0);
+    }
+
+    .context-modal .modal-content {
+        height: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        border-radius: 20px 20px 0 0;
+        padding-top: 40px; /* Space for close button */
+    }
+
+    .context-modal .close-modal {
+        position: sticky;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        z-index: 1;
+    }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+}
+
