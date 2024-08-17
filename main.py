@@ -66,8 +66,8 @@ model = BertModel.from_pretrained('bert-base-uncased')
 def create_app():
     app = Flask(__name__)
 
-    # Set a default secret key if one is not provided in the environment
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'your-default-secret-key-here'
+    
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
     csrf = CSRFProtect(app)
 
@@ -130,7 +130,7 @@ def create_app():
 
     class AdminModelView(ModelView):
         def is_accessible(self):
-            # Define your logic for admin accessibility
+            
             return current_user.is_authenticated and current_user.is_admin
 
         def inaccessible_callback(self, name, **kwargs):
@@ -236,7 +236,7 @@ def home(year=None, month=None, day=None):
     and a random 'Quote of the Day' from a special collection.
     """
     # Manually set the user timezone
-    user_timezone = 'America/New_York'  # Replace with your correct timezone
+    user_timezone = 'America/New_York' 
     timezone = pytz.timezone(user_timezone)
     utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
     local_now = utc_now.astimezone(timezone)
@@ -316,7 +316,7 @@ def authors():
     else:
         matched_authors = []
 
-    # No need to fetch quotes here as we're focusing on matching authors
+   
     return render_template('authors.html', authors=matched_authors, query=query)
 
 
@@ -345,9 +345,9 @@ import re
 @app.route('/quotes/<author>')
 def author_quotes(author):
     page = request.args.get('page', 1, type=int)
-    per_page = 20  # Keep your current per_page value
+    per_page = 20  
 
-    # Create a case statement for ordering using the new syntax
+ 
     order_case = case(
         (Quote.context != None, literal(0)),
         else_=literal(1)
@@ -836,7 +836,7 @@ def internal_error(error):
     Implements the internal_error functionality.
     """
 
-    db.session.rollback()  # If you're using a database, it's good to rollback any changes in case of errors
+    db.session.rollback()  
     return render_template('500.html'), 500
 
 @app.errorhandler(403)
@@ -880,7 +880,7 @@ def send_confirmation_email(email, token):
     Implements the send_confirmation_email functionality.
     """
 
-    confirmation_link = token  # Just use the token directly
+    confirmation_link = token  
 
     return requests.post(
         f"https://api.mailgun.net/v3/{app.config['MAILGUN_DOMAIN']}/messages",
@@ -1132,10 +1132,10 @@ def quote_page(quote_id):
     # Retrieve the quote based on quote_id from the database
     quote = Quote.query.get_or_404(quote_id)
 
-    # Optionally, fetch the author's image URL if needed
+    
     author_image_url = quote.image_url if quote.image_url else None
 
-    # Render the template with the retrieved quote and author's image URL
+    
     return render_template('quote_page.html', quote=quote, author_image_url=author_image_url)
 
 
@@ -1143,13 +1143,13 @@ def quote_page(quote_id):
 def quote_detail(quote_id):
     quote = Quote.query.get_or_404(quote_id)
 
-    # Optionally, fetch the author's image URL if needed
+    
     author_image_url = quote.image_url if quote.image_url else None
 
-    # Instantiate the form
+   
     form = CollectionForm()
 
-    # Render the template with the retrieved quote and author's image URL
+    
     return render_template('quote_page.html', quote=quote, author_image_url=author_image_url, form=form)
 
 @app.route('/contactus')
